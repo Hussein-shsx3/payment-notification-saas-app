@@ -1,0 +1,138 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+
+import '../api_client.dart';
+import 'auth_storage.dart';
+import '../../features/notifications/services/android_notification_capture_service.dart';
+
+class AuthProvider extends ChangeNotifier {
+  AuthProvider()
+      : _storage = AuthStorage(),
+        _isLoading = true,
+        _isAuthenticated = false {
+    _api = ApiClient(
+      getAccessToken: _storage.getAccessToken,
+      getRefreshToken: _storage.getRefreshToken,
+      saveTokens: (accessToken, refreshToken) =>
+          _storage.saveTokens(accessToken: accessToken, refreshToken: refreshToken),
+      onRefreshFailed: _handleRefreshFailed,
+    );
+    _init();
+  }
+
+  void _handleRefreshFailed() {
+    // Refresh token is invalid/expired - user must login again
+    // Only logout if we were authenticated (avoid loop during initial load)
+    if (_isAuthenticated) {
+      logout();
+    }
+  }
+
+  final AuthStorage _storage;
+  late final ApiClient _api;
+  final AndroidNotificationCaptureService _captureService =
+      AndroidNotificationCaptureService();
+
+  bool _isLoading;
+  bool _isAuthenticated;
+  String? _errorMessage;
+
+  bool get isLoading => _isLoading;
+  bool get isAuthenticated => _isAuthenticated;
+  String? get errorMessage => _errorMessage;
+  ApiClient get api => _api;
+
+  Future<void> _init() async {
+    final accessToken = await _storage.getAccessToken();
+    final refreshToken = await _storage.getRefreshToken();
+    _isAuthenticated = accessToken != null &&
+        accessToken.isNotEmpty &&
+        refreshToken != null &&
+        refreshToken.isNotEmpty;
+    if (_isAuthenticated) {
+      // Keep native background listener in sync with secure-storage tokens.
+      await _storage.mirrorSecureTokensToSharedPreferences();
+      await _captureService.start();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> login({
+    required String email,
+    required String password,
+  }) async {
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final response = await _api.post('/auth/login', body: {
+        'email': email.trim(),
+        'password': password,
+      });
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final accessToken = data['accessToken'] as String? ?? '';
+        final refreshToken = data['refreshToken'] as String? ?? '';
+
+        await _storage.saveTokens(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        );
+        _isAuthenticated = true;
+        await _captureService.start();
+        notifyListeners();
+        return true;
+      }
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      _errorMessage = body['message']?.toString() ?? 'Login failed';
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Network error. Please try again.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register({
+    required String fullName,
+    required String email,
+    required String phoneNumber,
+    required String password,
+  }) async {
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final response = await _api.post('/auth/register', body: {
+        'fullName': fullName.trim(),
+        'email': email.trim(),
+        'phoneNumber': phoneNumber.trim(),
+        'password': password,
+      });
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return true;
+      }
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      _errorMessage = body['message']?.toString() ?? 'Registration failed';
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Network error. Please try again.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _captureService.stop();
+    await _storage.clearTokens();
+    _isAuthenticated = false;
+    notifyListeners();
+  }
+}
+
