@@ -116,9 +116,9 @@ class PaymentNotificationParser {
     required String input,
   }) {
     // Direct app detection
-    if (_containsAny(input, ['palpay', 'pal pay'])) return 'PalPay';
-    if (_containsAny(input, ['jawwal', 'jawwalpay', 'jawwal pay'])) return 'Jawwal Pay';
-    if (_containsAny(input, ['palestine bank', 'bank of palestine', 'bop'])) {
+    if (_containsAny(input, ['palpay', 'pal pay', 'بال باي', 'بالباي'])) return 'PalPay';
+    if (_containsAny(input, ['jawwal', 'jawwalpay', 'jawwal pay', 'جوال باي', 'جوال'])) return 'Jawwal Pay';
+    if (_containsAny(input, ['palestine bank', 'bank of palestine', 'bop', 'بنك فلسطين'])) {
       return 'Palestine Bank';
     }
 
@@ -141,15 +141,22 @@ class PaymentNotificationParser {
       'bank',
       'bop',
       'palestine bank',
+      'bank of palestine',
       'palpay',
       'jawwal',
       'بنك',
+      'فلسطين',
       'مبلغ',
       'حساب',
+      'حسابك',
       'رصيد',
       'تحويل',
       'دفعة',
       'ايداع',
+      'إيداع',
+      'استلام',
+      'استقبال',
+      'حوالة',
       'استلام',
       'received',
       'credited',
@@ -187,16 +194,33 @@ class PaymentNotificationParser {
       'transfer received',
       'incoming',
       'you got',
+      'account credited',
+      'credit alert',
+      'cash in',
       // Arabic - received/incoming
       'تم استلام',
       'تم ايداع',
+      'تم إيداع',
       'استلمت',
       'وصلك',
       'تم تحويل لك',
       'تم الايداع',
+      'تم الإيداع',
       'وردت',
       'تم استقبال',
       'حوالة واردة',
+      'حوالة واردة لحسابك',
+      'واردة لحسابك',
+      'واردة الى حسابك',
+      'واردة إلى حسابك',
+      'تمت إضافة',
+      'تم اضافه',
+      'اضافة الى حسابك',
+      'إضافة إلى حسابك',
+      'تم اضافة',
+      'تم إضافة',
+      'إشعار إيداع',
+      'اشعار ايداع',
       // General terms (allowed if not sent)
       'payment',
       'transfer',
@@ -219,17 +243,30 @@ class PaymentNotificationParser {
       'payment to',
       'transfer to',
       'paid to',
+      'outgoing transfer',
+      'money sent',
+      'transaction sent',
       'deducted for',
       'debited for',
+      'debited',
+      'withdrawal',
+      'cash out',
       // Arabic - sent/outgoing
       'تم ارسال',
       'ارسلت',
+      'قمت بارسال',
       'تم الدفع لـ',
       'دفعت',
       'تم خصم لـ',
       'تم التحويل الى',
       'حولت',
       'ارسال الى',
+      'حوالة صادرة',
+      'صادرة من حسابك',
+      'تم سحب',
+      'سحب',
+      'شراء',
+      'تم الدفع',
     ]);
   }
 

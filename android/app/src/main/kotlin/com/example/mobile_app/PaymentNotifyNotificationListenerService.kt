@@ -3,11 +3,11 @@ package com.example.mobile_app
 import android.app.Notification
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 import java.io.BufferedReader
@@ -19,6 +19,8 @@ import java.security.MessageDigest
 
 class PaymentNotifyNotificationListenerService : NotificationListenerService() {
     private val TAG = "PaymentNotifyListener"
+    private val QUEUE_KEY = "pending_payment_queue"
+    private val QUEUE_MAX_ITEMS = 300
 
     // Must match Flutter's shared_preferences default file name.
     private fun prefs(context: Context): SharedPreferences {
@@ -88,9 +90,11 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         // Skip OUTGOING / SENT payments - we only want RECEIVED
         val sentIndicators = listOf(
             "you sent", "you transferred", "you paid", "sent to", "payment to",
-            "transfer to", "paid to", "deducted for", "debited for",
+            "transfer to", "paid to", "outgoing transfer", "money sent", "transaction sent",
+            "deducted for", "debited for", "debited", "withdrawal", "cash out",
             "تم ارسال", "ارسلت", "تم الدفع لـ", "دفعت", "تم خصم لـ", "تم التحويل الى",
-            "حولت", "ارسال الى"
+            "حولت", "ارسال الى", "حوالة صادرة", "صادرة من حسابك", "قمت بارسال",
+            "تم سحب", "سحب", "شراء", "تم الدفع"
         )
         if (sentIndicators.any { text.contains(it) }) return false
 
@@ -98,10 +102,13 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         val receivedHints = listOf(
             // English
             "received", "credited", "deposited", "you received", "payment received",
-            "transfer received", "incoming", "you got",
+            "transfer received", "incoming", "you got", "account credited", "credit alert", "cash in",
             // Arabic
             "تم استلام", "تم ايداع", "استلمت", "وصلك", "تم تحويل لك", "تم الايداع",
-            "وردت", "تم استقبال", "حوالة واردة",
+            "تم إيداع", "تم الإيداع", "وردت", "تم استقبال", "حوالة واردة", "حوالة واردة لحسابك",
+            "واردة الى حسابك", "واردة إلى حسابك", "واردة لحسابك",
+            "تمت إضافة", "تم اضافه", "اضافة الى حسابك", "إضافة إلى حسابك", "تم اضافة", "تم إضافة",
+            "إشعار إيداع", "اشعار ايداع",
             // General payment terms (can be received or sent - allow if no sent indicator)
             "payment", "transfer", "deposit", "credited",
             "تحويل", "ايداع", "حوالة", "دفعة"
@@ -111,7 +118,8 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         val packageLower = packageName.lowercase()
         val isKnownPaymentApp = listOf(
             "palpay", "jawwal", "bankofpalestine", "bop", "com.bop",
-            "com.palpay", "com.jawwal", "ps.jawwal"
+            "com.palpay", "com.jawwal", "ps.jawwal", "bank of palestine",
+            "بال باي", "بالباي", "جوال باي", "بنك فلسطين"
         ).any { packageLower.contains(it) }
 
         // Check for SMS apps (for Iburaq and bank SMS)
@@ -142,6 +150,102 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             isSmsApp && hasBankKeywords && hasReceivedHint -> true
             else -> false
         }
+    }
+
+    private fun readQueue(context: Context): MutableList<JSONObject> {
+        val raw = prefs(context).getString(QUEUE_KEY, "[]") ?: "[]"
+        return try {
+            val arr = JSONArray(raw)
+            val out = mutableListOf<JSONObject>()
+            for (i in 0 until arr.length()) {
+                val item = arr.optJSONObject(i)
+                if (item != null) out.add(item)
+            }
+            out
+        } catch (_: Exception) {
+            mutableListOf()
+        }
+    }
+
+    private fun writeQueue(context: Context, queue: List<JSONObject>) {
+        val arr = JSONArray()
+        queue.forEach { arr.put(it) }
+        prefs(context).edit().putString(QUEUE_KEY, arr.toString()).apply()
+    }
+
+    private fun enqueuePayload(context: Context, payload: JSONObject) {
+        val queue = readQueue(context)
+        queue.add(payload)
+        if (queue.size > QUEUE_MAX_ITEMS) {
+            val extra = queue.size - QUEUE_MAX_ITEMS
+            repeat(extra) { queue.removeAt(0) }
+        }
+        writeQueue(context, queue)
+        Log.d(TAG, "Queued payload. Pending=${queue.size}")
+    }
+
+    private fun sendPayloadWithRefresh(
+        context: Context,
+        baseUrl: String,
+        payload: JSONObject,
+        accessToken: String,
+        refreshToken: String
+    ): Boolean {
+        return try {
+            val headers = mapOf("Authorization" to "Bearer $accessToken")
+            val (code, responseBody) = postJson("$baseUrl/notifications/capture", payload, headers)
+            Log.d(TAG, "Capture response: $code $responseBody")
+
+            if (code in 200..299) {
+                return true
+            }
+
+            if (code == 401) {
+                val refreshUrl = "$baseUrl/auth/refresh"
+                val refreshBody = JSONObject()
+                refreshBody.put("refreshToken", refreshToken)
+
+                val refreshHeaders = mapOf("Content-Type" to "application/json")
+                val (rCode, rBody) = postJson(refreshUrl, refreshBody, refreshHeaders)
+                if (rCode in 200..299) {
+                    val parsed = JSONObject(rBody)
+                    val newAccessToken = parsed.optString("accessToken", "")
+                    val newRefreshToken = parsed.optString("refreshToken", refreshToken)
+                    if (newAccessToken.isNotBlank()) {
+                        setTokens(context, newAccessToken, newRefreshToken)
+                        val retryHeaders = mapOf("Authorization" to "Bearer $newAccessToken")
+                        val (retryCode, retryBody) = postJson("$baseUrl/notifications/capture", payload, retryHeaders)
+                        Log.d(TAG, "Capture retry response: $retryCode $retryBody")
+                        return retryCode in 200..299
+                    }
+                } else {
+                    Log.e(TAG, "Refresh failed: $rCode $rBody")
+                }
+            }
+
+            // Non-401 failures are considered temporary unless clearly invalid.
+            code >= 500 || code == 429
+        } catch (e: Exception) {
+            Log.e(TAG, "sendPayloadWithRefresh error", e)
+            false
+        }
+    }
+
+    private fun flushQueue(context: Context, baseUrl: String) {
+        val accessToken = getAccessToken(context)
+        val refreshToken = getRefreshToken(context)
+        if (accessToken.isNullOrBlank() || refreshToken.isNullOrBlank()) return
+
+        val queue = readQueue(context)
+        if (queue.isEmpty()) return
+
+        val remaining = mutableListOf<JSONObject>()
+        for (item in queue) {
+            val ok = sendPayloadWithRefresh(context, baseUrl, item, getAccessToken(context) ?: accessToken, getRefreshToken(context) ?: refreshToken)
+            if (!ok) remaining.add(item)
+        }
+        writeQueue(context, remaining)
+        Log.d(TAG, "Queue flush done. Remaining=${remaining.size}")
     }
 
     private fun postJson(url: String, body: JSONObject, headers: Map<String, String>): Pair<Int, String> {
@@ -175,7 +279,10 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             val message = getMessageText(notification)
 
             if (title.isBlank() && message.isBlank()) return
-            if (!shouldRoughlyLookLikePayment(title, message, packageName)) return
+            if (!shouldRoughlyLookLikePayment(title, message, packageName)) {
+                Log.d(TAG, "Ignored non-payment: pkg=$packageName title=$title")
+                return
+            }
 
             val receivedAt = System.currentTimeMillis()
 
@@ -201,32 +308,11 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             payload.put("message", message)
             payload.put("receivedAt", receivedAt)
 
-            val headers = mapOf("Authorization" to "Bearer $accessToken")
-            val (code, responseBody) = postJson("$baseUrl/notifications/capture", payload, headers)
-            Log.d(TAG, "Capture response: $code $responseBody")
-
-            if (code == 401) {
-                // Try refresh once, then retry.
-                val refreshUrl = "$baseUrl/auth/refresh"
-                val refreshBody = JSONObject()
-                refreshBody.put("refreshToken", refreshToken)
-
-                val refreshHeaders = mapOf("Content-Type" to "application/json")
-                val (rCode, rBody) = postJson(refreshUrl, refreshBody, refreshHeaders)
-                if (rCode in 200..299) {
-                    val parsed = JSONObject(rBody)
-                    val newAccessToken = parsed.optString("accessToken", "")
-                    val newRefreshToken = parsed.optString("refreshToken", refreshToken)
-                    if (newAccessToken.isNotBlank()) {
-                        setTokens(this, newAccessToken, newRefreshToken)
-                        val retryHeaders = mapOf("Authorization" to "Bearer $newAccessToken")
-                        val (retryCode, retryBody) = postJson("$baseUrl/notifications/capture", payload, retryHeaders)
-                        Log.d(TAG, "Capture retry response: $retryCode $retryBody")
-                    }
-                } else {
-                    Log.e(TAG, "Refresh failed: $rCode $rBody")
-                }
+            val sent = sendPayloadWithRefresh(this, baseUrl, payload, accessToken, refreshToken)
+            if (!sent) {
+                enqueuePayload(this, payload)
             }
+            flushQueue(this, baseUrl)
         } catch (e: Exception) {
             Log.e(TAG, "onNotificationPosted error", e)
         }
