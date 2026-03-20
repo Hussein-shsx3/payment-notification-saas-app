@@ -164,21 +164,12 @@ class AndroidNotificationCaptureService {
       return;
     }
 
-    await _forwarder.sendOrQueue(
-      source: parsed.source,
-      title: parsed.title,
-      // Keep the original notification message exactly as received.
-      // Amount is already displayed separately from parsed.amount/currency.
-      message: parsed.message,
-      receivedAt: parsed.receivedAt,
-      amount: parsed.amount,
-      currency: parsed.currency,
-      transactionId: parsed.transactionId,
-    );
-
+    // Server sync is handled by native PaymentNotifyNotificationListenerService (POST
+    // /notifications/capture) so capture works when the app is backgrounded. Dart only mirrors
+    // parsed results for the in-app debug stream.
     _pushDebug({
       'time': DateTime.now().toIso8601String(),
-      'status': 'forwarded_or_queued',
+      'status': 'recognized_native_sync',
       'source': parsed.source,
       'title': parsed.title,
       'message': parsed.message,

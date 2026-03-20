@@ -1,8 +1,16 @@
 package com.example.mobile_app
 
 import android.app.Notification
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -16,9 +24,32 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.concurrent.Executors
 
 class PaymentNotifyNotificationListenerService : NotificationListenerService() {
     private val TAG = "PaymentNotifyListener"
+
+    private val apiBaseUrl = "https://payment-notification-saas-server.onrender.com/api"
+
+    /** Serializes HTTP work so we never block the main thread or the listener callback. */
+    private val ioExecutor = Executors.newSingleThreadExecutor()
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var legacyConnectivityReceiver: BroadcastReceiver? = null
+
+    private val debouncedFlushRunnable = Runnable {
+        ioExecutor.execute {
+            try {
+                flushQueue(applicationContext, apiBaseUrl)
+            } catch (e: Exception) {
+                Log.e(TAG, "debouncedFlush error", e)
+            }
+        }
+    }
+
+    // Same action/extras as notification_listener_service's NotificationListener → Flutter EventChannel.
+    private val flutterBroadcastAction = "slayer.notification.listener.service.intent"
     private val QUEUE_KEY = "pending_payment_queue"
     private val QUEUE_MAX_ITEMS = 300
 
@@ -223,8 +254,10 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
                 }
             }
 
-            // Non-401 failures are considered temporary unless clearly invalid.
-            code >= 500 || code == 429
+            // 5xx / 429: not delivered — caller should queue for retry.
+            if (code >= 500 || code == 429) return false
+            // Other 4xx: treat as non-retryable; do not queue (avoid infinite bad retries).
+            return true
         } catch (e: Exception) {
             Log.e(TAG, "sendPayloadWithRefresh error", e)
             false
@@ -246,6 +279,115 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         }
         writeQueue(context, remaining)
         Log.d(TAG, "Queue flush done. Remaining=${remaining.size}")
+    }
+
+    /**
+     * When the app process is not running, [NotificationListenerService] is still bound by the
+     * system for new notifications. When the user only loses network, we must flush the offline
+     * queue as soon as connectivity returns — without waiting for another notification.
+     */
+    private fun scheduleDebouncedFlush() {
+        mainHandler.removeCallbacks(debouncedFlushRunnable)
+        mainHandler.postDelayed(debouncedFlushRunnable, 1200L)
+    }
+
+    private fun registerConnectivityFlush() {
+        unregisterConnectivityFlush()
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val cb = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    scheduleDebouncedFlush()
+                }
+
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    networkCapabilities: android.net.NetworkCapabilities
+                ) {
+                    if (networkCapabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                        scheduleDebouncedFlush()
+                    }
+                }
+            }
+            networkCallback = cb
+            try {
+                cm.registerDefaultNetworkCallback(cb)
+            } catch (e: Exception) {
+                Log.e(TAG, "registerDefaultNetworkCallback failed", e)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    scheduleDebouncedFlush()
+                }
+            }
+            legacyConnectivityReceiver = receiver
+            registerReceiver(receiver, filter)
+        }
+    }
+
+    private fun unregisterConnectivityFlush() {
+        mainHandler.removeCallbacks(debouncedFlushRunnable)
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        networkCallback?.let {
+            try {
+                cm.unregisterNetworkCallback(it)
+            } catch (_: Exception) {
+            }
+            networkCallback = null
+        }
+        legacyConnectivityReceiver?.let {
+            try {
+                unregisterReceiver(it)
+            } catch (_: Exception) {
+            }
+            legacyConnectivityReceiver = null
+        }
+    }
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        registerConnectivityFlush()
+        // Catch-up after reboot / listener rebind while items were queued offline.
+        scheduleDebouncedFlush()
+    }
+
+    override fun onListenerDisconnected() {
+        unregisterConnectivityFlush()
+        super.onListenerDisconnected()
+    }
+
+    override fun onDestroy() {
+        unregisterConnectivityFlush()
+        ioExecutor.shutdown()
+        super.onDestroy()
+    }
+
+    /**
+     * Forwards notification text to Flutter (notification_listener_service) using the same
+     * broadcast contract as the plugin. Includes EXTRA_BIG_TEXT via [getMessageText], which the
+     * plugin's bundled listener does not expose — without this, the Dart stream never receives
+     * events (our manifest only registers this service, not the plugin class).
+     */
+    private fun sendFlutterBroadcast(sbn: StatusBarNotification, title: String, message: String) {
+        try {
+            val notification = sbn.notification ?: return
+            val isOngoing = (notification.flags and Notification.FLAG_ONGOING_EVENT) != 0
+            val intent = Intent(flutterBroadcastAction)
+            intent.putExtra("package_name", sbn.packageName)
+            intent.putExtra("notification_id", sbn.id)
+            intent.putExtra("title", title)
+            intent.putExtra("message", message)
+            intent.putExtra("is_ongoing", isOngoing)
+            intent.putExtra("is_removed", false)
+            intent.putExtra("can_reply_to_it", false)
+            intent.putExtra("contain_image", false)
+            sendBroadcast(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "sendFlutterBroadcast error", e)
+        }
     }
 
     private fun postJson(url: String, body: JSONObject, headers: Map<String, String>): Pair<Int, String> {
@@ -278,6 +420,8 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             val title = getTitleText(notification)
             val message = getMessageText(notification)
 
+            sendFlutterBroadcast(sbn, title, message)
+
             if (title.isBlank() && message.isBlank()) return
             if (!shouldRoughlyLookLikePayment(title, message, packageName)) {
                 Log.d(TAG, "Ignored non-payment: pkg=$packageName title=$title")
@@ -293,8 +437,6 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
                 return
             }
 
-            val baseUrl = "https://payment-notification-saas-server.onrender.com/api"
-
             val accessToken = getAccessToken(this)
             val refreshToken = getRefreshToken(this)
             if (accessToken.isNullOrBlank() || refreshToken.isNullOrBlank()) {
@@ -308,11 +450,11 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             payload.put("message", message)
             payload.put("receivedAt", receivedAt)
 
-            val sent = sendPayloadWithRefresh(this, baseUrl, payload, accessToken, refreshToken)
+            val sent = sendPayloadWithRefresh(this, apiBaseUrl, payload, accessToken, refreshToken)
             if (!sent) {
                 enqueuePayload(this, payload)
             }
-            flushQueue(this, baseUrl)
+            flushQueue(this, apiBaseUrl)
         } catch (e: Exception) {
             Log.e(TAG, "onNotificationPosted error", e)
         }
