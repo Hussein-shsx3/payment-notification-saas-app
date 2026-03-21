@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 
 enum _DateFilter {
@@ -30,19 +31,25 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   _DateFilter _dateFilter = _DateFilter.all;
   List<Map<String, dynamic>> _paymentItems = const [];
 
-  String _getFilterLabel(_DateFilter f) {
+  String _getFilterLabel(AppLocalizations l10n, _DateFilter f) {
     switch (f) {
       case _DateFilter.today:
-        return 'Today';
+        return l10n.filterToday;
       case _DateFilter.yesterday:
-        return 'Yesterday';
+        return l10n.filterYesterday;
       case _DateFilter.last7Days:
-        return 'Last 7 days';
+        return l10n.filterLast7;
       case _DateFilter.last30Days:
-        return 'Last 30 days';
+        return l10n.filterLast30;
       case _DateFilter.all:
-        return 'All';
+        return l10n.filterAll;
     }
+  }
+
+  String _directionLabel(AppLocalizations l10n, String? d) {
+    if (d == 'outgoing') return l10n.directionSent;
+    if (d == 'incoming') return l10n.directionReceived;
+    return l10n.directionUnknown;
   }
 
   (DateTime?, DateTime?) _getDateRange() {
@@ -71,10 +78,12 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _loading = true;
       _error = null;
@@ -100,16 +109,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         _paymentTotalPages = (container['totalPages'] as num?)?.toInt() ?? 1;
         _paymentTotal = (container['total'] as num?)?.toInt() ?? paymentList.length;
       } else {
-        _error = 'Failed to load payment notifications (${paymentsRes.statusCode}). '
-            'Please redeploy backend and try again.';
+        _error = l10n.failedLoadPayments(paymentsRes.statusCode);
       }
 
       setState(() {
         _paymentItems = paymentList;
       });
-    } catch (e) {
+    } catch (_) {
       setState(() {
-        _error = 'Network error while loading payment notifications.';
+        _error = l10n.networkErrorPayments;
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -117,16 +125,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Future<void> _deleteAllPayments() async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete all payment notifications?'),
-        content: const Text(
-          'This will permanently remove all payment notifications from your account.',
-        ),
+        title: Text(l10n.deleteAllPaymentsTitle),
+        content: Text(l10n.deleteAllPaymentsBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete all')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancel)),
+          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.deleteAll)),
         ],
       ),
     );
@@ -145,14 +152,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Future<void> _deleteSingle(String id) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete this notification?'),
-        content: const Text('This will permanently remove this payment notification.'),
+        title: Text(l10n.deleteSingleTitle),
+        content: Text(l10n.deleteSingleBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancel)),
+          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.delete)),
         ],
       ),
     );
@@ -166,7 +174,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete notification')),
+          SnackBar(content: Text(l10n.failedDeleteNotification)),
         );
       }
     }
@@ -193,37 +201,59 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     _load();
   }
 
+  Future<void> _setPaymentDirection(String id, String direction) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final api = context.read<AuthProvider>().api;
+      final res = await api.patch(
+        '/notifications/payments/$id/direction',
+        body: {'direction': direction},
+      );
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        await _load();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.updateFailed(res.statusCode))),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.networkError)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Notification Center')),
+      appBar: AppBar(title: Text(l10n.notificationCenterAppBar)),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text(
-                  'Payment notifications',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                Text(
+                  l10n.paymentNotificationsHeading,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                 ),
                 const SizedBox(height: 12),
-
-                // Date filter - prominent
                 DropdownButtonFormField<_DateFilter>(
                   value: _dateFilter,
-                  decoration: const InputDecoration(
-                    labelText: 'Show notifications from',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: InputDecoration(
+                    labelText: l10n.showNotificationsFrom,
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: _DateFilter.values
-                      .map((f) => DropdownMenuItem(value: f, child: Text(_getFilterLabel(f))))
+                      .map((f) => DropdownMenuItem(value: f, child: Text(_getFilterLabel(l10n, f))))
                       .toList(),
                   onChanged: _onFilterChanged,
                 ),
                 const SizedBox(height: 16),
-
-                // Pagination & Delete all - clearly visible at top
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -234,19 +264,18 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          '$_paymentTotal total · Page $_paymentPage of $_paymentTotalPages',
+                          l10n.paginationSummary(_paymentTotal, _paymentPage, _paymentTotalPages),
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                         ),
                       ),
                       FilledButton.tonal(
                         onPressed: _deletingPayments ? null : _deleteAllPayments,
-                        child: Text(_deletingPayments ? 'Deleting…' : 'Delete all'),
+                        child: Text(_deletingPayments ? l10n.deleting : l10n.deleteAll),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 if (_error != null) ...[
                   Text(
                     _error!,
@@ -254,14 +283,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                   ),
                   const SizedBox(height: 8),
                 ],
-
                 if (_paymentItems.isEmpty)
-                  const Card(
+                  Card(
                     child: ListTile(
-                      title: Text('No payment notifications'),
-                      subtitle: Text(
-                        'Notifications from the selected period will appear here.',
-                      ),
+                      title: Text(l10n.noPaymentNotifications),
+                      subtitle: Text(l10n.noPaymentNotificationsHint),
                     ),
                   )
                 else
@@ -272,38 +298,73 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     final title = (p['title'] ?? '').toString();
                     final msg = (p['message'] ?? '').toString();
                     final src = (p['source'] ?? '').toString();
+                    final direction = (p['direction'] ?? 'unknown').toString();
+                    final dirLabel = _directionLabel(l10n, direction);
                     final receivedAtRaw = (p['receivedAt'] ?? '').toString();
                     final receivedAtParsed = DateTime.tryParse(receivedAtRaw);
                     final receivedAtLabel = receivedAtParsed == null
                         ? ''
                         : receivedAtParsed.toLocal().toString().split('.').first;
+                    final amountStr = amount?.toString() ?? '--';
+                    final bodyText = StringBuffer()
+                      ..write(l10n.sourceAmountLine(src, dirLabel, amountStr, currency))
+                      ..write(
+                        receivedAtLabel.isNotEmpty ? l10n.timeLine(receivedAtLabel) : '',
+                      )
+                      ..write(l10n.messageLine(msg));
                     return Card(
-                      child: ListTile(
-                        title: Text(title.isEmpty ? 'Payment message' : title),
-                        subtitle: Text(
-                          'Source: $src\n'
-                          'Amount: ${amount ?? '--'} ${currency.isEmpty ? '' : currency}\n'
-                          '${receivedAtLabel.isNotEmpty ? 'Received: $receivedAtLabel\n' : ''}'
-                          'Message: $msg',
-                        ),
-                        isThreeLine: true,
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                              onPressed: () => _deleteSingle(id),
-                              tooltip: 'Delete',
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title.isEmpty ? l10n.paymentMessageFallback : title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                  onPressed: () => _deleteSingle(id),
+                                  tooltip: l10n.delete,
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 6),
+                            Text(
+                              bodyText.toString(),
+                              style: const TextStyle(fontSize: 13, height: 1.35),
+                            ),
+                            if (direction == 'unknown') ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 4,
+                                children: [
+                                  TextButton(
+                                    onPressed: id.isEmpty ? null : () => _setPaymentDirection(id, 'incoming'),
+                                    child: Text(l10n.markAsReceived),
+                                  ),
+                                  TextButton(
+                                    onPressed: id.isEmpty ? null : () => _setPaymentDirection(id, 'outgoing'),
+                                    child: Text(l10n.markAsSent),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
                     );
                   }),
-
                 const SizedBox(height: 16),
-
-                // Pagination controls - clearly visible at bottom
                 if (_paymentTotalPages > 1)
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -317,7 +378,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                         OutlinedButton.icon(
                           onPressed: _paymentPage > 1 ? _previousPage : null,
                           icon: const Icon(Icons.chevron_left),
-                          label: const Text('Previous'),
+                          label: Text(l10n.previous),
                         ),
                         const SizedBox(width: 16),
                         Text(
@@ -328,7 +389,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                         OutlinedButton.icon(
                           onPressed: _paymentPage < _paymentTotalPages ? _nextPage : null,
                           icon: const Icon(Icons.chevron_right),
-                          label: const Text('Next'),
+                          label: Text(l10n.next),
                         ),
                       ],
                     ),

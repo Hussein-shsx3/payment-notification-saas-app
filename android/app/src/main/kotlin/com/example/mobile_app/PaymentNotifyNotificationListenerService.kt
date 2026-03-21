@@ -98,18 +98,41 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         return extras?.getString(Notification.EXTRA_TITLE) ?: ""
     }
 
+    /**
+     * Banks (e.g. Palestine Bank) often put the real body in [Notification.EXTRA_TEXT_LINES]
+     * (InboxStyle) or [Notification.EXTRA_SUB_TEXT]; amount may sit in the title only.
+     */
     private fun getMessageText(notification: Notification): String {
-        val extras = notification.extras
-        val text = extras?.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
-        if (text.isNotBlank()) return text
-        val bigText = extras?.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
-        if (bigText.isNotBlank()) return bigText
-        val summary = extras?.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
-        return summary
+        val extras = notification.extras ?: return ""
+        val chunks = LinkedHashSet<String>()
+        fun add(s: CharSequence?) {
+            val t = s?.toString()?.trim() ?: return
+            if (t.isNotEmpty()) chunks.add(t)
+        }
+        add(extras.getCharSequence(Notification.EXTRA_TEXT))
+        add(extras.getCharSequence(Notification.EXTRA_BIG_TEXT))
+        extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)?.forEach { add(it) }
+        add(extras.getCharSequence(Notification.EXTRA_SUB_TEXT))
+        add(extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT))
+        // TemplateCompat / OEM quirks
+        add(extras.getCharSequence("android.text"))
+        add(extras.getCharSequence("android.bigText"))
+        return chunks.joinToString("\n")
+    }
+
+    /** Only internal moves between the user's own accounts (same as Dart / server). */
+    private fun isInternalAccountTransferOnly(text: String): Boolean {
+        if (text.contains("بين الحسابات") || text.contains("between accounts")) return true
+        if (text.contains("تحويل بنكي بين الحسابات") || text.contains("تحويل بين الحسابات")) {
+            return true
+        }
+        return false
     }
 
     private fun shouldRoughlyLookLikePayment(title: String, message: String, packageName: String): Boolean {
         val text = (title + " " + message).lowercase()
+
+        if (isInternalAccountTransferOnly(text)) return false
         
         // Quick skip for common false positives (OTP, verification codes, etc.)
         val falsePositives = listOf(
@@ -118,31 +141,26 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         )
         if (falsePositives.any { text.contains(it) }) return false
 
-        // Skip OUTGOING / SENT payments - we only want RECEIVED
-        val sentIndicators = listOf(
-            "you sent", "you transferred", "you paid", "sent to", "payment to",
-            "transfer to", "paid to", "outgoing transfer", "money sent", "transaction sent",
-            "deducted for", "debited for", "debited", "withdrawal", "cash out",
-            "تم ارسال", "ارسلت", "تم الدفع لـ", "دفعت", "تم خصم لـ", "تم التحويل الى",
-            "حولت", "ارسال الى", "حوالة صادرة", "صادرة من حسابك", "قمت بارسال",
-            "تم سحب", "سحب", "شراء", "تم الدفع"
-        )
-        if (sentIndicators.any { text.contains(it) }) return false
-
-        // Payment RECEIVED hints - what we want to capture
-        val receivedHints = listOf(
-            // English
+        // Incoming + outgoing + neutral money movement (we only exclude internal account↔account above).
+        val paymentHints = listOf(
             "received", "credited", "deposited", "you received", "payment received",
             "transfer received", "incoming", "you got", "account credited", "credit alert", "cash in",
-            // Arabic
+            "you sent", "you transferred", "you paid", "sent to", "payment to", "transfer to",
+            "paid to", "outgoing transfer", "money sent", "transaction sent", "deducted for",
+            "debited for", "debited", "withdrawal", "cash out",
             "تم استلام", "تم ايداع", "استلمت", "وصلك", "تم تحويل لك", "تم الايداع",
             "تم إيداع", "تم الإيداع", "وردت", "تم استقبال", "حوالة واردة", "حوالة واردة لحسابك",
             "واردة الى حسابك", "واردة إلى حسابك", "واردة لحسابك",
             "تمت إضافة", "تم اضافه", "اضافة الى حسابك", "إضافة إلى حسابك", "تم اضافة", "تم إضافة",
             "إشعار إيداع", "اشعار ايداع",
-            // General payment terms (can be received or sent - allow if no sent indicator)
-            "payment", "transfer", "deposit", "credited",
-            "تحويل", "ايداع", "حوالة", "دفعة"
+            "تم ارسال", "ارسلت", "تم الدفع لـ", "تم الدفع إلى", "تم الدفع ل", "دفعت",
+            "تم خصم لـ", "تم التحويل الى", "تم التحويل إلى", "حولت", "ارسال الى", "إرسال إلى",
+            "حوالة صادرة", "صادرة من حسابك", "تم سحب", "سحب", "شراء",
+            "تحويل بنكي", "تحويل دفع لصديق", "بنكي", "تم بنجاح", "بنجاح",
+            "عملية ناجحة", "إشعار عملية", "اشعار عملية", "عملية مالية",
+            "رصيد", "مبلغ", "حسابك", "لحسابك", "شيكل", "شيقل", "نيس",
+            "موبايل", "بمبلغ", "payment", "transfer", "deposit", "credited",
+            "تحويل", "ايداع", "حوالة", "دفعة", "wallet", "محفظة", "ils", "nis", "jod", "usd"
         )
 
         // Check for recognized payment sources
@@ -150,6 +168,7 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         val isKnownPaymentApp = listOf(
             "palpay", "jawwal", "bankofpalestine", "bop", "com.bop",
             "com.palpay", "com.jawwal", "ps.jawwal", "bank of palestine",
+            "com.bop.mobile", "bop.mobile", "bankofpalestine", "albop",
             "بال باي", "بالباي", "جوال باي", "بنك فلسطين"
         ).any { packageLower.contains(it) }
 
@@ -169,17 +188,27 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         )
 
         // Check for bank SMS with payment keywords
-        val hasBankKeywords = text.contains("bank") || text.contains("بنك") || 
-                              text.contains("bop") || text.contains("palestine")
+        val hasBankKeywords = text.contains("bank") || text.contains("بنك") ||
+            text.contains("bop") || text.contains("palestine")
 
-        // Accept if: known payment app OR (SMS with Iburaq) OR (SMS with bank keywords and received hints)
-        val hasReceivedHint = receivedHints.any { text.contains(it) }
-        
+        val hasPaymentHint = paymentHints.any { text.contains(it) }
+
+        // Strong BOP / local banking wording (titles like "تحويل بنكي" may carry little else)
+        val hasBankOperationHint = listOf(
+            "تحويل بنكي", "بنك فلسطين", "مبلغ", "رصيد", "حسابك",
+            "لحسابك", "عملية", "إشعار", "اشعار", "شيكل", "شيقل", "نيس", "ils", "nis"
+        ).any { text.contains(it) }
+
+        val genericMoneyHint = listOf(
+            "مبلغ", "بمبلغ", "ils", "jod", "usd", "nis", "شيكل", "دفع", "تحويل",
+            "transfer", "payment", "pay", "wallet", "palpay", "جوال"
+        ).any { text.contains(it) }
+
         return when {
-            isKnownPaymentApp && hasReceivedHint -> true
-            isIburaqTransfer && hasReceivedHint -> true
-            isSmsApp && hasBankKeywords && hasReceivedHint -> true
-            else -> false
+            isKnownPaymentApp && (hasPaymentHint || hasBankOperationHint) -> true
+            isIburaqTransfer && hasPaymentHint -> true
+            isSmsApp && hasBankKeywords && hasPaymentHint -> true
+            else -> hasPaymentHint || hasBankOperationHint || genericMoneyHint
         }
     }
 

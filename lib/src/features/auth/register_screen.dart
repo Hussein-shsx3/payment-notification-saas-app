@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
 
@@ -37,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     final auth = context.read<AuthProvider>();
+    final l10n = AppLocalizations.of(context)!;
     final ok = await auth.register(
       fullName: _fullNameController.text,
       email: _emailController.text,
@@ -47,16 +49,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
     setState(() {
       _submitting = false;
-      _message = ok
-          ? 'Registration successful. Check your email to verify your account.'
-          : auth.errorMessage ?? 'Registration failed.';
+      _message = ok ? l10n.registrationSuccess : (auth.errorMessage ?? l10n.registrationFailed);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      appBar: AppBar(title: Text(l10n.registerTitle)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -75,59 +77,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _fullNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Full name',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.fullName,
+                            border: const OutlineInputBorder(),
                           ),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Full name is required'
-                              : null,
+                          validator: (v) =>
+                              (v == null || v.trim().isEmpty) ? l10n.validationFullNameRequired : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.email,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Email is required' : null,
+                              (v == null || v.trim().isEmpty) ? l10n.validationEmailRequired : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone number',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.phoneNumber,
+                            border: const OutlineInputBorder(),
                           ),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Phone number is required'
-                              : null,
+                          validator: (v) =>
+                              (v == null || v.trim().isEmpty) ? l10n.validationPhoneRequired : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.password,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (v) =>
-                              (v == null || v.isEmpty) ? 'Password is required' : null,
+                              (v == null || v.isEmpty) ? l10n.validationPasswordRequired : null,
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _submitting ? null : _submit,
-                          child: Text(_submitting ? 'Creating account...' : 'Create account'),
+                          child: Text(_submitting ? l10n.creatingAccount : l10n.createAccount),
                         ),
                         if (_message != null) ...[
                           const SizedBox(height: 10),
                           Text(
                             _message!,
                             style: TextStyle(
-                              color: _message!.startsWith('Registration successful')
+                              color: _message == l10n.registrationSuccess
                                   ? Colors.greenAccent
                                   : Colors.redAccent,
                               fontSize: 12,
@@ -146,4 +146,3 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 }
-

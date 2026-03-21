@@ -1,0 +1,174 @@
+{
+  "@@locale": "en",
+  "appTitle": "Payment Notify",
+  "loading": "Loading…",
+  "login": "Login",
+  "register": "Register",
+  "logout": "Logout",
+  "settings": "Settings",
+  "subscription": "Subscription",
+  "notificationCenter": "Notification Center",
+  "emailOrPhone": "Email or phone",
+  "password": "Password",
+  "signInSubtitle": "Sign in with your email or phone number.",
+  "loggingIn": "Logging in…",
+  "createNewAccount": "Create new account",
+  "fullName": "Full name",
+  "email": "Email",
+  "phoneNumber": "Phone number",
+  "phoneHint": "e.g. +9665…",
+  "createAccount": "Create account",
+  "creatingAccount": "Creating account…",
+  "registerTitle": "Register",
+  "registrationSuccess": "Registration successful. Check your email to verify your account.",
+  "registrationFailed": "Registration failed.",
+  "validationEmailOrPhoneRequired": "Email or phone is required",
+  "validationPasswordRequired": "Password is required",
+  "validationFullNameRequired": "Full name is required",
+  "validationEmailRequired": "Email is required",
+  "validationPhoneRequired": "Phone number is required",
+  "accountAndSecurity": "Account & security",
+  "profileSection": "Profile",
+  "profileSectionDesc": "Your name and phone. Sign in with email or phone.",
+  "emailLabel": "Email",
+  "changePasswordSection": "Change password",
+  "changePasswordDesc": "Use a strong password you do not reuse elsewhere.",
+  "currentPassword": "Current password",
+  "newPassword": "New password",
+  "confirmPassword": "Confirm new password",
+  "saveProfile": "Save profile",
+  "saving": "Saving…",
+  "profileUpdated": "Profile updated",
+  "updatePassword": "Update password",
+  "updatingPassword": "Updating…",
+  "passwordUpdated": "Password updated",
+  "fillPasswordFields": "Fill current and new password",
+  "passwordsDoNotMatch": "New passwords do not match",
+  "passwordTooShort": "New password is too short",
+  "language": "Language",
+  "languageEnglish": "English",
+  "languageArabic": "Arabic",
+  "reload": "Reload",
+  "paymentCaptureService": "Payment capture service",
+  "captureInactiveSubscription": "Subscription inactive — renew to capture and sync payments.",
+  "captureRunning": "Running: listening for wallets & bank notifications",
+  "captureStarting": "Starting…",
+  "captureNeedPermission": "Notification access is required to capture payments",
+  "enable": "Enable",
+  "refreshStatus": "Refresh status",
+  "systemNotifications": "System notifications",
+  "subscriptionTileSubtitle": "View status and expiry date",
+  "notificationCenterTileSubtitle": "Payment notifications sent to target email",
+  "settingsTileSubtitle": "Profile, phone, password, and language",
+  "offlineQueueHint": "Offline queue auto-flushes when internet returns and every 30s.",
+  "subscriptionTitle": "Subscription",
+  "subscriptionStatusHeading": "Subscription status",
+  "statusLabel": "Status: {status}",
+  "@statusLabel": {
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "startDate": "Start date: {date}",
+  "@startDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "expirationDate": "Expiration date: {date}",
+  "@expirationDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "subscriptionFooterNote": "If expired, payment notification forwarding is disabled on server.",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "statusNoSubscription": "No subscription",
+  "statusExpired": "Expired",
+  "failedLoadSubscription": "Failed to load subscription data",
+  "networkErrorSubscription": "Network error while loading subscription",
+  "notificationCenterAppBar": "Notification Center",
+  "paymentNotificationsHeading": "Payment notifications",
+  "showNotificationsFrom": "Show notifications from",
+  "filterToday": "Today",
+  "filterYesterday": "Yesterday",
+  "filterLast7": "Last 7 days",
+  "filterLast30": "Last 30 days",
+  "filterAll": "All",
+  "paginationSummary": "{total} total · Page {page} of {pages}",
+  "@paginationSummary": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "page": {"type": "int"},
+      "pages": {"type": "int"}
+    }
+  },
+  "deleteAll": "Delete all",
+  "deleting": "Deleting…",
+  "deleteAllPaymentsTitle": "Delete all payment notifications?",
+  "deleteAllPaymentsBody": "This will permanently remove all payment notifications from your account.",
+  "cancel": "Cancel",
+  "deleteSingleTitle": "Delete this notification?",
+  "deleteSingleBody": "This will permanently remove this payment notification.",
+  "delete": "Delete",
+  "failedDeleteNotification": "Failed to delete notification",
+  "previous": "Previous",
+  "next": "Next",
+  "directionSent": "Sent",
+  "directionReceived": "Received",
+  "directionUnknown": "Unknown",
+  "markAsReceived": "Mark as received",
+  "markAsSent": "Mark as sent",
+  "paymentMessageFallback": "Payment message",
+  "sourceAmountLine": "Source: {source} · {direction}\nAmount: {amount} {currency}\n",
+  "@sourceAmountLine": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "direction": {"type": "String"},
+      "amount": {"type": "String"},
+      "currency": {"type": "String"}
+    }
+  },
+  "timeLine": "Time: {time}\n",
+  "@timeLine": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "messageLine": "Message: {message}",
+  "@messageLine": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "noPaymentNotifications": "No payment notifications",
+  "noPaymentNotificationsHint": "Notifications from the selected period will appear here.",
+  "failedLoadPayments": "Failed to load payment notifications ({code}). Please redeploy backend and try again.",
+  "@failedLoadPayments": {
+    "placeholders": {
+      "code": {"type": "int"}
+    }
+  },
+  "networkErrorPayments": "Network error while loading payment notifications.",
+  "updateFailed": "Update failed ({code})",
+  "@updateFailed": {
+    "placeholders": {
+      "code": {"type": "int"}
+    }
+  },
+  "networkError": "Network error",
+  "failedLoadProfile": "Failed to load profile",
+  "networkErrorProfile": "Network error while loading profile",
+  "couldNotUpdateProfile": "Could not update profile",
+  "couldNotChangePassword": "Could not change password",
+  "systemNotificationsTitle": "System notifications",
+  "noSystemNotifications": "No system notifications",
+  "markRead": "Mark read",
+  "failedToLoadWithCode": "Failed to load ({code})",
+  "@failedToLoadWithCode": {
+    "placeholders": {
+      "code": {"type": "int"}
+    }
+  }
+}

@@ -84,12 +84,17 @@ class PaymentNotificationForwarder {
     double? amount,
     String? currency,
     String? transactionId,
+    String direction = 'unknown',
   }) async {
+    final dir = direction == 'outgoing' || direction == 'incoming' || direction == 'unknown'
+        ? direction
+        : 'unknown';
     final payload = <String, dynamic>{
       'source': source,
       'title': title,
       'message': message,
       'receivedAt': receivedAt.toIso8601String(),
+      'direction': dir,
       if (amount != null) 'amount': amount,
       if (currency != null && currency.isNotEmpty) 'currency': currency,
       if (transactionId != null && transactionId.trim().isNotEmpty)

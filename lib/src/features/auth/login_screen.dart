@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
 import '../dashboard/dashboard_screen.dart';
@@ -15,13 +16,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _emailOrPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _submitting = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _emailOrPhoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthProvider>();
     final success = await auth.login(
-      email: _emailController.text,
+      emailOrPhone: _emailOrPhoneController.text,
       password: _passwordController.text,
     );
 
@@ -53,10 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final error = context.watch<AuthProvider>().errorMessage;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: Text(l10n.login)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -74,26 +76,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const Center(child: AppLogo(size: 52)),
                         const SizedBox(height: 12),
-                        const Text(
-                          'Payment Notify',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        Text(
+                          l10n.appTitle,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Login with your email and password.',
-                          style: TextStyle(fontSize: 13, color: Colors.white70),
+                        Text(
+                          l10n.signInSubtitle,
+                          style: const TextStyle(fontSize: 13, color: Colors.white70),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
+                          controller: _emailOrPhoneController,
+                          keyboardType: TextInputType.text,
+                          decoration: InputDecoration(
+                            labelText: l10n.emailOrPhone,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Email is required';
+                              return l10n.validationEmailOrPhoneRequired;
                             }
                             return null;
                           },
@@ -102,13 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.password,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Password is required';
+                              return l10n.validationPasswordRequired;
                             }
                             return null;
                           },
@@ -123,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _submitting ? null : _submit,
-                          child: Text(_submitting ? 'Logging in...' : 'Login'),
+                          child: Text(_submitting ? l10n.loggingIn : l10n.login),
                         ),
                         const SizedBox(height: 8),
                         TextButton(
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   );
                                 },
-                          child: const Text('Create new account'),
+                          child: Text(l10n.createNewAccount),
                         ),
                       ],
                     ),
@@ -150,4 +152,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

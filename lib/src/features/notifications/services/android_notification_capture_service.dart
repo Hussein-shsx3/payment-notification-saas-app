@@ -171,6 +171,7 @@ class AndroidNotificationCaptureService {
       'time': DateTime.now().toIso8601String(),
       'status': 'recognized_native_sync',
       'source': parsed.source,
+      'direction': parsed.direction,
       'title': parsed.title,
       'message': parsed.message,
       'amount': parsed.amount,

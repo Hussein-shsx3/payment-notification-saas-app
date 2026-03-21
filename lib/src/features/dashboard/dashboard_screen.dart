@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
 import '../notifications/notification_center_screen.dart';
 import '../notifications/services/android_notification_capture_service.dart';
-import '../profile/profile_screen.dart';
+import '../settings/settings_screen.dart';
 import '../subscription/subscription_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -34,8 +35,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _refreshCaptureState() async {
+    final auth = context.read<AuthProvider>();
+    await auth.refreshSubscription();
     final granted = await _captureService.hasPermission();
-    await _captureService.start();
     if (!mounted) return;
     setState(() {
       _captureRunning = _captureService.isStarted;
@@ -45,7 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // When user returns from Android notification access settings, refresh state.
     if (state == AppLifecycleState.resumed) {
       _refreshCaptureState();
     }
@@ -76,27 +77,28 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.read<AuthProvider>();
+    final l10n = AppLocalizations.of(context)!;
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppLogo(size: 30),
-            SizedBox(width: 8),
-            Text('Payment Notify'),
+            const AppLogo(size: 30),
+            const SizedBox(width: 8),
+            Text(l10n.appTitle),
           ],
         ),
         actions: [
           IconButton(
             onPressed: () => _showSystemNotifications(context, auth),
             icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'System notifications',
+            tooltip: l10n.systemNotifications,
           ),
           IconButton(
             onPressed: () async => auth.logout(),
             icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
+            tooltip: l10n.logout,
           ),
         ],
       ),
@@ -109,13 +111,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               leading: Icon(
                 _captureRunning ? Icons.notifications_active : Icons.notifications_off,
               ),
-              title: const Text('Payment capture service'),
+              title: Text(l10n.paymentCaptureService),
               subtitle: Text(
-                _captureRunning
-                    ? 'Running: listening for PalPay/Jawwal/Bank/SMS notifications'
-                    : (_hasPermission
-                          ? 'Starting…'
-                          : 'Notification access is required to capture payments'),
+                !auth.isSubscriptionActive
+                    ? l10n.captureInactiveSubscription
+                    : (_captureRunning
+                        ? l10n.captureRunning
+                        : (_hasPermission ? l10n.captureStarting : l10n.captureNeedPermission)),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -134,11 +136,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                               }
                               await _refreshCaptureState();
                             },
-                      child: const Text('Enable'),
+                      child: Text(l10n.enable),
                     ),
                   if (_hasPermission && !_captureRunning)
                     const Padding(
-                      padding: EdgeInsets.only(right: 8),
+                      padding: EdgeInsetsDirectional.only(end: 8),
                       child: SizedBox(
                         width: 16,
                         height: 16,
@@ -151,15 +153,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   IconButton(
                     onPressed: _refreshCaptureState,
                     icon: const Icon(Icons.refresh),
-                    tooltip: 'Refresh status',
+                    tooltip: l10n.refreshStatus,
                   ),
                 ],
               ),
             ),
           ),
           _DashboardTile(
-            title: 'Subscription',
-            subtitle: 'View status and expiry date',
+            title: l10n.subscription,
+            subtitle: l10n.subscriptionTileSubtitle,
             icon: Icons.credit_card_outlined,
             onTap: () {
               Navigator.of(context).push(
@@ -168,8 +170,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             },
           ),
           _DashboardTile(
-            title: 'Notification Center',
-            subtitle: 'Payment notifications sent to target email',
+            title: l10n.notificationCenter,
+            subtitle: l10n.notificationCenterTileSubtitle,
             icon: Icons.notifications_outlined,
             onTap: () {
               Navigator.of(context).push(
@@ -180,19 +182,19 @@ class _DashboardScreenState extends State<DashboardScreen>
             },
           ),
           _DashboardTile(
-            title: 'Profile Settings',
-            subtitle: 'Target email and account preferences',
-            icon: Icons.person_outline,
+            title: l10n.settings,
+            subtitle: l10n.settingsTileSubtitle,
+            icon: Icons.settings_outlined,
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
+                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
               );
             },
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Offline queue auto-flushes when internet returns and every 30s.',
-            style: TextStyle(color: Colors.white70, fontSize: 12),
+          Text(
+            l10n.offlineQueueHint,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
@@ -221,10 +223,12 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _loading = true;
       _error = null;
@@ -239,10 +243,10 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
             .toList();
         if (mounted) setState(() => _items = list);
       } else {
-        if (mounted) setState(() => _error = 'Failed to load (${res.statusCode})');
+        if (mounted) setState(() => _error = l10n.failedToLoadWithCode(res.statusCode));
       }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Network error');
+      if (mounted) setState(() => _error = l10n.networkError);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -255,13 +259,14 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              const Text('System notifications', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(l10n.systemNotificationsTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const Spacer(),
               IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
             ],
@@ -270,11 +275,11 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
         const Divider(height: 1),
         Expanded(
           child: _loading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
               : _error != null
                   ? Center(child: Text(_error!, style: const TextStyle(color: Colors.redAccent)))
                   : _items.isEmpty
-                      ? const Center(child: Text('No system notifications'))
+                      ? Center(child: Text(l10n.noSystemNotifications))
                       : ListView.builder(
                           controller: widget.scrollController,
                           itemCount: _items.length,
@@ -288,7 +293,7 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
                                   ? const Icon(Icons.done, size: 18, color: Colors.green)
                                   : TextButton(
                                       onPressed: () => _markAsRead(id),
-                                      child: const Text('Mark read'),
+                                      child: Text(l10n.markRead),
                                     ),
                             );
                           },
@@ -314,6 +319,7 @@ class _DashboardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
@@ -321,9 +327,8 @@ class _DashboardTile extends StatelessWidget {
         leading: Icon(icon),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(isRtl ? Icons.chevron_left : Icons.chevron_right),
       ),
     );
   }
 }
-

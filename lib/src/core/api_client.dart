@@ -77,6 +77,12 @@ class ApiClient {
         headers: mergedHeaders,
         body: body == null ? null : jsonEncode(body),
       );
+    } else if (method == 'PATCH') {
+      response = await http.patch(
+        Uri.parse('$apiBaseUrl$path'),
+        headers: mergedHeaders,
+        body: body == null ? null : jsonEncode(body),
+      );
     } else {
       response = await http.post(
         Uri.parse('$apiBaseUrl$path'),
@@ -102,6 +108,13 @@ class ApiClient {
     }
     if (method == 'PUT') {
       return http.put(
+        Uri.parse('$apiBaseUrl$path'),
+        headers: retryHeaders,
+        body: body == null ? null : jsonEncode(body),
+      );
+    }
+    if (method == 'PATCH') {
+      return http.patch(
         Uri.parse('$apiBaseUrl$path'),
         headers: retryHeaders,
         body: body == null ? null : jsonEncode(body),
@@ -156,6 +169,19 @@ class ApiClient {
   }) async {
     return _requestWithOptionalRefresh(
       method: 'PUT',
+      path: path,
+      body: body,
+      headers: headers,
+    );
+  }
+
+  Future<http.Response> patch(
+    String path, {
+    Object? body,
+    Map<String, String>? headers,
+  }) async {
+    return _requestWithOptionalRefresh(
+      method: 'PATCH',
       path: path,
       body: body,
       headers: headers,

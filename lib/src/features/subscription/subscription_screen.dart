@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 
 class SubscriptionScreen extends StatefulWidget {
@@ -21,11 +22,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   Future<void> _load() async {
     setState(() => _loading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final api = context.read<AuthProvider>().api;
       final res = await api.get('/users/profile');
@@ -43,18 +45,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _start = start == null ? '--' : _format(start);
           _end = end == null ? '--' : _format(end);
           if (statusFromApi != null && statusFromApi.isNotEmpty) {
-            _status = statusFromApi == 'active' ? 'Active' : 'Inactive';
+            _status = statusFromApi == 'active' ? l10n.statusActive : l10n.statusInactive;
           } else if (endDt == null) {
-            _status = 'No subscription';
+            _status = l10n.statusNoSubscription;
           } else {
-            _status = endDt.isAfter(now) ? 'Active' : 'Expired';
+            _status = endDt.isAfter(now) ? l10n.statusActive : l10n.statusExpired;
           }
         });
+        if (mounted) {
+          await context.read<AuthProvider>().refreshSubscription();
+        }
       } else {
-        setState(() => _error = 'Failed to load subscription data');
+        setState(() => _error = l10n.failedLoadSubscription);
       }
     } catch (_) {
-      setState(() => _error = 'Network error while loading subscription');
+      setState(() => _error = l10n.networkErrorSubscription);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -68,12 +73,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Subscription')),
+      appBar: AppBar(title: Text(l10n.subscriptionTitle)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
             : Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -81,12 +88,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Subscription status',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        l10n.subscriptionStatusHeading,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       const SizedBox(height: 8),
-                      Text('Status: $_status'),
-                      Text('Start date: $_start'),
-                      Text('Expiration date: $_end'),
+                      Text(l10n.statusLabel(_status)),
+                      Text(l10n.startDate(_start)),
+                      Text(l10n.expirationDate(_end)),
                       if (_error != null) ...[
                         const SizedBox(height: 8),
                         Text(
@@ -95,9 +104,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                       ],
                       const SizedBox(height: 10),
-                      const Text(
-                        'If expired, payment notification forwarding is disabled on server.',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                      Text(
+                        l10n.subscriptionFooterNote,
+                        style: const TextStyle(fontSize: 12, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -107,4 +116,3 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 }
-

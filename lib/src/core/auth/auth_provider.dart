@@ -37,11 +37,39 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading;
   bool _isAuthenticated;
   String? _errorMessage;
+  bool? _subscriptionActive;
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   String? get errorMessage => _errorMessage;
+  /// Loaded from `GET /users/profile` — capture runs only when `true`.
+  bool get isSubscriptionActive => _subscriptionActive == true;
   ApiClient get api => _api;
+
+  /// Refreshes subscription from the server and starts/stops capture accordingly.
+  Future<void> refreshSubscription() async {
+    if (!_isAuthenticated) {
+      _subscriptionActive = null;
+      notifyListeners();
+      return;
+    }
+    try {
+      final res = await _api.get('/users/profile');
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final data = body['data'] as Map<String, dynamic>?;
+        _subscriptionActive = data?['isSubscriptionActive'] == true;
+      }
+    } catch (_) {
+      // leave previous value
+    }
+    if (_subscriptionActive == true) {
+      await _captureService.start();
+    } else {
+      await _captureService.stop();
+    }
+    notifyListeners();
+  }
 
   Future<void> _init() async {
     final accessToken = await _storage.getAccessToken();
@@ -51,23 +79,22 @@ class AuthProvider extends ChangeNotifier {
         refreshToken != null &&
         refreshToken.isNotEmpty;
     if (_isAuthenticated) {
-      // Keep native background listener in sync with secure-storage tokens.
       await _storage.mirrorSecureTokensToSharedPreferences();
-      await _captureService.start();
+      await refreshSubscription();
     }
     _isLoading = false;
     notifyListeners();
   }
 
   Future<bool> login({
-    required String email,
+    required String emailOrPhone,
     required String password,
   }) async {
     _errorMessage = null;
     notifyListeners();
     try {
       final response = await _api.post('/auth/login', body: {
-        'email': email.trim(),
+        'email': emailOrPhone.trim(),
         'password': password,
       });
 
@@ -81,7 +108,7 @@ class AuthProvider extends ChangeNotifier {
           refreshToken: refreshToken,
         );
         _isAuthenticated = true;
-        await _captureService.start();
+        await refreshSubscription();
         notifyListeners();
         return true;
       }
@@ -132,6 +159,7 @@ class AuthProvider extends ChangeNotifier {
     await _captureService.stop();
     await _storage.clearTokens();
     _isAuthenticated = false;
+    _subscriptionActive = null;
     notifyListeners();
   }
 }

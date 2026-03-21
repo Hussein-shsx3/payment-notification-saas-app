@@ -8,6 +8,7 @@ class ParsedPaymentNotification {
     required this.currency,
     required this.sender,
     required this.transactionId,
+    this.direction = 'unknown',
   });
 
   final String source;
@@ -18,11 +19,18 @@ class ParsedPaymentNotification {
   final String? currency;
   final String? sender;
   final String? transactionId;
+  /// `incoming` = money in; `outgoing` = money out; `unknown` = fix in app.
+  final String direction;
 }
 
 class PaymentNotificationParser {
+  /// Amount + optional currency (Gaza/Palestine: ₪ / NIS / شيكل / شيقل).
   static final RegExp _amountRegex = RegExp(
-    r'(?<!\d)(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(USD|US\$|ILS|NIS|JOD|JDS|\$|شيكل|دولار)?',
+    r'(?<!\d)(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(USD|US\$|ILS|NIS|JOD|JDS|\$|₪|شيكل|شيقل|دولار)?',
+    caseSensitive: false,
+  );
+  static final RegExp _amountAfterMablagRegex = RegExp(
+    r'مبلغ[\s:]*(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)',
     caseSensitive: false,
   );
   static final RegExp _transactionIdRegex = RegExp(
@@ -54,29 +62,37 @@ class PaymentNotificationParser {
       return null;
     }
 
-    final amountMatch = _amountRegex.firstMatch(normalizedMessage);
+    final combinedForAmount = _normalizeDigits('$title\n$message').trim();
+    if (_isInternalAccountTransferOnly(combinedForAmount.toLowerCase())) {
+      return null;
+    }
+
+    RegExpMatch? amountMatch =
+        _amountRegex.firstMatch(combinedForAmount) ?? _amountRegex.firstMatch(normalizedMessage);
+    amountMatch ??= _amountAfterMablagRegex.firstMatch(combinedForAmount) ??
+        _amountAfterMablagRegex.firstMatch(normalizedMessage);
+
     double? amount;
     String? currency;
     String? sender;
     String? transactionId;
     if (amountMatch != null) {
       amount = _parseAmount(amountMatch.group(1));
-      currency = amountMatch.group(2)?.toUpperCase();
-      if (currency == r'$') {
-        currency = 'USD';
-      }
-      if (currency == 'US\$') {
-        currency = 'USD';
-      }
-      if (currency == 'JDS') {
-        currency = 'JOD';
+      final cur = amountMatch.group(2);
+      if (cur != null && cur.isNotEmpty) {
+        var c = cur.toUpperCase();
+        if (c == r'$' || c == 'US\$') c = 'USD';
+        if (c == 'JDS') c = 'JOD';
+        currency = c;
       }
     }
 
-    final txMatch = _transactionIdRegex.firstMatch(normalizedMessage);
+    final txMatch = _transactionIdRegex.firstMatch(combinedForAmount) ??
+        _transactionIdRegex.firstMatch(normalizedMessage);
     transactionId = txMatch?.group(1);
 
-    final senderMatch = _senderRegex.firstMatch(normalizedMessage);
+    final senderMatch = _senderRegex.firstMatch(combinedForAmount.toLowerCase()) ??
+        _senderRegex.firstMatch(normalizedMessage);
     sender = senderMatch?.group(1)?.trim();
 
     final fullText = '$titleLower $messageLower';
@@ -88,6 +104,8 @@ class PaymentNotificationParser {
       return null;
     }
 
+    final direction = _inferPaymentDirection(fullText);
+
     final source = _detectSource(
           packageName: packageLower,
           title: titleLower,
@@ -95,7 +113,6 @@ class PaymentNotificationParser {
           input: haystack,
         ) ??
         _inferSourceFallback(packageNameLower: packageLower, messageLower: messageLower);
-    if (source == null) return null;
 
     return ParsedPaymentNotification(
       source: source,
@@ -106,6 +123,7 @@ class PaymentNotificationParser {
       currency: currency,
       sender: sender,
       transactionId: transactionId,
+      direction: direction,
     );
   }
 
@@ -118,7 +136,15 @@ class PaymentNotificationParser {
     // Direct app detection
     if (_containsAny(input, ['palpay', 'pal pay', 'بال باي', 'بالباي'])) return 'PalPay';
     if (_containsAny(input, ['jawwal', 'jawwalpay', 'jawwal pay', 'جوال باي', 'جوال'])) return 'Jawwal Pay';
-    if (_containsAny(input, ['palestine bank', 'bank of palestine', 'bop', 'بنك فلسطين'])) {
+    if (_containsAny(input, [
+          'palestine bank',
+          'bank of palestine',
+          'bop',
+          'بنك فلسطين',
+          'تحويل بنكي',
+          'تحويل لصديق',
+          'bankofpalestine',
+        ])) {
       return 'Palestine Bank';
     }
 
@@ -142,6 +168,7 @@ class PaymentNotificationParser {
       'bop',
       'palestine bank',
       'bank of palestine',
+      'bankofpalestine',
       'palpay',
       'jawwal',
       'بنك',
@@ -151,6 +178,8 @@ class PaymentNotificationParser {
       'حسابك',
       'رصيد',
       'تحويل',
+      'تحويل بنكي',
+      'تحويل لصديق',
       'دفعة',
       'ايداع',
       'إيداع',
@@ -158,6 +187,8 @@ class PaymentNotificationParser {
       'استقبال',
       'حوالة',
       'استلام',
+      'عملية',
+      'إشعار',
       'received',
       'credited',
       'deposit',
@@ -177,15 +208,18 @@ class PaymentNotificationParser {
     return false;
   }
 
-  static bool _isPaymentIntent(String input) {
-    // First check if this is an OUTGOING payment - we don't want those
-    if (_isSentPayment(input)) {
-      return false;
+  /// Internal moves between the user's own accounts only (not stored).
+  static bool _isInternalAccountTransferOnly(String combinedLower) {
+    final t = combinedLower;
+    if (t.contains('بين الحسابات') || t.contains('between accounts')) return true;
+    if (t.contains('تحويل بنكي بين الحسابات') || t.contains('تحويل بين الحسابات')) {
+      return true;
     }
+    return false;
+  }
 
-    // Check for RECEIVED payment indicators
+  static bool _isIncomingIndicators(String input) {
     return _containsAny(input, [
-      // English - received/incoming
       'received',
       'credited',
       'deposited',
@@ -197,7 +231,6 @@ class PaymentNotificationParser {
       'account credited',
       'credit alert',
       'cash in',
-      // Arabic - received/incoming
       'تم استلام',
       'تم ايداع',
       'تم إيداع',
@@ -221,7 +254,114 @@ class PaymentNotificationParser {
       'تم إضافة',
       'إشعار إيداع',
       'اشعار ايداع',
-      // General terms (allowed if not sent)
+      '- wallet',
+      'wallet',
+      'محفظة',
+      'وارد',
+      'واردة',
+      'للمحفظة',
+      'إلى محفظتك',
+    ]);
+  }
+
+  static String _inferPaymentDirection(String fullTextLower) {
+    final sent = _isSentPayment(fullTextLower);
+    final inc = _isIncomingIndicators(fullTextLower);
+    if (sent && inc) return 'unknown';
+    if (sent) return 'outgoing';
+    if (inc) return 'incoming';
+    return 'unknown';
+  }
+
+  /// Incoming + outgoing + neutral (we only exclude internal account↔account above).
+  static bool _isPaymentIntent(String input) {
+    return _containsAny(input, [
+      // English — received
+      'received',
+      'credited',
+      'deposited',
+      'you received',
+      'payment received',
+      'transfer received',
+      'incoming',
+      'you got',
+      'account credited',
+      'credit alert',
+      'cash in',
+      // English — sent
+      'you sent',
+      'you transferred',
+      'you paid',
+      'sent to',
+      'payment to',
+      'transfer to',
+      'paid to',
+      'outgoing transfer',
+      'money sent',
+      'transaction sent',
+      'deducted for',
+      'debited for',
+      'debited',
+      'withdrawal',
+      'cash out',
+      // Arabic — received
+      'تم استلام',
+      'تم ايداع',
+      'تم إيداع',
+      'استلمت',
+      'وصلك',
+      'تم تحويل لك',
+      'تم الايداع',
+      'تم الإيداع',
+      'وردت',
+      'تم استقبال',
+      'حوالة واردة',
+      'حوالة واردة لحسابك',
+      'واردة لحسابك',
+      'واردة الى حسابك',
+      'واردة إلى حسابك',
+      'تمت إضافة',
+      'تم اضافه',
+      'اضافة الى حسابك',
+      'إضافة إلى حسابك',
+      'تم اضافة',
+      'تم إضافة',
+      'إشعار إيداع',
+      'اشعار ايداع',
+      // Arabic — sent
+      'تم ارسال',
+      'ارسلت',
+      'قمت بارسال',
+      'تم الدفع لـ',
+      'تم الدفع إلى',
+      'تم الدفع ل',
+      'دفعت',
+      'تم خصم لـ',
+      'تم التحويل الى',
+      'تم التحويل إلى',
+      'حولت',
+      'ارسال الى',
+      'إرسال إلى',
+      'حوالة صادرة',
+      'صادرة من حسابك',
+      'تم سحب',
+      'سحب',
+      'شراء',
+      // Palestine Bank / local
+      'تحويل بنكي',
+      'تحويل دفع لصديق',
+      'تم بنجاح',
+      'بنجاح',
+      'عملية ناجحة',
+      'إشعار عملية',
+      'اشعار عملية',
+      'عملية مالية',
+      'شيكل',
+      'شيقل',
+      'نيس',
+      'موبايل',
+      'بمبلغ',
+      // General
       'payment',
       'transfer',
       'deposit',
@@ -230,6 +370,10 @@ class PaymentNotificationParser {
       'ايداع',
       'حوالة',
       'دفعة',
+      'مبلغ',
+      'عملية',
+      'wallet',
+      'محفظة',
     ]);
   }
 
@@ -251,22 +395,25 @@ class PaymentNotificationParser {
       'debited',
       'withdrawal',
       'cash out',
-      // Arabic - sent/outgoing
+      // Arabic - sent/outgoing (avoid bare "تم الدفع" — banks use it for credits too)
       'تم ارسال',
       'ارسلت',
       'قمت بارسال',
       'تم الدفع لـ',
+      'تم الدفع إلى',
+      'تم الدفع ل',
       'دفعت',
       'تم خصم لـ',
       'تم التحويل الى',
+      'تم التحويل إلى',
       'حولت',
       'ارسال الى',
+      'إرسال إلى',
       'حوالة صادرة',
       'صادرة من حسابك',
       'تم سحب',
       'سحب',
       'شراء',
-      'تم الدفع',
     ]);
   }
 
@@ -300,13 +447,21 @@ class PaymentNotificationParser {
     ]);
   }
 
-  static String? _inferSourceFallback({
+  static String _inferSourceFallback({
     required String packageNameLower,
     required String messageLower,
   }) {
     if (_containsAny(packageNameLower, ['palpay'])) return 'PalPay';
     if (_containsAny(packageNameLower, ['jawwal', 'jawwalpay'])) return 'Jawwal Pay';
-    if (_containsAny(packageNameLower, ['bank', 'bop', 'palestine'])) return 'Palestine Bank';
+    if (_containsAny(packageNameLower, [
+          'bank',
+          'bop',
+          'palestine',
+          'bankofpalestine',
+          'bop.mobile',
+        ])) {
+      return 'Palestine Bank';
+    }
 
     final isSmsApp = _containsAny(packageNameLower, [
       'com.google.android.apps.messaging',
@@ -318,7 +473,7 @@ class PaymentNotificationParser {
     ]);
     if (isSmsApp && _containsAny(messageLower, ['iburaq', 'ايبرق', 'البراق'])) return 'Iburaq';
     if (isSmsApp) return 'SMS Payment';
-    return null;
+    return 'Other';
   }
 
   static String _normalizeDigits(String input) {
