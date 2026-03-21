@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../api_client.dart';
 import 'auth_storage.dart';
+import 'register_outcome.dart';
 import '../../features/notifications/services/android_notification_capture_service.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -124,7 +125,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> register({
+  Future<RegisterOutcome> register({
     required String fullName,
     required String email,
     required String phoneNumber,
@@ -141,16 +142,42 @@ class AuthProvider extends ChangeNotifier {
       });
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return true;
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final needs = body['requiresEmailVerification'] == true;
+        return RegisterOutcome(success: true, needsEmailVerification: needs);
       }
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       _errorMessage = body['message']?.toString() ?? 'Registration failed';
       notifyListeners();
-      return false;
+      return RegisterOutcome(success: false, errorMessage: _errorMessage);
     } catch (_) {
       _errorMessage = 'Network error. Please try again.';
       notifyListeners();
+      return RegisterOutcome(success: false, errorMessage: _errorMessage);
+    }
+  }
+
+
+  /// Confirms email using the token from the verification email (or pasted link query).
+  Future<bool> verifyEmail(String token) async {
+    try {
+      final response = await _api.post('/auth/verify-email', body: {
+        'token': token.trim(),
+      });
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> resendVerificationEmail(String email) async {
+    try {
+      final response = await _api.post('/auth/resend-verification', body: {
+        'email': email.trim(),
+      });
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
       return false;
     }
   }

@@ -73,6 +73,41 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم التسجيل بنجاح. تحقق من بريدك لتأكيد الحساب.';
 
   @override
+  String get verifyEmailTitle => 'تأكيد البريد الإلكتروني';
+
+  @override
+  String get verifyEmailSubtitle =>
+      'أرسلنا رسالة إلى بريدك. افتح الرابط في الرسالة، أو الصق رمز التحقق أدناه.';
+
+  @override
+  String get verifyTokenLabel => 'رمز التحقق';
+
+  @override
+  String get verifyTokenHint => 'الرمز الطويل من البريد';
+
+  @override
+  String get verifyButton => 'تأكيد البريد';
+
+  @override
+  String get resendVerification => 'إعادة إرسال البريد';
+
+  @override
+  String get backToLogin => 'العودة لتسجيل الدخول';
+
+  @override
+  String get verifySuccess => 'تم تأكيد البريد. يمكنك تسجيل الدخول الآن.';
+
+  @override
+  String get verifyFailed =>
+      'رمز غير صالح أو منتهٍ. حاول مرة أخرى أو أعد إرسال البريد.';
+
+  @override
+  String get resendSent => 'إذا كان الحساب يحتاج تأكيداً، أُرسل بريد جديد.';
+
+  @override
+  String get resending => 'جاري الإرسال…';
+
+  @override
   String get registrationFailed => 'فشل التسجيل.';
 
   @override

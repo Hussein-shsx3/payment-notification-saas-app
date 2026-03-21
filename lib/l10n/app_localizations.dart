@@ -224,6 +224,72 @@ abstract class AppLocalizations {
   /// **'Registration successful. Check your email to verify your account.'**
   String get registrationSuccess;
 
+  /// No description provided for @verifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyEmailTitle;
+
+  /// No description provided for @verifyEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a message to your address. Open the link in the email, or paste the verification token below.'**
+  String get verifyEmailSubtitle;
+
+  /// No description provided for @verifyTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification token'**
+  String get verifyTokenLabel;
+
+  /// No description provided for @verifyTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Long code from the email'**
+  String get verifyTokenHint;
+
+  /// No description provided for @verifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify email'**
+  String get verifyButton;
+
+  /// No description provided for @resendVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendVerification;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to login'**
+  String get backToLogin;
+
+  /// No description provided for @verifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified. You can sign in now.'**
+  String get verifySuccess;
+
+  /// No description provided for @verifyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired token. Try again or resend the email.'**
+  String get verifyFailed;
+
+  /// No description provided for @resendSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If your account needs verification, a new email was sent.'**
+  String get resendSent;
+
+  /// No description provided for @resending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get resending;
+
   /// No description provided for @registrationFailed.
   ///
   /// In en, this message translates to:

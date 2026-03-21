@@ -73,6 +73,42 @@ class AppLocalizationsEn extends AppLocalizations {
       'Registration successful. Check your email to verify your account.';
 
   @override
+  String get verifyEmailTitle => 'Verify your email';
+
+  @override
+  String get verifyEmailSubtitle =>
+      'We sent a message to your address. Open the link in the email, or paste the verification token below.';
+
+  @override
+  String get verifyTokenLabel => 'Verification token';
+
+  @override
+  String get verifyTokenHint => 'Long code from the email';
+
+  @override
+  String get verifyButton => 'Verify email';
+
+  @override
+  String get resendVerification => 'Resend email';
+
+  @override
+  String get backToLogin => 'Back to login';
+
+  @override
+  String get verifySuccess => 'Email verified. You can sign in now.';
+
+  @override
+  String get verifyFailed =>
+      'Invalid or expired token. Try again or resend the email.';
+
+  @override
+  String get resendSent =>
+      'If your account needs verification, a new email was sent.';
+
+  @override
+  String get resending => 'Sending…';
+
+  @override
   String get registrationFailed => 'Registration failed.';
 
   @override

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
+import 'verify_email_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -39,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final auth = context.read<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
-    final ok = await auth.register(
+    final outcome = await auth.register(
       fullName: _fullNameController.text,
       email: _emailController.text,
       phoneNumber: _phoneController.text,
@@ -47,9 +48,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (!mounted) return;
+    setState(() => _submitting = false);
+
+    if (outcome.success && outcome.needsEmailVerification) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => VerifyEmailScreen(email: _emailController.text.trim()),
+        ),
+      );
+      return;
+    }
+
+    if (outcome.success) {
+      setState(() => _message = l10n.registrationSuccess);
+      return;
+    }
+
     setState(() {
-      _submitting = false;
-      _message = ok ? l10n.registrationSuccess : (auth.errorMessage ?? l10n.registrationFailed);
+      _message = outcome.errorMessage ?? auth.errorMessage ?? l10n.registrationFailed;
     });
   }
 
