@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,6 +34,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   String? _message;
   Color? _messageColor;
   bool _success = false;
+  String? _appBuildLabel;
 
   static const _bg = Color(0xFF020617);
   static const _panel = Color(0xFF0F172A);
@@ -40,6 +42,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   static const _accent = Color(0xFF06B6D4);
   static const _text = Color(0xFFF1F5F9);
   static const _muted = Color(0xFF94A3B8);
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      if (!mounted) return;
+      setState(() {
+        _appBuildLabel = '${info.version} (${info.buildNumber})';
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -428,6 +441,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   },
                   child: Text(l10n.backToLogin, style: TextStyle(color: _muted.withValues(alpha: 0.95))),
                 ),
+                if (_appBuildLabel != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Build $_appBuildLabel · 6-digit code',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 10, color: _muted.withValues(alpha: 0.75)),
+                  ),
+                ],
                 if (_message != null) ...[
                   const SizedBox(height: 8),
                   Text(

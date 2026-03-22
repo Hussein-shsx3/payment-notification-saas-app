@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,10 @@ class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated;
   String? _errorMessage;
   bool? _subscriptionActive;
+  Timer? _subscriptionPollTimer;
+
+  /// Poll server so admin changes (e.g. clear subscription) apply without restart.
+  static const Duration _subscriptionPollInterval = Duration(seconds: 30);
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
@@ -68,6 +73,27 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _startSubscriptionPolling() {
+    _subscriptionPollTimer?.cancel();
+    if (!_isAuthenticated) return;
+    _subscriptionPollTimer = Timer.periodic(_subscriptionPollInterval, (_) {
+      if (_isAuthenticated) {
+        unawaited(refreshSubscription());
+      }
+    });
+  }
+
+  void _stopSubscriptionPolling() {
+    _subscriptionPollTimer?.cancel();
+    _subscriptionPollTimer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopSubscriptionPolling();
+    super.dispose();
+  }
+
   Future<void> _init() async {
     final accessToken = await _storage.getAccessToken();
     final refreshToken = await _storage.getRefreshToken();
@@ -78,6 +104,7 @@ class AuthProvider extends ChangeNotifier {
     if (_isAuthenticated) {
       await _storage.mirrorSecureTokensToSharedPreferences();
       await refreshSubscription();
+      _startSubscriptionPolling();
     }
     _isLoading = false;
     notifyListeners();
@@ -106,6 +133,7 @@ class AuthProvider extends ChangeNotifier {
         );
         _isAuthenticated = true;
         await refreshSubscription();
+        _startSubscriptionPolling();
         notifyListeners();
         return true;
       }
@@ -202,10 +230,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _captureService.stop();
+    _stopSubscriptionPolling();
     await _storage.clearTokens();
     _isAuthenticated = false;
     _subscriptionActive = null;
     notifyListeners();
+    // Do not block the UI on notification listener teardown (can stall on some devices).
+    unawaited(
+      _captureService.stop().timeout(
+            const Duration(seconds: 3),
+            onTimeout: () {},
+          ),
+    );
   }
 }

@@ -22,7 +22,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen>
     with WidgetsBindingObserver {
   late final AndroidNotificationCaptureService _captureService;
-  bool _captureRunning = false;
   bool _hasPermission = false;
   bool _openingSettings = false;
 
@@ -40,7 +39,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     final granted = await _captureService.hasPermission();
     if (!mounted) return;
     setState(() {
-      _captureRunning = _captureService.isStarted;
       _hasPermission = granted;
     });
   }
@@ -79,6 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final auth = context.watch<AuthProvider>();
+    final captureRunning = _captureService.isStarted;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -102,63 +101,72 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: Icon(
-                _captureRunning ? Icons.notifications_active : Icons.notifications_off,
-              ),
-              title: Text(l10n.paymentCaptureService),
-              subtitle: Text(
-                !auth.isSubscriptionActive
-                    ? l10n.captureInactiveSubscription
-                    : (_captureRunning
-                        ? l10n.captureRunning
-                        : (_hasPermission ? l10n.captureStarting : l10n.captureNeedPermission)),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!_hasPermission)
-                    TextButton(
-                      onPressed: _openingSettings
-                          ? null
-                          : () async {
-                              final ok = await _captureService.hasPermission();
-                              if (!ok) {
-                                setState(() => _openingSettings = true);
-                                await _captureService.openPermissionSettings();
-                                if (mounted) setState(() => _openingSettings = false);
-                                return;
-                              }
-                              await _refreshCaptureState();
-                            },
-                      child: Text(l10n.enable),
-                    ),
-                  if (_hasPermission && !_captureRunning)
-                    const Padding(
-                      padding: EdgeInsetsDirectional.only(end: 8),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+      body: RefreshIndicator(
+        color: const Color(0xFF06B6D4),
+        onRefresh: _refreshCaptureState,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: Icon(
+                  captureRunning ? Icons.notifications_active : Icons.notifications_off,
+                ),
+                title: Text(l10n.paymentCaptureService),
+                subtitle: Text(
+                  !auth.isSubscriptionActive
+                      ? l10n.captureInactiveSubscription
+                      : (captureRunning
+                          ? l10n.captureRunning
+                          : (_hasPermission ? l10n.captureStarting : l10n.captureNeedPermission)),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_hasPermission)
+                      TextButton(
+                        onPressed: _openingSettings
+                            ? null
+                            : () async {
+                                final ok = await _captureService.hasPermission();
+                                if (!ok) {
+                                  setState(() => _openingSettings = true);
+                                  await _captureService.openPermissionSettings();
+                                  if (mounted) setState(() => _openingSettings = false);
+                                  return;
+                                }
+                                await _refreshCaptureState();
+                              },
+                        child: Text(l10n.enable),
                       ),
+                    if (auth.isSubscriptionActive && _hasPermission && !captureRunning)
+                      const Padding(
+                        padding: EdgeInsetsDirectional.only(end: 8),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    if (auth.isSubscriptionActive && _hasPermission && captureRunning)
+                      const Icon(Icons.check_circle, color: Colors.greenAccent),
+                    if (!auth.isSubscriptionActive && _hasPermission)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 8),
+                        child: Icon(Icons.pause_circle_outline, color: Colors.white.withValues(alpha: 0.45), size: 22),
+                      ),
+                    const SizedBox(width: 6),
+                    IconButton(
+                      onPressed: _refreshCaptureState,
+                      icon: const Icon(Icons.refresh),
+                      tooltip: l10n.refreshStatus,
                     ),
-                  if (_hasPermission && _captureRunning)
-                    const Icon(Icons.check_circle, color: Colors.greenAccent),
-                  const SizedBox(width: 6),
-                  IconButton(
-                    onPressed: _refreshCaptureState,
-                    icon: const Icon(Icons.refresh),
-                    tooltip: l10n.refreshStatus,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           _DashboardTile(
             title: l10n.subscription,
             subtitle: l10n.subscriptionTileSubtitle,
@@ -191,12 +199,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               );
             },
           ),
-          const SizedBox(height: 12),
-          Text(
-            l10n.offlineQueueHint,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              l10n.offlineQueueHint,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ],
+        ),
       ),
     );
   }
