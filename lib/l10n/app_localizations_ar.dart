@@ -12,6 +12,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'إشعار الدفع';
 
   @override
+  String get bottomNavHome => 'الرئيسية';
+
+  @override
   String get loading => 'جاري التحميل…';
 
   @override
@@ -458,6 +461,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportLoadError => 'تعذّر تحميل الدعم.';
+
+  @override
+  String get supportConversation => 'المحادثة';
+
+  @override
+  String get supportYou => 'أنت';
+
+  @override
+  String get supportTeam => 'فريق الدعم';
+
+  @override
+  String get supportRefresh => 'تحديث';
+
+  @override
+  String get supportSendFailed => 'تعذّر الإرسال. حاول مرة أخرى.';
+
+  @override
+  String get supportWhatsAppIntro => 'للرد الأسرع، تواصل معنا عبر واتساب.';
+
+  @override
+  String get supportTileSubtitle => 'راسل الفريق أو افتح واتساب';
 
   @override
   String get failedLoadProfile => 'فشل تحميل الملف الشخصي';

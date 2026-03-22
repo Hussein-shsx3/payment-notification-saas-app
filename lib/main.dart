@@ -9,7 +9,7 @@ import 'src/core/auth/auth_provider.dart';
 import 'src/core/background/workmanager_service.dart';
 import 'src/core/locale/locale_controller.dart';
 import 'src/features/auth/login_screen.dart';
-import 'src/features/dashboard/dashboard_screen.dart';
+import 'src/features/shell/main_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
             home: auth.isLoading
                 ? const _LoadingScreen()
                 : (auth.isAuthenticated
-                    ? const DashboardScreen()
+                    ? const MainShell()
                     : const LoginScreen()),
           );
         },

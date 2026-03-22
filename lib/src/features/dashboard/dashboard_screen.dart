@@ -9,7 +9,6 @@ import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
 import '../notifications/notification_center_screen.dart';
 import '../notifications/services/android_notification_capture_service.dart';
-import '../settings/settings_screen.dart';
 import '../subscription/subscription_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -186,16 +185,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 MaterialPageRoute<void>(
                   builder: (_) => const NotificationCenterScreen(),
                 ),
-              );
-            },
-          ),
-          _DashboardTile(
-            title: l10n.settings,
-            subtitle: l10n.settingsTileSubtitle,
-            icon: Icons.settings_outlined,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
               );
             },
           ),

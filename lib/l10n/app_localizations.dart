@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'Payment Notify'**
   String get appTitle;
 
+  /// No description provided for @bottomNavHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get bottomNavHome;
+
   /// No description provided for @loading.
   ///
   /// In en, this message translates to:
@@ -918,6 +924,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load support.'**
   String get supportLoadError;
+
+  /// No description provided for @supportConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get supportConversation;
+
+  /// No description provided for @supportYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get supportYou;
+
+  /// No description provided for @supportTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Support team'**
+  String get supportTeam;
+
+  /// No description provided for @supportRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get supportRefresh;
+
+  /// No description provided for @supportSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send. Try again.'**
+  String get supportSendFailed;
+
+  /// No description provided for @supportWhatsAppIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'For a quicker reply, contact us on WhatsApp.'**
+  String get supportWhatsAppIntro;
+
+  /// No description provided for @supportTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Message the team or open WhatsApp'**
+  String get supportTileSubtitle;
 
   /// No description provided for @failedLoadProfile.
   ///

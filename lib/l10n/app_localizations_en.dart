@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Payment Notify';
 
   @override
+  String get bottomNavHome => 'Home';
+
+  @override
   String get loading => 'Loading…';
 
   @override
@@ -462,6 +465,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportLoadError => 'Could not load support.';
+
+  @override
+  String get supportConversation => 'Conversation';
+
+  @override
+  String get supportYou => 'You';
+
+  @override
+  String get supportTeam => 'Support team';
+
+  @override
+  String get supportRefresh => 'Refresh';
+
+  @override
+  String get supportSendFailed => 'Could not send. Try again.';
+
+  @override
+  String get supportWhatsAppIntro =>
+      'For a quicker reply, contact us on WhatsApp.';
+
+  @override
+  String get supportTileSubtitle => 'Message the team or open WhatsApp';
 
   @override
   String get failedLoadProfile => 'Failed to load profile';
