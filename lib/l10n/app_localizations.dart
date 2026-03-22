@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @verificationEmailNotSent.
   ///
   /// In en, this message translates to:
-  /// **'We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs Brevo (BREVO_API_KEY and a verified sender) configured.'**
+  /// **'Could not send the email (server or mail provider). Try again in a moment or contact support if this continues.'**
   String get verificationEmailNotSent;
 
   /// No description provided for @verifyEmailTitle.
@@ -239,43 +239,43 @@ abstract class AppLocalizations {
   /// No description provided for @verifyEmailSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We sent a 6-digit code to your address. Enter it below (valid 24 hours). The email also includes English and Arabic instructions and a web link to verify or resend.'**
+  /// **'We emailed a 6-digit code to the address below. Enter it here — it is valid for 24 hours.'**
   String get verifyEmailSubtitle;
 
   /// No description provided for @verifyCodeLabel.
   ///
   /// In en, this message translates to:
-  /// **'Enter your code'**
+  /// **'6-digit code'**
   String get verifyCodeLabel;
 
-  /// No description provided for @verifyTokenHint.
+  /// No description provided for @verifyCodeHint.
   ///
   /// In en, this message translates to:
-  /// **'Type the 6 digits from the email. Codes expire after 24 hours.'**
-  String get verifyTokenHint;
+  /// **'Use the six numbers from the message. You can also paste a link from the email; we will read the code.'**
+  String get verifyCodeHint;
 
   /// No description provided for @verifyStepsTitle.
   ///
   /// In en, this message translates to:
-  /// **'How to verify'**
+  /// **'Quick steps'**
   String get verifyStepsTitle;
 
   /// No description provided for @verifyStep1.
   ///
   /// In en, this message translates to:
-  /// **'Check your inbox for our email from Payment Notify.'**
+  /// **'Open the email from Payment Notify (check spam).'**
   String get verifyStep1;
 
   /// No description provided for @verifyStep2.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6-digit code below, or open the web page from the email.'**
+  /// **'Enter the code here, or open the link in the email in a browser.'**
   String get verifyStep2;
 
   /// No description provided for @verifyStep3.
   ///
   /// In en, this message translates to:
-  /// **'If the code expired, tap Resend to get a new email.'**
+  /// **'Need a new code? Tap Resend email.'**
   String get verifyStep3;
 
   /// No description provided for @verifyOpenInBrowser.
@@ -317,14 +317,20 @@ abstract class AppLocalizations {
   /// No description provided for @verifyFailed.
   ///
   /// In en, this message translates to:
-  /// **'Invalid or expired code. Try again or resend the email.'**
+  /// **'Invalid or expired code. Request a new code with Resend email.'**
   String get verifyFailed;
 
-  /// No description provided for @resendSent.
+  /// No description provided for @resendSentSuccess.
   ///
   /// In en, this message translates to:
-  /// **'If your account needs verification, a new email was sent.'**
-  String get resendSent;
+  /// **'A new verification email was sent. Check inbox and spam — code valid 24 hours.'**
+  String get resendSentSuccess;
+
+  /// No description provided for @resendNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'If this email is registered and still unverified, you should get a message soon. Otherwise confirm it matches the address you used to sign up.'**
+  String get resendNeutral;
 
   /// No description provided for @resending.
   ///

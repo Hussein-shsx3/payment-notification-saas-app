@@ -74,35 +74,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verificationEmailNotSent =>
-      'تعذّر إرسال بريد التحقق من الخادم. جرّب «إعادة إرسال البريد». تأكد من ضبط Brevo على الخادم (BREVO_API_KEY والمرسل المعتمد).';
+      'تعذّر إرسال البريد (الخادم أو مزود البريد). أعد المحاولة لاحقاً أو تواصل مع الدعم إذا استمرّ الأمر.';
 
   @override
   String get verifyEmailTitle => 'تأكيد البريد الإلكتروني';
 
   @override
   String get verifyEmailSubtitle =>
-      'أرسلنا رمزاً مكوّناً من 6 أرقام إلى بريدك. أدخله أدناه (صالح لمدة 24 ساعة). الرسالة تحتوي تعليمات ورابطاً للتحقق أو إعادة الإرسال من الموقع.';
+      'أرسلنا رمزاً من 6 أرقام إلى البريد أدناه. أدخله هنا — صالح لمدة 24 ساعة.';
 
   @override
-  String get verifyCodeLabel => 'أدخل الرمز';
+  String get verifyCodeLabel => 'الرمز المكوّن من 6 أرقام';
 
   @override
-  String get verifyTokenHint =>
-      'اكتب الأرقام الستة من البريد. صلاحية الرمز 24 ساعة.';
+  String get verifyCodeHint =>
+      'استخدم الأرقام الستة من الرسالة. يمكنك لصق رابط من البريد وسنقرأ الرمز تلقائياً.';
 
   @override
-  String get verifyStepsTitle => 'طريقة التحقق';
+  String get verifyStepsTitle => 'خطوات سريعة';
 
   @override
-  String get verifyStep1 => 'افتح بريدك وابحث عن رسالة «Payment Notify».';
+  String get verifyStep1 =>
+      'افتح البريد من «Payment Notify» (تحقق من الرسائل غير المرغوبة).';
 
   @override
   String get verifyStep2 =>
-      'أدخل الرمز أدناه، أو افتح صفحة التحقق من الرابط في البريد.';
+      'أدخل الرمز هنا، أو افتح الرابط في المتصفح من البريد.';
 
   @override
-  String get verifyStep3 =>
-      'إذا انتهت صلاحية الرمز، اضغط إعادة الإرسال لرسالة جديدة.';
+  String get verifyStep3 => 'تحتاج رمزاً جديداً؟ اضغط إعادة إرسال البريد.';
 
   @override
   String get verifyOpenInBrowser => 'فتح صفحة التحقق في المتصفح';
@@ -125,10 +125,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyFailed =>
-      'الرمز غير صالح أو منتهٍ. حاول مرة أخرى أو أعد إرسال البريد.';
+      'الرمز غير صالح أو منتهٍ. اطلب رمزاً جديداً بإعادة إرسال البريد.';
 
   @override
-  String get resendSent => 'إذا كان الحساب يحتاج تأكيداً، أُرسل بريد جديد.';
+  String get resendSentSuccess =>
+      'أُرسل بريد تحقق جديد. راجع الوارد والرسائل غير المرغوبة — الرمز صالح 24 ساعة.';
+
+  @override
+  String get resendNeutral =>
+      'إذا كان هذا البريد مسجّلاً ولم يُؤكَّد بعد، ستصلك رسالة قريباً. وإلا تأكد أنه نفس البريد المستخدم عند التسجيل.';
 
   @override
   String get resending => 'جاري الإرسال…';

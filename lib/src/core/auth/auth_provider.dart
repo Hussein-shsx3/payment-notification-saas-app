@@ -173,7 +173,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<({bool httpOk, bool emailSent})> resendVerificationEmail(
+  /// [emailSent] is null when the API omits `verificationEmailSent` (unknown email or already verified — privacy).
+  Future<({bool httpOk, bool? emailSent})> resendVerificationEmail(
     String email, {
     String locale = 'en',
   }) async {
@@ -184,13 +185,19 @@ class AuthProvider extends ChangeNotifier {
       });
       final ok = response.statusCode >= 200 && response.statusCode < 300;
       if (!ok) {
-        return (httpOk: false, emailSent: false);
+        return (httpOk: false, emailSent: null);
       }
       final body = jsonDecode(response.body) as Map<String, dynamic>;
-      final sent = body['verificationEmailSent'] != false;
-      return (httpOk: true, emailSent: sent);
+      if (!body.containsKey('verificationEmailSent')) {
+        return (httpOk: true, emailSent: null);
+      }
+      final ve = body['verificationEmailSent'];
+      if (ve is bool) {
+        return (httpOk: true, emailSent: ve);
+      }
+      return (httpOk: true, emailSent: null);
     } catch (_) {
-      return (httpOk: false, emailSent: false);
+      return (httpOk: false, emailSent: null);
     }
   }
 

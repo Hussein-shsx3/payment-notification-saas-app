@@ -31,6 +31,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   bool _submitting = false;
   bool _resending = false;
   String? _message;
+  Color? _messageColor;
   bool _success = false;
 
   static const _bg = Color(0xFF020617);
@@ -81,6 +82,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     setState(() {
       _submitting = true;
       _message = null;
+      _messageColor = null;
       _success = false;
     });
 
@@ -92,6 +94,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       _submitting = false;
       _success = ok;
       _message = ok ? null : AppLocalizations.of(context)!.verifyFailed;
+      _messageColor = ok ? null : Colors.redAccent;
     });
   }
 
@@ -99,6 +102,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     setState(() {
       _resending = true;
       _message = null;
+      _messageColor = null;
     });
     final auth = context.read<AuthProvider>();
     final r = await auth.resendVerificationEmail(
@@ -111,10 +115,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       _resending = false;
       if (!r.httpOk) {
         _message = l10n.networkError;
-      } else if (!r.emailSent) {
+        _messageColor = Colors.redAccent;
+      } else if (r.emailSent == true) {
+        _message = l10n.resendSentSuccess;
+        _messageColor = const Color(0xFF4ADE80);
+      } else if (r.emailSent == false) {
         _message = l10n.verificationEmailNotSent;
+        _messageColor = const Color(0xFFFBBF24);
       } else {
-        _message = l10n.resendSent;
+        _message = l10n.resendNeutral;
+        _messageColor = _muted;
       }
     });
   }
@@ -353,7 +363,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  l10n.verifyTokenHint,
+                  l10n.verifyCodeHint,
                   style: TextStyle(fontSize: 11, color: _muted.withValues(alpha: 0.85), height: 1.35),
                 ),
 
@@ -426,11 +436,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.35,
-                      color: _message == l10n.resendSent
-                          ? const Color(0xFF4ADE80)
-                          : _message == l10n.verificationEmailNotSent
-                              ? const Color(0xFFFBBF24)
-                              : Colors.redAccent,
+                      color: _messageColor ?? Colors.redAccent,
                     ),
                   ),
                 ],

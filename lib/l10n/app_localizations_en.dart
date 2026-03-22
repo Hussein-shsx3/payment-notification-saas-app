@@ -74,36 +74,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationEmailNotSent =>
-      'We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs Brevo (BREVO_API_KEY and a verified sender) configured.';
+      'Could not send the email (server or mail provider). Try again in a moment or contact support if this continues.';
 
   @override
   String get verifyEmailTitle => 'Verify your email';
 
   @override
   String get verifyEmailSubtitle =>
-      'We sent a 6-digit code to your address. Enter it below (valid 24 hours). The email also includes English and Arabic instructions and a web link to verify or resend.';
+      'We emailed a 6-digit code to the address below. Enter it here — it is valid for 24 hours.';
 
   @override
-  String get verifyCodeLabel => 'Enter your code';
+  String get verifyCodeLabel => '6-digit code';
 
   @override
-  String get verifyTokenHint =>
-      'Type the 6 digits from the email. Codes expire after 24 hours.';
+  String get verifyCodeHint =>
+      'Use the six numbers from the message. You can also paste a link from the email; we will read the code.';
 
   @override
-  String get verifyStepsTitle => 'How to verify';
+  String get verifyStepsTitle => 'Quick steps';
 
   @override
-  String get verifyStep1 =>
-      'Check your inbox for our email from Payment Notify.';
+  String get verifyStep1 => 'Open the email from Payment Notify (check spam).';
 
   @override
   String get verifyStep2 =>
-      'Enter the 6-digit code below, or open the web page from the email.';
+      'Enter the code here, or open the link in the email in a browser.';
 
   @override
-  String get verifyStep3 =>
-      'If the code expired, tap Resend to get a new email.';
+  String get verifyStep3 => 'Need a new code? Tap Resend email.';
 
   @override
   String get verifyOpenInBrowser => 'Open verification page in browser';
@@ -126,11 +124,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyFailed =>
-      'Invalid or expired code. Try again or resend the email.';
+      'Invalid or expired code. Request a new code with Resend email.';
 
   @override
-  String get resendSent =>
-      'If your account needs verification, a new email was sent.';
+  String get resendSentSuccess =>
+      'A new verification email was sent. Check inbox and spam — code valid 24 hours.';
+
+  @override
+  String get resendNeutral =>
+      'If this email is registered and still unverified, you should get a message soon. Otherwise confirm it matches the address you used to sign up.';
 
   @override
   String get resending => 'Sending…';
