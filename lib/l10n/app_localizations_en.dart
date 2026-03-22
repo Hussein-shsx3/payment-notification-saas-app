@@ -297,6 +297,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'If expired, payment notification forwarding is disabled on server.';
 
   @override
+  String get subscriptionProofSectionTitle => 'Payment proof';
+
+  @override
+  String get subscriptionProofSectionHint =>
+      'Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).';
+
+  @override
+  String get subscriptionProofUploadCta => 'Upload payment screenshot';
+
+  @override
+  String get subscriptionProofUploading => 'Uploading…';
+
+  @override
+  String get subscriptionProofUploadSuccess => 'Payment proof uploaded.';
+
+  @override
+  String subscriptionProofUploadFailed(int code) {
+    return 'Upload failed ($code)';
+  }
+
+  @override
+  String get subscriptionProofTooLarge => 'Image is too large (max 5 MB).';
+
+  @override
+  String get subscriptionProofPickGallery => 'Choose from gallery';
+
+  @override
+  String get subscriptionProofPickCamera => 'Take photo';
+
+  @override
+  String get subscriptionProofImageError => 'Could not load image';
+
+  @override
+  String subscriptionProofUploadedLabel(String time) {
+    return 'Uploaded: $time';
+  }
+
+  @override
+  String get subscriptionProofAwaitingAdmin =>
+      'Waiting for admin review of your screenshot.';
+
+  @override
+  String subscriptionProofReviewedByAdmin(String time) {
+    return 'Reviewed by admin: $time';
+  }
+
+  @override
   String get statusActive => 'Active';
 
   @override

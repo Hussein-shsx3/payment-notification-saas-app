@@ -52,6 +52,7 @@ dependencies:
   pinput: ^6.0.2
   url_launcher: ^6.3.2
   package_info_plus: ^8.3.0
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:

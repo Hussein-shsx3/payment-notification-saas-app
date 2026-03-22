@@ -188,6 +188,33 @@ class ApiClient {
     );
   }
 
+  /// Multipart upload (e.g. subscription payment proof). Field name must match server (`image`).
+  Future<http.Response> postMultipart(
+    String path, {
+    required http.MultipartFile file,
+  }) async {
+    Future<http.Response> send(String? token) async {
+      final uri = Uri.parse('$apiBaseUrl$path');
+      final request = http.MultipartRequest('POST', uri);
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.files.add(file);
+      final streamed = await request.send();
+      return http.Response.fromStream(streamed);
+    }
+
+    var access = await getAccessToken();
+    var response = await send(access);
+    if (response.statusCode != 401) return response;
+
+    final refreshed = await _tryRefreshToken();
+    if (!refreshed) return response;
+
+    access = await getAccessToken();
+    return send(access);
+  }
+
   Future<http.Response> delete(
     String path, {
     Object? body,

@@ -103,6 +103,34 @@
     }
   },
   "subscriptionFooterNote": "If expired, payment notification forwarding is disabled on server.",
+  "subscriptionProofSectionTitle": "Payment proof",
+  "subscriptionProofSectionHint": "Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).",
+  "subscriptionProofUploadCta": "Upload payment screenshot",
+  "subscriptionProofUploading": "Uploading…",
+  "subscriptionProofUploadSuccess": "Payment proof uploaded.",
+  "subscriptionProofUploadFailed": "Upload failed ({code})",
+  "@subscriptionProofUploadFailed": {
+    "placeholders": {
+      "code": {"type": "int"}
+    }
+  },
+  "subscriptionProofTooLarge": "Image is too large (max 5 MB).",
+  "subscriptionProofPickGallery": "Choose from gallery",
+  "subscriptionProofPickCamera": "Take photo",
+  "subscriptionProofImageError": "Could not load image",
+  "subscriptionProofUploadedLabel": "Uploaded: {time}",
+  "@subscriptionProofUploadedLabel": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "subscriptionProofAwaitingAdmin": "Waiting for admin review of your screenshot.",
+  "subscriptionProofReviewedByAdmin": "Reviewed by admin: {time}",
+  "@subscriptionProofReviewedByAdmin": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
   "statusActive": "Active",
   "statusInactive": "Inactive",
   "statusNoSubscription": "No subscription",

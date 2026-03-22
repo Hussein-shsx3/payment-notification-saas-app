@@ -297,6 +297,54 @@ class AppLocalizationsAr extends AppLocalizations {
       'عند الانتهاء، يتوقف إعادة توجيه إشعارات الدفع على الخادم.';
 
   @override
+  String get subscriptionProofSectionTitle => 'إثبات الدفع';
+
+  @override
+  String get subscriptionProofSectionHint =>
+      'ارفع لقطة شاشة لدفع اشتراكك ليتحقق المسؤول. بحد أقصى 5 ميجابايت (JPEG أو PNG أو WebP).';
+
+  @override
+  String get subscriptionProofUploadCta => 'رفع لقطة الدفع';
+
+  @override
+  String get subscriptionProofUploading => 'جاري الرفع…';
+
+  @override
+  String get subscriptionProofUploadSuccess => 'تم رفع إثبات الدفع.';
+
+  @override
+  String subscriptionProofUploadFailed(int code) {
+    return 'فشل الرفع ($code)';
+  }
+
+  @override
+  String get subscriptionProofTooLarge =>
+      'الصورة كبيرة جداً (الحد 5 ميجابايت).';
+
+  @override
+  String get subscriptionProofPickGallery => 'اختيار من المعرض';
+
+  @override
+  String get subscriptionProofPickCamera => 'التقاط صورة';
+
+  @override
+  String get subscriptionProofImageError => 'تعذّر تحميل الصورة';
+
+  @override
+  String subscriptionProofUploadedLabel(String time) {
+    return 'تاريخ الرفع: $time';
+  }
+
+  @override
+  String get subscriptionProofAwaitingAdmin =>
+      'في انتظار مراجعة المسؤول للقطة.';
+
+  @override
+  String subscriptionProofReviewedByAdmin(String time) {
+    return 'راجعها المسؤول: $time';
+  }
+
+  @override
   String get statusActive => 'فعّال';
 
   @override

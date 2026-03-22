@@ -626,6 +626,84 @@ abstract class AppLocalizations {
   /// **'If expired, payment notification forwarding is disabled on server.'**
   String get subscriptionFooterNote;
 
+  /// No description provided for @subscriptionProofSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment proof'**
+  String get subscriptionProofSectionTitle;
+
+  /// No description provided for @subscriptionProofSectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).'**
+  String get subscriptionProofSectionHint;
+
+  /// No description provided for @subscriptionProofUploadCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload payment screenshot'**
+  String get subscriptionProofUploadCta;
+
+  /// No description provided for @subscriptionProofUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get subscriptionProofUploading;
+
+  /// No description provided for @subscriptionProofUploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment proof uploaded.'**
+  String get subscriptionProofUploadSuccess;
+
+  /// No description provided for @subscriptionProofUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed ({code})'**
+  String subscriptionProofUploadFailed(int code);
+
+  /// No description provided for @subscriptionProofTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Image is too large (max 5 MB).'**
+  String get subscriptionProofTooLarge;
+
+  /// No description provided for @subscriptionProofPickGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get subscriptionProofPickGallery;
+
+  /// No description provided for @subscriptionProofPickCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get subscriptionProofPickCamera;
+
+  /// No description provided for @subscriptionProofImageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load image'**
+  String get subscriptionProofImageError;
+
+  /// No description provided for @subscriptionProofUploadedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded: {time}'**
+  String subscriptionProofUploadedLabel(String time);
+
+  /// No description provided for @subscriptionProofAwaitingAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for admin review of your screenshot.'**
+  String get subscriptionProofAwaitingAdmin;
+
+  /// No description provided for @subscriptionProofReviewedByAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by admin: {time}'**
+  String subscriptionProofReviewedByAdmin(String time);
+
   /// No description provided for @statusActive.
   ///
   /// In en, this message translates to:

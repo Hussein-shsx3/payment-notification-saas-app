@@ -88,6 +88,34 @@
   "startDate": "تاريخ البدء: {date}",
   "expirationDate": "تاريخ الانتهاء: {date}",
   "subscriptionFooterNote": "عند الانتهاء، يتوقف إعادة توجيه إشعارات الدفع على الخادم.",
+  "subscriptionProofSectionTitle": "إثبات الدفع",
+  "subscriptionProofSectionHint": "ارفع لقطة شاشة لدفع اشتراكك ليتحقق المسؤول. بحد أقصى 5 ميجابايت (JPEG أو PNG أو WebP).",
+  "subscriptionProofUploadCta": "رفع لقطة الدفع",
+  "subscriptionProofUploading": "جاري الرفع…",
+  "subscriptionProofUploadSuccess": "تم رفع إثبات الدفع.",
+  "subscriptionProofUploadFailed": "فشل الرفع ({code})",
+  "@subscriptionProofUploadFailed": {
+    "placeholders": {
+      "code": {"type": "int"}
+    }
+  },
+  "subscriptionProofTooLarge": "الصورة كبيرة جداً (الحد 5 ميجابايت).",
+  "subscriptionProofPickGallery": "اختيار من المعرض",
+  "subscriptionProofPickCamera": "التقاط صورة",
+  "subscriptionProofImageError": "تعذّر تحميل الصورة",
+  "subscriptionProofUploadedLabel": "تاريخ الرفع: {time}",
+  "@subscriptionProofUploadedLabel": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "subscriptionProofAwaitingAdmin": "في انتظار مراجعة المسؤول للقطة.",
+  "subscriptionProofReviewedByAdmin": "راجعها المسؤول: {time}",
+  "@subscriptionProofReviewedByAdmin": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
   "statusActive": "فعّال",
   "statusInactive": "غير فعّال",
   "statusNoSubscription": "لا يوجد اشتراك",

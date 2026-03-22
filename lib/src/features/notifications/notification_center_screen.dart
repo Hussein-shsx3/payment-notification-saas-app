@@ -284,6 +284,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                         ),
                       ),
                       FilledButton.tonal(
+                        style: FilledButton.styleFrom(
+                          foregroundColor: const Color(0xFFF8FAFC),
+                          backgroundColor: const Color(0xFF475569),
+                        ),
                         onPressed: _deletingPayments ? null : _deleteAllPayments,
                         child: Text(_deletingPayments ? l10n.deleting : l10n.deleteAll),
                       ),
