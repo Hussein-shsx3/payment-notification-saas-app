@@ -23,8 +23,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void _handleRefreshFailed() {
-    // Refresh token is invalid/expired - user must login again
-    // Only logout if we were authenticated (avoid loop during initial load)
     if (_isAuthenticated) {
       logout();
     }
@@ -43,11 +41,9 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   String? get errorMessage => _errorMessage;
-  /// Loaded from `GET /users/profile` — capture runs only when `true`.
   bool get isSubscriptionActive => _subscriptionActive == true;
   ApiClient get api => _api;
 
-  /// Refreshes subscription from the server and starts/stops capture accordingly.
   Future<void> refreshSubscription() async {
     if (!_isAuthenticated) {
       _subscriptionActive = null;
@@ -130,6 +126,7 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String phoneNumber,
     required String password,
+    String locale = 'en',
   }) async {
     _errorMessage = null;
     notifyListeners();
@@ -139,13 +136,12 @@ class AuthProvider extends ChangeNotifier {
         'email': email.trim(),
         'phoneNumber': phoneNumber.trim(),
         'password': password,
+        'locale': locale,
       });
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final needs = body['requiresEmailVerification'] == true;
-        // Only treat as "known failed" when server explicitly says false (sync send).
-        // Pending/omitted = email is sending in background; don't show "not sent" scare.
         final explicitFailed = body['verificationEmailSent'] == false;
         return RegisterOutcome(
           success: true,
@@ -165,12 +161,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-
-  /// Confirms email using the token from the verification email (or pasted link query).
-  Future<bool> verifyEmail(String token) async {
+  /// Confirms email using the 6-digit code (or legacy token).
+  Future<bool> verifyEmail(String code) async {
     try {
       final response = await _api.post('/auth/verify-email', body: {
-        'token': token.trim(),
+        'code': code.trim(),
       });
       return response.statusCode >= 200 && response.statusCode < 300;
     } catch (_) {
@@ -178,11 +173,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// [emailSent] is false when the server accepted the request but could not send mail.
-  Future<({bool httpOk, bool emailSent})> resendVerificationEmail(String email) async {
+  Future<({bool httpOk, bool emailSent})> resendVerificationEmail(
+    String email, {
+    String locale = 'en',
+  }) async {
     try {
       final response = await _api.post('/auth/resend-verification', body: {
         'email': email.trim(),
+        'locale': locale,
       });
       final ok = response.statusCode >= 200 && response.statusCode < 300;
       if (!ok) {
@@ -204,4 +202,3 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -239,19 +239,19 @@ abstract class AppLocalizations {
   /// No description provided for @verifyEmailSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We sent a message to your address. Open the link in the email, or paste the verification token below.'**
+  /// **'We sent a 6-digit code to your address. Enter it below (valid 24 hours). The email also includes English and Arabic instructions and a web link to verify or resend.'**
   String get verifyEmailSubtitle;
 
-  /// No description provided for @verifyTokenLabel.
+  /// No description provided for @verifyCodeLabel.
   ///
   /// In en, this message translates to:
-  /// **'Verification token'**
-  String get verifyTokenLabel;
+  /// **'6-digit code'**
+  String get verifyCodeLabel;
 
   /// No description provided for @verifyTokenHint.
   ///
   /// In en, this message translates to:
-  /// **'Long code from the email'**
+  /// **'Enter the numbers from the email'**
   String get verifyTokenHint;
 
   /// No description provided for @verifyButton.
@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyFailed.
   ///
   /// In en, this message translates to:
-  /// **'Invalid or expired token. Try again or resend the email.'**
+  /// **'Invalid or expired code. Try again or resend the email.'**
   String get verifyFailed;
 
   /// No description provided for @resendSent.

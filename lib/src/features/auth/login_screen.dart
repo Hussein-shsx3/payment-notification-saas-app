@@ -123,9 +123,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF06B6D4),
+                            foregroundColor: const Color(0xFF020617),
+                            minimumSize: const Size.fromHeight(50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           onPressed: _submitting ? null : _submit,
-                          child: Text(_submitting ? l10n.loggingIn : l10n.login),
+                          child: Text(
+                            _submitting ? l10n.loggingIn : l10n.login,
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextButton(

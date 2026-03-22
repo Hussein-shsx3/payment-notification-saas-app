@@ -74,20 +74,20 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verificationEmailNotSent =>
-      'تعذّر إرسال بريد التحقق من الخادم. جرّب «إعادة إرسال البريد» أو الصق الرمز إن وُجد. يجب ضبط GMAIL_USER وGMAIL_APP_PASSWORD (كلمة مرور التطبيق من Google) على الخادم بشكل صحيح.';
+      'تعذّر إرسال بريد التحقق من الخادم. جرّب «إعادة إرسال البريد». تأكد من ضبط Brevo على الخادم (BREVO_API_KEY والمرسل المعتمد).';
 
   @override
   String get verifyEmailTitle => 'تأكيد البريد الإلكتروني';
 
   @override
   String get verifyEmailSubtitle =>
-      'أرسلنا رسالة إلى بريدك. افتح الرابط في الرسالة، أو الصق رمز التحقق أدناه.';
+      'أرسلنا رمزاً مكوّناً من 6 أرقام إلى بريدك. أدخله أدناه (صالح لمدة 24 ساعة). الرسالة تحتوي تعليمات ورابطاً للتحقق أو إعادة الإرسال من الموقع.';
 
   @override
-  String get verifyTokenLabel => 'رمز التحقق';
+  String get verifyCodeLabel => 'الرمز المكوّن من 6 أرقام';
 
   @override
-  String get verifyTokenHint => 'الرمز الطويل من البريد';
+  String get verifyTokenHint => 'الأرقام المرسلة في البريد';
 
   @override
   String get verifyButton => 'تأكيد البريد';
@@ -103,7 +103,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyFailed =>
-      'رمز غير صالح أو منتهٍ. حاول مرة أخرى أو أعد إرسال البريد.';
+      'الرمز غير صالح أو منتهٍ. حاول مرة أخرى أو أعد إرسال البريد.';
 
   @override
   String get resendSent => 'إذا كان الحساب يحتاج تأكيداً، أُرسل بريد جديد.';

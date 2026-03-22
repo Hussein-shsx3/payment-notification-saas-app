@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,7 +8,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
 import 'login_screen.dart';
 
-/// Enter the token from the verification email, or open the link from the email in a browser.
+/// Enter the 6-digit code from the verification email.
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({
     super.key,
@@ -15,7 +17,6 @@ class VerifyEmailScreen extends StatefulWidget {
   });
 
   final String email;
-  /// True when register/resend indicated the server did not dispatch an email.
   final bool showEmailDeliveryWarning;
 
   @override
@@ -23,7 +24,8 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  final _tokenController = TextEditingController();
+  final _pinController = TextEditingController();
+  final _focusNode = FocusNode();
   bool _submitting = false;
   bool _resending = false;
   String? _message;
@@ -31,26 +33,29 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   void dispose() {
-    _tokenController.dispose();
+    _pinController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  String _normalizeToken(String raw) {
-    var t = raw.trim();
-    final asUri = Uri.tryParse(t);
-    if (asUri != null && asUri.queryParameters.containsKey('token')) {
-      return asUri.queryParameters['token'] ?? t;
-    }
-    final m = RegExp(r'[?&]token=([^&\s]+)').firstMatch(t);
-    if (m != null) {
-      return Uri.decodeQueryComponent(m.group(1)!);
-    }
-    return t;
+  String _localeTag(BuildContext context) {
+    final code = Localizations.localeOf(context).languageCode;
+    return code.startsWith('ar') ? 'ar' : 'en';
   }
 
-  Future<void> _verify() async {
-    final token = _normalizeToken(_tokenController.text);
-    if (token.isEmpty) return;
+  Future<void> _verifyWith(String raw) async {
+    var s = raw.trim();
+    final asUri = Uri.tryParse(s);
+    if (asUri != null && asUri.hasQuery) {
+      s = asUri.queryParameters['code'] ?? asUri.queryParameters['token'] ?? s;
+    } else {
+      final m = RegExp(r'[?&](?:code|token)=([^&\s]+)').firstMatch(s);
+      if (m != null) {
+        s = Uri.decodeQueryComponent(m.group(1)!);
+      }
+    }
+    final code = s.replaceAll(RegExp(r'\D'), '');
+    if (code.length != 6) return;
 
     setState(() {
       _submitting = true;
@@ -59,7 +64,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     });
 
     final auth = context.read<AuthProvider>();
-    final ok = await auth.verifyEmail(token);
+    final ok = await auth.verifyEmail(code);
 
     if (!mounted) return;
     setState(() {
@@ -75,7 +80,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       _message = null;
     });
     final auth = context.read<AuthProvider>();
-    final r = await auth.resendVerificationEmail(widget.email);
+    final r = await auth.resendVerificationEmail(
+      widget.email,
+      locale: _localeTag(context),
+    );
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() {
@@ -93,6 +101,28 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    final defaultPinTheme = PinTheme(
+      width: 46,
+      height: 54,
+      textStyle: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFFF1F5F9),
+        letterSpacing: 2,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF1E293B)),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.verifyEmailTitle)),
@@ -134,7 +164,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         widget.email,
                         style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF06B6D4)),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       if (_success) ...[
                         Text(
                           l10n.verifySuccess,
@@ -142,6 +172,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         ),
                         const SizedBox(height: 16),
                         FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF06B6D4),
+                            foregroundColor: const Color(0xFF020617),
+                            minimumSize: const Size.fromHeight(48),
+                          ),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
@@ -150,18 +185,38 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           child: Text(l10n.login),
                         ),
                       ] else ...[
-                        TextField(
-                          controller: _tokenController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: l10n.verifyTokenLabel,
-                            hintText: l10n.verifyTokenHint,
-                            border: const OutlineInputBorder(),
-                          ),
+                        Text(
+                          l10n.verifyCodeLabel,
+                          style: const TextStyle(fontSize: 12, color: Colors.white54),
+                        ),
+                        const SizedBox(height: 8),
+                        Pinput(
+                          length: 6,
+                          controller: _pinController,
+                          focusNode: _focusNode,
+                          defaultPinTheme: defaultPinTheme,
+                          focusedPinTheme: focusedPinTheme,
+                          submittedPinTheme: focusedPinTheme,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          autofocus: true,
+                          onCompleted: _verifyWith,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.verifyTokenHint,
+                          style: const TextStyle(fontSize: 11, color: Colors.white38),
                         ),
                         const SizedBox(height: 16),
                         FilledButton(
-                          onPressed: _submitting ? null : _verify,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF06B6D4),
+                            foregroundColor: const Color(0xFF020617),
+                            minimumSize: const Size.fromHeight(48),
+                          ),
+                          onPressed: _submitting
+                              ? null
+                              : () => _verifyWith(_pinController.text),
                           child: Text(_submitting ? l10n.loading : l10n.verifyButton),
                         ),
                         const SizedBox(height: 8),

@@ -81,13 +81,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyEmailSubtitle =>
-      'We sent a message to your address. Open the link in the email, or paste the verification token below.';
+      'We sent a 6-digit code to your address. Enter it below (valid 24 hours). The email also includes English and Arabic instructions and a web link to verify or resend.';
 
   @override
-  String get verifyTokenLabel => 'Verification token';
+  String get verifyCodeLabel => '6-digit code';
 
   @override
-  String get verifyTokenHint => 'Long code from the email';
+  String get verifyTokenHint => 'Enter the numbers from the email';
 
   @override
   String get verifyButton => 'Verify email';
@@ -103,7 +103,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyFailed =>
-      'Invalid or expired token. Try again or resend the email.';
+      'Invalid or expired code. Try again or resend the email.';
 
   @override
   String get resendSent =>

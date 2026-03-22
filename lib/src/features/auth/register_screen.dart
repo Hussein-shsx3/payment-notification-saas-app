@@ -41,11 +41,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final auth = context.read<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
+    final lang = Localizations.localeOf(context).languageCode;
     final outcome = await auth.register(
       fullName: _fullNameController.text,
       email: _emailController.text,
       phoneNumber: _phoneController.text,
       password: _passwordController.text,
+      locale: lang.startsWith('ar') ? 'ar' : 'en',
     );
 
     if (!mounted) return;
