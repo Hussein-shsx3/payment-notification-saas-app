@@ -84,10 +84,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'We sent a 6-digit code to your address. Enter it below (valid 24 hours). The email also includes English and Arabic instructions and a web link to verify or resend.';
 
   @override
-  String get verifyCodeLabel => '6-digit code';
+  String get verifyCodeLabel => 'Enter your code';
 
   @override
-  String get verifyTokenHint => 'Enter the numbers from the email';
+  String get verifyTokenHint =>
+      'Type the 6 digits from the email. Codes expire after 24 hours.';
+
+  @override
+  String get verifyStepsTitle => 'How to verify';
+
+  @override
+  String get verifyStep1 =>
+      'Check your inbox for our email from Payment Notify.';
+
+  @override
+  String get verifyStep2 =>
+      'Enter the 6-digit code below, or open the web page from the email.';
+
+  @override
+  String get verifyStep3 =>
+      'If the code expired, tap Resend to get a new email.';
+
+  @override
+  String get verifyOpenInBrowser => 'Open verification page in browser';
+
+  @override
+  String get verifyOpenInBrowserHint =>
+      'Same page as in your email — enter the code or resend there too.';
 
   @override
   String get verifyButton => 'Verify email';

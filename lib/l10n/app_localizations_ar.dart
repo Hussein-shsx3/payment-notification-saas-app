@@ -84,10 +84,32 @@ class AppLocalizationsAr extends AppLocalizations {
       'أرسلنا رمزاً مكوّناً من 6 أرقام إلى بريدك. أدخله أدناه (صالح لمدة 24 ساعة). الرسالة تحتوي تعليمات ورابطاً للتحقق أو إعادة الإرسال من الموقع.';
 
   @override
-  String get verifyCodeLabel => 'الرمز المكوّن من 6 أرقام';
+  String get verifyCodeLabel => 'أدخل الرمز';
 
   @override
-  String get verifyTokenHint => 'الأرقام المرسلة في البريد';
+  String get verifyTokenHint =>
+      'اكتب الأرقام الستة من البريد. صلاحية الرمز 24 ساعة.';
+
+  @override
+  String get verifyStepsTitle => 'طريقة التحقق';
+
+  @override
+  String get verifyStep1 => 'افتح بريدك وابحث عن رسالة «Payment Notify».';
+
+  @override
+  String get verifyStep2 =>
+      'أدخل الرمز أدناه، أو افتح صفحة التحقق من الرابط في البريد.';
+
+  @override
+  String get verifyStep3 =>
+      'إذا انتهت صلاحية الرمز، اضغط إعادة الإرسال لرسالة جديدة.';
+
+  @override
+  String get verifyOpenInBrowser => 'فتح صفحة التحقق في المتصفح';
+
+  @override
+  String get verifyOpenInBrowserHint =>
+      'نفس الصفحة الموجودة في البريد — يمكنك إدخال الرمز أو إعادة الإرسال من هناك.';
 
   @override
   String get verifyButton => 'تأكيد البريد';

@@ -245,14 +245,50 @@ abstract class AppLocalizations {
   /// No description provided for @verifyCodeLabel.
   ///
   /// In en, this message translates to:
-  /// **'6-digit code'**
+  /// **'Enter your code'**
   String get verifyCodeLabel;
 
   /// No description provided for @verifyTokenHint.
   ///
   /// In en, this message translates to:
-  /// **'Enter the numbers from the email'**
+  /// **'Type the 6 digits from the email. Codes expire after 24 hours.'**
   String get verifyTokenHint;
+
+  /// No description provided for @verifyStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to verify'**
+  String get verifyStepsTitle;
+
+  /// No description provided for @verifyStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox for our email from Payment Notify.'**
+  String get verifyStep1;
+
+  /// No description provided for @verifyStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code below, or open the web page from the email.'**
+  String get verifyStep2;
+
+  /// No description provided for @verifyStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'If the code expired, tap Resend to get a new email.'**
+  String get verifyStep3;
+
+  /// No description provided for @verifyOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open verification page in browser'**
+  String get verifyOpenInBrowser;
+
+  /// No description provided for @verifyOpenInBrowserHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Same page as in your email — enter the code or resend there too.'**
+  String get verifyOpenInBrowserHint;
 
   /// No description provided for @verifyButton.
   ///
