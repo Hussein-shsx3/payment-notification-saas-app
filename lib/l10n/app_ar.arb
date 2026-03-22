@@ -117,6 +117,7 @@
   "directionSent": "صادر",
   "directionReceived": "وارد",
   "directionUnknown": "غير معروف",
+  "paymentDirectionLabel": "اتجاه الدفع",
   "markAsReceived": "تعيين كوارد",
   "markAsSent": "تعيين كصادر",
   "paymentMessageFallback": "رسالة دفع",

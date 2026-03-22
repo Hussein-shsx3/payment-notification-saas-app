@@ -31,6 +31,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   static const int _paymentLimit = 15;
   _DateFilter _dateFilter = _DateFilter.all;
   List<Map<String, dynamic>> _paymentItems = const [];
+  /// Payment notification ids currently PATCHing direction.
+  final Set<String> _patchingDirectionIds = {};
 
   String _getFilterLabel(AppLocalizations l10n, _DateFilter f) {
     switch (f) {
@@ -51,6 +53,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     if (d == 'outgoing') return l10n.directionSent;
     if (d == 'incoming') return l10n.directionReceived;
     return l10n.directionUnknown;
+  }
+
+  /// Normalizes API `direction` to `incoming` | `outgoing` | `unknown`.
+  String _normalizeDirection(dynamic raw) {
+    final s = raw?.toString() ?? '';
+    if (s == 'incoming' || s == 'outgoing' || s == 'unknown') return s;
+    return 'unknown';
   }
 
   (DateTime?, DateTime?) _getDateRange() {
@@ -204,6 +213,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
   Future<void> _setPaymentDirection(String id, String direction) async {
     final l10n = AppLocalizations.of(context)!;
+    setState(() => _patchingDirectionIds.add(id));
     try {
       final api = context.read<AuthProvider>().api;
       final res = await api.patch(
@@ -222,6 +232,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.networkError)),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _patchingDirectionIds.remove(id));
       }
     }
   }
@@ -299,8 +313,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     final title = (p['title'] ?? '').toString();
                     final msg = (p['message'] ?? '').toString();
                     final src = (p['source'] ?? '').toString();
-                    final direction = (p['direction'] ?? 'unknown').toString();
-                    final dirLabel = _directionLabel(l10n, direction);
+                    final norm = _normalizeDirection(p['direction']);
+                    final dirLabel = _directionLabel(l10n, norm);
                     final receivedAtRaw = (p['receivedAt'] ?? '').toString();
                     final receivedAtParsed = DateTime.tryParse(receivedAtRaw);
                     final receivedAtLabel = receivedAtParsed == null
@@ -314,6 +328,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                       )
                       ..write(l10n.messageLine(msg));
                     return Card(
+                      key: ValueKey<String>('payment-$id'),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(
@@ -338,28 +353,50 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 10),
+                            if (_patchingDirectionIds.contains(id))
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 8),
+                                child: LinearProgressIndicator(
+                                  minHeight: 2,
+                                  color: Color(0xFF06B6D4),
+                                ),
+                              ),
+                            DropdownButtonFormField<String>(
+                              value: norm,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.paymentDirectionLabel,
+                                border: const OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              ),
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'incoming',
+                                  child: Text(l10n.directionReceived),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'outgoing',
+                                  child: Text(l10n.directionSent),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'unknown',
+                                  child: Text(l10n.directionUnknown),
+                                ),
+                              ],
+                              onChanged: id.isEmpty || _patchingDirectionIds.contains(id)
+                                  ? null
+                                  : (v) {
+                                      if (v != null && v != norm) {
+                                        _setPaymentDirection(id, v);
+                                      }
+                                    },
+                            ),
+                            const SizedBox(height: 8),
                             Text(
                               bodyText.toString(),
                               style: const TextStyle(fontSize: 13, height: 1.35),
                             ),
-                            if (direction == 'unknown') ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 4,
-                                children: [
-                                  TextButton(
-                                    onPressed: id.isEmpty ? null : () => _setPaymentDirection(id, 'incoming'),
-                                    child: Text(l10n.markAsReceived),
-                                  ),
-                                  TextButton(
-                                    onPressed: id.isEmpty ? null : () => _setPaymentDirection(id, 'outgoing'),
-                                    child: Text(l10n.markAsSent),
-                                  ),
-                                ],
-                              ),
-                            ],
                           ],
                         ),
                       ),

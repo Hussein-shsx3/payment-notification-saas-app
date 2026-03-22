@@ -139,6 +139,7 @@
   "directionSent": "Sent",
   "directionReceived": "Received",
   "directionUnknown": "Unknown",
+  "paymentDirectionLabel": "Payment direction",
   "markAsReceived": "Mark as received",
   "markAsSent": "Mark as sent",
   "paymentMessageFallback": "Payment message",

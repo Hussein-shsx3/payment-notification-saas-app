@@ -389,6 +389,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get directionUnknown => 'Unknown';
 
   @override
+  String get paymentDirectionLabel => 'Payment direction';
+
+  @override
   String get markAsReceived => 'Mark as received';
 
   @override

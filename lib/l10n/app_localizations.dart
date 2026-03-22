@@ -800,6 +800,12 @@ abstract class AppLocalizations {
   /// **'Unknown'**
   String get directionUnknown;
 
+  /// No description provided for @paymentDirectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment direction'**
+  String get paymentDirectionLabel;
+
   /// No description provided for @markAsReceived.
   ///
   /// In en, this message translates to:

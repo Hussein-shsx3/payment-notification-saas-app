@@ -387,6 +387,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get directionUnknown => 'غير معروف';
 
   @override
+  String get paymentDirectionLabel => 'اتجاه الدفع';
+
+  @override
   String get markAsReceived => 'تعيين كوارد';
 
   @override
