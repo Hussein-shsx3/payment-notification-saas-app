@@ -435,6 +435,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get networkError => 'خطأ في الشبكة';
 
   @override
+  String get supportScreenTitle => 'الدعم';
+
+  @override
+  String get supportHelpText =>
+      'راسل فريقنا. تظهر الردود هنا؛ راقب إشعارات النظام للتنبيهات.';
+
+  @override
+  String get supportWhatsAppHint => 'واتساب (إذا لم يصل رد سريع في التطبيق):';
+
+  @override
+  String get supportTypeMessage => 'رسالتك…';
+
+  @override
+  String get supportSend => 'إرسال';
+
+  @override
+  String get supportNav => 'الدعم';
+
+  @override
+  String get supportEmptyThread => 'لا رسائل بعد.';
+
+  @override
+  String get supportLoadError => 'تعذّر تحميل الدعم.';
+
+  @override
   String get failedLoadProfile => 'فشل تحميل الملف الشخصي';
 
   @override

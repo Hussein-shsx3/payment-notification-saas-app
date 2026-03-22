@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/validation/password_policy.dart';
 import '../../core/locale/locale_controller.dart';
+import '../support/support_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -204,6 +205,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.support_agent_rounded, color: Color(0xFF06B6D4)),
+                  title: Text(l10n.supportNav),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => const SupportScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 24, color: Color(0xFF334155)),
                 Text(
                   l10n.language,
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),

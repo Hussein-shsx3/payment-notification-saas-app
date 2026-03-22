@@ -439,6 +439,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkError => 'Network error';
 
   @override
+  String get supportScreenTitle => 'Support';
+
+  @override
+  String get supportHelpText =>
+      'Message our team. Replies appear here; check system notifications for alerts.';
+
+  @override
+  String get supportWhatsAppHint => 'WhatsApp (if no quick reply in the app):';
+
+  @override
+  String get supportTypeMessage => 'Your message…';
+
+  @override
+  String get supportSend => 'Send';
+
+  @override
+  String get supportNav => 'Support';
+
+  @override
+  String get supportEmptyThread => 'No messages yet.';
+
+  @override
+  String get supportLoadError => 'Could not load support.';
+
+  @override
   String get failedLoadProfile => 'Failed to load profile';
 
   @override

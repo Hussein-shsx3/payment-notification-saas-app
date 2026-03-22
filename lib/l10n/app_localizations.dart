@@ -871,6 +871,54 @@ abstract class AppLocalizations {
   /// **'Network error'**
   String get networkError;
 
+  /// No description provided for @supportScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get supportScreenTitle;
+
+  /// No description provided for @supportHelpText.
+  ///
+  /// In en, this message translates to:
+  /// **'Message our team. Replies appear here; check system notifications for alerts.'**
+  String get supportHelpText;
+
+  /// No description provided for @supportWhatsAppHint.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp (if no quick reply in the app):'**
+  String get supportWhatsAppHint;
+
+  /// No description provided for @supportTypeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message…'**
+  String get supportTypeMessage;
+
+  /// No description provided for @supportSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get supportSend;
+
+  /// No description provided for @supportNav.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get supportNav;
+
+  /// No description provided for @supportEmptyThread.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet.'**
+  String get supportEmptyThread;
+
+  /// No description provided for @supportLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load support.'**
+  String get supportLoadError;
+
   /// No description provided for @failedLoadProfile.
   ///
   /// In en, this message translates to:
