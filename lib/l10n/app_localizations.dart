@@ -704,6 +704,18 @@ abstract class AppLocalizations {
   /// **'Reviewed by admin: {time}'**
   String subscriptionProofReviewedByAdmin(String time);
 
+  /// No description provided for @subscriptionProofShowScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Show payment screenshot'**
+  String get subscriptionProofShowScreenshot;
+
+  /// No description provided for @subscriptionProofHideScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide payment screenshot'**
+  String get subscriptionProofHideScreenshot;
+
   /// No description provided for @statusActive.
   ///
   /// In en, this message translates to:

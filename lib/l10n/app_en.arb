@@ -131,6 +131,8 @@
       "time": {"type": "String"}
     }
   },
+  "subscriptionProofShowScreenshot": "Show payment screenshot",
+  "subscriptionProofHideScreenshot": "Hide payment screenshot",
   "statusActive": "Active",
   "statusInactive": "Inactive",
   "statusNoSubscription": "No subscription",

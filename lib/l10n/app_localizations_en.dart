@@ -344,6 +344,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get subscriptionProofShowScreenshot => 'Show payment screenshot';
+
+  @override
+  String get subscriptionProofHideScreenshot => 'Hide payment screenshot';
+
+  @override
   String get statusActive => 'Active';
 
   @override

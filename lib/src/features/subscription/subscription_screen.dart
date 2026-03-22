@@ -26,6 +26,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String? _proofUrl;
   String? _proofUploadedAtIso;
   String? _proofReviewedAtIso;
+  bool _proofExpanded = false;
 
   @override
   void initState() {
@@ -65,6 +66,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _proofUploadedAtIso = rawAt != null && rawAt.isNotEmpty ? rawAt : null;
           final rawRv = data['subscriptionPaymentProofReviewedAt']?.toString();
           _proofReviewedAtIso = rawRv != null && rawRv.isNotEmpty ? rawRv : null;
+          _proofExpanded = false;
         });
         if (mounted) {
           await context.read<AuthProvider>().refreshSubscription();
@@ -219,52 +221,71 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           ),
                           const SizedBox(height: 12),
                           if (_proofUrl != null && _proofUrl!.isNotEmpty) ...[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: AspectRatio(
-                                aspectRatio: 16 / 10,
-                                child: Image.network(
-                                  _proofUrl!,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
-                                    );
-                                  },
-                                  errorBuilder: (_, __, ___) => Container(
-                                    color: const Color(0xFF1E293B),
-                                    alignment: Alignment.center,
-                                    child: Text(l10n.subscriptionProofImageError),
+                            TextButton.icon(
+                              onPressed: () => setState(() => _proofExpanded = !_proofExpanded),
+                              icon: Icon(
+                                _proofExpanded ? Icons.expand_less : Icons.expand_more,
+                                size: 20,
+                                color: const Color(0xFF06B6D4),
+                              ),
+                              label: Text(
+                                _proofExpanded
+                                    ? l10n.subscriptionProofHideScreenshot
+                                    : l10n.subscriptionProofShowScreenshot,
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFFE2E8F0),
+                                alignment: Alignment.centerLeft,
+                              ),
+                            ),
+                            if (_proofExpanded) ...[
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: AspectRatio(
+                                  aspectRatio: 16 / 10,
+                                  child: Image.network(
+                                    _proofUrl!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return const Center(
+                                        child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
+                                      );
+                                    },
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: const Color(0xFF1E293B),
+                                      alignment: Alignment.center,
+                                      child: Text(l10n.subscriptionProofImageError),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            if (_proofUploadedAtIso != null) ...[
+                              if (_proofUploadedAtIso != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  l10n.subscriptionProofUploadedLabel(
+                                    formatDateTimeDmyFromIso(_proofUploadedAtIso!),
+                                  ),
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                                ),
+                              ],
                               const SizedBox(height: 8),
                               Text(
-                                l10n.subscriptionProofUploadedLabel(
-                                  formatDateTimeDmyFromIso(_proofUploadedAtIso!),
+                                _proofReviewedAtIso != null
+                                    ? l10n.subscriptionProofReviewedByAdmin(
+                                        formatDateTimeDmyFromIso(_proofReviewedAtIso!),
+                                      )
+                                    : l10n.subscriptionProofAwaitingAdmin,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.35,
+                                  color: _proofReviewedAtIso != null
+                                      ? const Color(0xFF34D399)
+                                      : const Color(0xFFFBBF24),
                                 ),
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                               ),
+                              const SizedBox(height: 12),
                             ],
-                            const SizedBox(height: 8),
-                            Text(
-                              _proofReviewedAtIso != null
-                                  ? l10n.subscriptionProofReviewedByAdmin(
-                                      formatDateTimeDmyFromIso(_proofReviewedAtIso!),
-                                    )
-                                  : l10n.subscriptionProofAwaitingAdmin,
-                              style: TextStyle(
-                                fontSize: 12,
-                                height: 1.35,
-                                color: _proofReviewedAtIso != null
-                                    ? const Color(0xFF34D399)
-                                    : const Color(0xFFFBBF24),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
                           ],
                           FilledButton.icon(
                             onPressed: _uploading ? null : _showSourcePicker,

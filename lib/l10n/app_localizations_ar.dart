@@ -345,6 +345,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get subscriptionProofShowScreenshot => 'إظهار لقطة الدفع';
+
+  @override
+  String get subscriptionProofHideScreenshot => 'إخفاء لقطة الدفع';
+
+  @override
   String get statusActive => 'فعّال';
 
   @override

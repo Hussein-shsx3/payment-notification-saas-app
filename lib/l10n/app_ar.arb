@@ -116,6 +116,8 @@
       "time": {"type": "String"}
     }
   },
+  "subscriptionProofShowScreenshot": "إظهار لقطة الدفع",
+  "subscriptionProofHideScreenshot": "إخفاء لقطة الدفع",
   "statusActive": "فعّال",
   "statusInactive": "غير فعّال",
   "statusNoSubscription": "لا يوجد اشتراك",
