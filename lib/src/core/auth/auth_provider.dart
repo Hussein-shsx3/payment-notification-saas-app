@@ -144,11 +144,13 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final needs = body['requiresEmailVerification'] == true;
-        final sent = body['verificationEmailSent'] != false;
+        // Only treat as "known failed" when server explicitly says false (sync send).
+        // Pending/omitted = email is sending in background; don't show "not sent" scare.
+        final explicitFailed = body['verificationEmailSent'] == false;
         return RegisterOutcome(
           success: true,
           needsEmailVerification: needs,
-          verificationEmailSent: sent,
+          verificationEmailSent: !explicitFailed,
         );
       }
 
