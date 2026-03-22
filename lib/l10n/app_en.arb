@@ -21,7 +21,7 @@
   "creatingAccount": "Creating account…",
   "registerTitle": "Register",
   "registrationSuccess": "Registration successful. Check your email to verify your account.",
-  "verificationEmailNotSent": "We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs GMAIL_USER and GMAIL_APP_PASSWORD (Google App Password) set correctly.",
+  "verificationEmailNotSent": "We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs Brevo (BREVO_API_KEY and a verified sender) configured.",
   "verifyEmailTitle": "Verify your email",
   "verifyEmailSubtitle": "We sent a message to your address. Open the link in the email, or paste the verification token below.",
   "verifyTokenLabel": "Verification token",

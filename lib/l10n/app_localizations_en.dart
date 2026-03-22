@@ -74,7 +74,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationEmailNotSent =>
-      'We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs GMAIL_USER and GMAIL_APP_PASSWORD (Google App Password) set correctly.';
+      'We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs Brevo (BREVO_API_KEY and a verified sender) configured.';
 
   @override
   String get verifyEmailTitle => 'Verify your email';
