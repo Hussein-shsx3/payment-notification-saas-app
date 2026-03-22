@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @verificationEmailNotSent.
   ///
   /// In en, this message translates to:
-  /// **'We could not send the verification email from the server. Use “Resend email” or paste the token if your admin shares it. Ask the server admin to check email settings (Resend or Gmail).'**
+  /// **'We could not send the verification email from the server. Try “Resend email” or paste the token if you have it. The server needs GMAIL_USER and GMAIL_APP_PASSWORD (Google App Password) set correctly.'**
   String get verificationEmailNotSent;
 
   /// No description provided for @verifyEmailTitle.

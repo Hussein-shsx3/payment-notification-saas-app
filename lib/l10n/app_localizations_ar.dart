@@ -74,7 +74,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verificationEmailNotSent =>
-      'تعذّر إرسال بريد التحقق من الخادم. استخدم «إعادة إرسال البريد» أو الصق الرمز إن وُجد. اطلب من مسؤول الخادم التحقق من إعدادات البريد (Resend أو Gmail).';
+      'تعذّر إرسال بريد التحقق من الخادم. جرّب «إعادة إرسال البريد» أو الصق الرمز إن وُجد. يجب ضبط GMAIL_USER وGMAIL_APP_PASSWORD (كلمة مرور التطبيق من Google) على الخادم بشكل صحيح.';
 
   @override
   String get verifyEmailTitle => 'تأكيد البريد الإلكتروني';
