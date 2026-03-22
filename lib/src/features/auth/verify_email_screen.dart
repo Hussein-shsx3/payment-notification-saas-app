@@ -8,9 +8,15 @@ import 'login_screen.dart';
 
 /// Enter the token from the verification email, or open the link from the email in a browser.
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({super.key, required this.email});
+  const VerifyEmailScreen({
+    super.key,
+    required this.email,
+    this.showEmailDeliveryWarning = false,
+  });
 
   final String email;
+  /// True when register/resend indicated the server did not dispatch an email.
+  final bool showEmailDeliveryWarning;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -69,11 +75,18 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       _message = null;
     });
     final auth = context.read<AuthProvider>();
-    final ok = await auth.resendVerificationEmail(widget.email);
+    final r = await auth.resendVerificationEmail(widget.email);
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _resending = false;
-      _message = ok ? AppLocalizations.of(context)!.resendSent : AppLocalizations.of(context)!.networkError;
+      if (!r.httpOk) {
+        _message = l10n.networkError;
+      } else if (!r.emailSent) {
+        _message = l10n.verificationEmailNotSent;
+      } else {
+        _message = l10n.resendSent;
+      }
     });
   }
 
@@ -101,6 +114,21 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         l10n.verifyEmailSubtitle,
                         style: const TextStyle(fontSize: 13, color: Colors.white70),
                       ),
+                      if (widget.showEmailDeliveryWarning) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF422006),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFCA8A04)),
+                          ),
+                          child: Text(
+                            l10n.verificationEmailNotSent,
+                            style: const TextStyle(fontSize: 12, color: Color(0xFFFEF08A)),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       Text(
                         widget.email,
@@ -155,7 +183,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             _message!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: _message == l10n.resendSent ? Colors.greenAccent : Colors.redAccent,
+                              color: _message == l10n.resendSent
+                                  ? Colors.greenAccent
+                                  : _message == l10n.verificationEmailNotSent
+                                      ? const Color(0xFFFBBF24)
+                                      : Colors.redAccent,
                             ),
                           ),
                         ],

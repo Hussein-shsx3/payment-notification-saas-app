@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/validation/password_policy.dart';
 import '../../core/locale/locale_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -132,8 +133,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _passwordMessage = l10n.passwordsDoNotMatch);
       return;
     }
-    if (next.length < 6) {
-      setState(() => _passwordMessage = l10n.passwordTooShort);
+    if (!isStrongPassword(next)) {
+      setState(() => _passwordMessage = l10n.passwordPolicyError);
       return;
     }
 

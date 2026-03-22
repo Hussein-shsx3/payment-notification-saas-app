@@ -144,7 +144,12 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final needs = body['requiresEmailVerification'] == true;
-        return RegisterOutcome(success: true, needsEmailVerification: needs);
+        final sent = body['verificationEmailSent'] != false;
+        return RegisterOutcome(
+          success: true,
+          needsEmailVerification: needs,
+          verificationEmailSent: sent,
+        );
       }
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -171,14 +176,21 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> resendVerificationEmail(String email) async {
+  /// [emailSent] is false when the server accepted the request but could not send mail.
+  Future<({bool httpOk, bool emailSent})> resendVerificationEmail(String email) async {
     try {
       final response = await _api.post('/auth/resend-verification', body: {
         'email': email.trim(),
       });
-      return response.statusCode >= 200 && response.statusCode < 300;
+      final ok = response.statusCode >= 200 && response.statusCode < 300;
+      if (!ok) {
+        return (httpOk: false, emailSent: false);
+      }
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final sent = body['verificationEmailSent'] != false;
+      return (httpOk: true, emailSent: sent);
     } catch (_) {
-      return false;
+      return (httpOk: false, emailSent: false);
     }
   }
 

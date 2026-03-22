@@ -73,6 +73,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Registration successful. Check your email to verify your account.';
 
   @override
+  String get verificationEmailNotSent =>
+      'We could not send the verification email from the server. Use “Resend email” or paste the token if your admin shares it. Ask the server admin to check email settings (Resend or Gmail).';
+
+  @override
   String get verifyEmailTitle => 'Verify your email';
 
   @override
@@ -181,6 +185,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'New password is too short';
+
+  @override
+  String get passwordPolicyError =>
+      'Password must be at least 8 characters and include a letter, a number, and a special character (e.g. example2026\$).';
 
   @override
   String get language => 'Language';

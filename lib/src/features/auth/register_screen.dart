@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/validation/password_policy.dart';
 import '../../shared/widgets/app_logo.dart';
 import 'verify_email_screen.dart';
 
@@ -53,7 +54,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (outcome.success && outcome.needsEmailVerification) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (_) => VerifyEmailScreen(email: _emailController.text.trim()),
+          builder: (_) => VerifyEmailScreen(
+            email: _emailController.text.trim(),
+            showEmailDeliveryWarning: !outcome.verificationEmailSent,
+          ),
         ),
       );
       return;
@@ -130,8 +134,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             labelText: l10n.password,
                             border: const OutlineInputBorder(),
                           ),
-                          validator: (v) =>
-                              (v == null || v.isEmpty) ? l10n.validationPasswordRequired : null,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return l10n.validationPasswordRequired;
+                            }
+                            if (!isStrongPassword(v)) {
+                              return l10n.passwordPolicyError;
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(

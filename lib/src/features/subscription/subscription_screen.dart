@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/format/app_date_format.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -42,8 +43,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
         setState(() {
           _error = null;
-          _start = start == null ? '--' : _format(start);
-          _end = end == null ? '--' : _format(end);
+          _start = start == null ? '--' : formatDateDmyFromIso(start);
+          _end = end == null ? '--' : formatDateDmyFromIso(end);
           if (statusFromApi != null && statusFromApi.isNotEmpty) {
             _status = statusFromApi == 'active' ? l10n.statusActive : l10n.statusInactive;
           } else if (endDt == null) {
@@ -63,12 +64,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  String _format(String iso) {
-    final dt = DateTime.tryParse(iso);
-    if (dt == null) return '--';
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 
   @override

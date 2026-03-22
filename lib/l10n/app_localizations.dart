@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'Registration successful. Check your email to verify your account.'**
   String get registrationSuccess;
 
+  /// No description provided for @verificationEmailNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send the verification email from the server. Use “Resend email” or paste the token if your admin shares it. Ask the server admin to check email settings (Resend or Gmail).'**
+  String get verificationEmailNotSent;
+
   /// No description provided for @verifyEmailTitle.
   ///
   /// In en, this message translates to:
@@ -433,6 +439,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New password is too short'**
   String get passwordTooShort;
+
+  /// No description provided for @passwordPolicyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters and include a letter, a number, and a special character (e.g. example2026\$).'**
+  String get passwordPolicyError;
 
   /// No description provided for @language.
   ///

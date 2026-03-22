@@ -73,6 +73,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم التسجيل بنجاح. تحقق من بريدك لتأكيد الحساب.';
 
   @override
+  String get verificationEmailNotSent =>
+      'تعذّر إرسال بريد التحقق من الخادم. استخدم «إعادة إرسال البريد» أو الصق الرمز إن وُجد. اطلب من مسؤول الخادم التحقق من إعدادات البريد (Resend أو Gmail).';
+
+  @override
   String get verifyEmailTitle => 'تأكيد البريد الإلكتروني';
 
   @override
@@ -180,6 +184,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'كلمة المرور الجديدة قصيرة جداً';
+
+  @override
+  String get passwordPolicyError =>
+      'يجب أن تكون كلمة المرور 8 أحرف على الأقل وتتضمن حرفاً ورقماً ورمزاً خاصاً (مثال: example2026\$).';
 
   @override
   String get language => 'اللغة';

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../core/format/app_date_format.dart';
 import '../../core/auth/auth_provider.dart';
 
 enum _DateFilter {
@@ -304,7 +305,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     final receivedAtParsed = DateTime.tryParse(receivedAtRaw);
                     final receivedAtLabel = receivedAtParsed == null
                         ? ''
-                        : receivedAtParsed.toLocal().toString().split('.').first;
+                        : formatDateTimeDmyFromIso(receivedAtRaw);
                     final amountStr = amount?.toString() ?? '--';
                     final bodyText = StringBuffer()
                       ..write(l10n.sourceAmountLine(src, dirLabel, amountStr, currency))
