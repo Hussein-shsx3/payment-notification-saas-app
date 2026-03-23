@@ -114,6 +114,10 @@
     }
   },
   "subscriptionFooterNote": "If expired, payment notification forwarding is disabled on server.",
+  "subscriptionProofGalleryHeading": "Your payment screenshots",
+  "subscriptionProofGalleryHint": "Newest first. Tap a card to show or hide the full image.",
+  "subscriptionProofItemShowFull": "Show full image",
+  "subscriptionProofItemHideFull": "Hide full image",
   "subscriptionProofSectionTitle": "Payment proof",
   "subscriptionProofSectionHint": "Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).",
   "subscriptionProofUploadCta": "Upload payment screenshot",

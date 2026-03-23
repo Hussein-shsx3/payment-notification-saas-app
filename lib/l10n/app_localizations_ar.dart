@@ -331,6 +331,19 @@ class AppLocalizationsAr extends AppLocalizations {
       'عند الانتهاء، يتوقف إعادة توجيه إشعارات الدفع على الخادم.';
 
   @override
+  String get subscriptionProofGalleryHeading => 'لقطات الدفع';
+
+  @override
+  String get subscriptionProofGalleryHint =>
+      'الأحدث أولاً. اضغط البطاقة لإظهار الصورة كاملة أو إخفائها.';
+
+  @override
+  String get subscriptionProofItemShowFull => 'عرض الصورة كاملة';
+
+  @override
+  String get subscriptionProofItemHideFull => 'إخفاء الصورة الكاملة';
+
+  @override
   String get subscriptionProofSectionTitle => 'إثبات الدفع';
 
   @override

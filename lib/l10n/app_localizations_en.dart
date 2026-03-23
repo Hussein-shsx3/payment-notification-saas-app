@@ -331,6 +331,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'If expired, payment notification forwarding is disabled on server.';
 
   @override
+  String get subscriptionProofGalleryHeading => 'Your payment screenshots';
+
+  @override
+  String get subscriptionProofGalleryHint =>
+      'Newest first. Tap a card to show or hide the full image.';
+
+  @override
+  String get subscriptionProofItemShowFull => 'Show full image';
+
+  @override
+  String get subscriptionProofItemHideFull => 'Hide full image';
+
+  @override
   String get subscriptionProofSectionTitle => 'Payment proof';
 
   @override

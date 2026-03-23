@@ -692,6 +692,30 @@ abstract class AppLocalizations {
   /// **'If expired, payment notification forwarding is disabled on server.'**
   String get subscriptionFooterNote;
 
+  /// No description provided for @subscriptionProofGalleryHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment screenshots'**
+  String get subscriptionProofGalleryHeading;
+
+  /// No description provided for @subscriptionProofGalleryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first. Tap a card to show or hide the full image.'**
+  String get subscriptionProofGalleryHint;
+
+  /// No description provided for @subscriptionProofItemShowFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Show full image'**
+  String get subscriptionProofItemShowFull;
+
+  /// No description provided for @subscriptionProofItemHideFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide full image'**
+  String get subscriptionProofItemHideFull;
+
   /// No description provided for @subscriptionProofSectionTitle.
   ///
   /// In en, this message translates to:
