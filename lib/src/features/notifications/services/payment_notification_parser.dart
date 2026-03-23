@@ -63,7 +63,11 @@ class PaymentNotificationParser {
     }
 
     final combinedForAmount = _normalizeDigits('$title\n$message').trim();
-    if (_isInternalAccountTransferOnly(combinedForAmount.toLowerCase())) {
+    final combinedLower = combinedForAmount.toLowerCase();
+    if (_isInternalAccountTransferOnly(combinedLower)) {
+      return null;
+    }
+    if (_isCardMovementExcluded(combinedLower)) {
       return null;
     }
 
@@ -218,6 +222,11 @@ class PaymentNotificationParser {
     return false;
   }
 
+  /// Card purchase/ATM style alerts (e.g. حركة على بطاقة رقم … بقيمة) — not stored.
+  static bool _isCardMovementExcluded(String combinedLower) {
+    return combinedLower.contains('حركة على بطاقة');
+  }
+
   static bool _isIncomingIndicators(String input) {
     return _containsAny(input, [
       'received',
@@ -304,6 +313,18 @@ class PaymentNotificationParser {
       'debited',
       'withdrawal',
       'cash out',
+      // English — common bank templates (short / currency-led)
+      'transaction',
+      'purchase',
+      'spent',
+      'amount',
+      'debit',
+      'nis',
+      'ils',
+      'jod',
+      'usd',
+      'gbp',
+      'eur',
       // Arabic — received
       'تم استلام',
       'تم ايداع',

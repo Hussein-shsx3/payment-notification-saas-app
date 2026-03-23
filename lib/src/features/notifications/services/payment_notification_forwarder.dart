@@ -17,7 +17,7 @@ class PaymentNotificationForwarder {
   // Avoid forwarding the same Android notification multiple times (listener stream
   // + "warm-up" active notifications can overlap).
   static const String _dedupeBoxName = 'payment_notification_dedupe';
-  static const int _dedupeTtlMs = 10 * 60 * 1000; // 10 minutes
+  static const int _dedupeTtlMs = 24 * 60 * 60 * 1000; // 24h — server also dedupes by content hash
   final Map<String, int> _recentKeys = <String, int>{};
 
   Future<Box<dynamic>> _openDedupeBox() async {

@@ -84,7 +84,8 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         return sb.toString()
     }
 
-    private fun isDuplicate(context: Context, key: String, ttlMs: Long = 10 * 60 * 1000): Boolean {
+    /** Same notification can re-fire while it stays in the status bar; keep suppressing duplicates longer than a few minutes. */
+    private fun isDuplicate(context: Context, key: String, ttlMs: Long = 24 * 60 * 60 * 1000): Boolean {
         val now = System.currentTimeMillis()
         val p = prefs(context)
         val last = p.getLong("dedupe_$key", -1L)
@@ -129,11 +130,17 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         return false
     }
 
+    /** Card movement alerts (e.g. حركة على بطاقة رقم … بقيمة) — do not forward. */
+    private fun isCardMovementExcluded(text: String): Boolean {
+        return text.contains("حركة على بطاقة")
+    }
+
     private fun shouldRoughlyLookLikePayment(title: String, message: String, packageName: String): Boolean {
         val text = (title + " " + message).lowercase()
 
         if (isInternalAccountTransferOnly(text)) return false
-        
+        if (isCardMovementExcluded(text)) return false
+
         // Quick skip for common false positives (OTP, verification codes, etc.)
         val falsePositives = listOf(
             "otp", "verification code", "confirm code", "password reset", "login code", "code:",
@@ -148,6 +155,8 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             "you sent", "you transferred", "you paid", "sent to", "payment to", "transfer to",
             "paid to", "outgoing transfer", "money sent", "transaction sent", "deducted for",
             "debited for", "debited", "withdrawal", "cash out",
+            "transaction", "purchase", "spent", "amount", "debit",
+            "gbp", "eur",
             "تم استلام", "تم ايداع", "استلمت", "وصلك", "تم تحويل لك", "تم الايداع",
             "تم إيداع", "تم الإيداع", "وردت", "تم استقبال", "حوالة واردة", "حوالة واردة لحسابك",
             "واردة الى حسابك", "واردة إلى حسابك", "واردة لحسابك",
