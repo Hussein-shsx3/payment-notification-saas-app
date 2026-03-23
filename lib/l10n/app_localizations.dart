@@ -596,6 +596,72 @@ abstract class AppLocalizations {
   /// **'Subscription'**
   String get subscriptionTitle;
 
+  /// No description provided for @subscriptionPlansHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a plan'**
+  String get subscriptionPlansHeading;
+
+  /// No description provided for @subscriptionPlansSubheading.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the period you are paying for before you upload proof — your admin sees this choice.'**
+  String get subscriptionPlansSubheading;
+
+  /// No description provided for @subscriptionPlanWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week'**
+  String get subscriptionPlanWeekTitle;
+
+  /// No description provided for @subscriptionPlanWeekSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Short access'**
+  String get subscriptionPlanWeekSubtitle;
+
+  /// No description provided for @subscriptionPlanMonthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month'**
+  String get subscriptionPlanMonthTitle;
+
+  /// No description provided for @subscriptionPlanMonthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible monthly'**
+  String get subscriptionPlanMonthSubtitle;
+
+  /// No description provided for @subscriptionPlanMonthBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get subscriptionPlanMonthBadge;
+
+  /// No description provided for @subscriptionPlanYearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get subscriptionPlanYearTitle;
+
+  /// No description provided for @subscriptionPlanYearSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-term access'**
+  String get subscriptionPlanYearSubtitle;
+
+  /// No description provided for @subscriptionPlanSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan preference saved'**
+  String get subscriptionPlanSaved;
+
+  /// No description provided for @subscriptionPlanSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save plan'**
+  String get subscriptionPlanSaveFailed;
+
   /// No description provided for @subscriptionStatusHeading.
   ///
   /// In en, this message translates to:

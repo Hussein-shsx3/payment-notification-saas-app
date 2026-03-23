@@ -275,6 +275,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get subscriptionTitle => 'الاشتراك';
 
   @override
+  String get subscriptionPlansHeading => 'اختر خطة';
+
+  @override
+  String get subscriptionPlansSubheading =>
+      'حدد المدة التي تدفع عنها قبل رفع إثبات الدفع — يراها المسؤول.';
+
+  @override
+  String get subscriptionPlanWeekTitle => 'أسبوع';
+
+  @override
+  String get subscriptionPlanWeekSubtitle => 'وصول قصير';
+
+  @override
+  String get subscriptionPlanMonthTitle => 'شهر';
+
+  @override
+  String get subscriptionPlanMonthSubtitle => 'شهري مرن';
+
+  @override
+  String get subscriptionPlanMonthBadge => 'الأكثر شيوعاً';
+
+  @override
+  String get subscriptionPlanYearTitle => 'سنة';
+
+  @override
+  String get subscriptionPlanYearSubtitle => 'وصول طويل';
+
+  @override
+  String get subscriptionPlanSaved => 'تم حفظ الخطة';
+
+  @override
+  String get subscriptionPlanSaveFailed => 'تعذّر حفظ الخطة';
+
+  @override
   String get subscriptionStatusHeading => 'حالة الاشتراك';
 
   @override

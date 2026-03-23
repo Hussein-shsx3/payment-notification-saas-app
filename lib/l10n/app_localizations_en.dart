@@ -275,6 +275,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionTitle => 'Subscription';
 
   @override
+  String get subscriptionPlansHeading => 'Choose a plan';
+
+  @override
+  String get subscriptionPlansSubheading =>
+      'Pick the period you are paying for before you upload proof — your admin sees this choice.';
+
+  @override
+  String get subscriptionPlanWeekTitle => '1 week';
+
+  @override
+  String get subscriptionPlanWeekSubtitle => 'Short access';
+
+  @override
+  String get subscriptionPlanMonthTitle => '1 month';
+
+  @override
+  String get subscriptionPlanMonthSubtitle => 'Flexible monthly';
+
+  @override
+  String get subscriptionPlanMonthBadge => 'Popular';
+
+  @override
+  String get subscriptionPlanYearTitle => '1 year';
+
+  @override
+  String get subscriptionPlanYearSubtitle => 'Long-term access';
+
+  @override
+  String get subscriptionPlanSaved => 'Plan preference saved';
+
+  @override
+  String get subscriptionPlanSaveFailed => 'Could not save plan';
+
+  @override
   String get subscriptionStatusHeading => 'Subscription status';
 
   @override
