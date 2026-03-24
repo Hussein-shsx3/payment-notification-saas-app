@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
-import '../shell/main_shell.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -36,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final auth = context.read<AuthProvider>();
-    final success = await auth.login(
+    await auth.login(
       emailOrPhone: _emailOrPhoneController.text,
       password: _passwordController.text,
     );
@@ -46,11 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _submitting = false;
     });
 
-    if (success) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const MainShell()),
-      );
-    }
+    // Success: MainShell is shown via MaterialApp home in main.dart (AuthProvider).
+    // Do not push MainShell here — that duplicates the route stack and breaks logout until restart.
   }
 
   @override

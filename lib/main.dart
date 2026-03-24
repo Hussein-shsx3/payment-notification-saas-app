@@ -58,6 +58,8 @@ class MyApp extends StatelessWidget {
           );
 
           return MaterialApp(
+            // Reset navigator when auth changes so logout/login never leaves a stale route stack.
+            key: ValueKey<bool>(auth.isAuthenticated),
             debugShowCheckedModeBanner: false,
             title: 'Payment Notify',
             locale: localeCtrl.locale,
