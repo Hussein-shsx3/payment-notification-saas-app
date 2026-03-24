@@ -275,23 +275,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get subscriptionTitle => 'الاشتراك';
 
   @override
-  String get subscriptionPlansHeading => 'اختر خطة';
+  String get subscriptionPlansHeading => 'الخطط والأسعار';
 
   @override
   String get subscriptionPlansSubheading =>
-      'حدد المدة التي تدفع عنها قبل رفع إثبات الدفع — يراها المسؤول.';
+      'جميع المبالغ بالشيكل الجديد (₪). بعد الدفع، ارفع إثبات التحويل أدناه.';
 
   @override
   String get subscriptionPlanWeekTitle => 'أسبوع';
 
   @override
-  String get subscriptionPlanWeekSubtitle => 'وصول قصير';
+  String get subscriptionPlanWeekSubtitle => 'وصول لمدة 7 أيام';
 
   @override
   String get subscriptionPlanMonthTitle => 'شهر';
 
   @override
-  String get subscriptionPlanMonthSubtitle => 'شهري مرن';
+  String get subscriptionPlanMonthSubtitle => 'مرن — يمكن الإلغاء لاحقاً';
 
   @override
   String get subscriptionPlanMonthBadge => 'الأكثر شيوعاً';
@@ -300,7 +300,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get subscriptionPlanYearTitle => 'سنة';
 
   @override
-  String get subscriptionPlanYearSubtitle => 'وصول طويل';
+  String get subscriptionPlanYearSubtitle => 'أفضل قيمة للاستخدام الطويل';
+
+  @override
+  String get subscriptionPlanPerWeek => 'في الأسبوع';
+
+  @override
+  String get subscriptionPlanPerMonth => 'في الشهر';
+
+  @override
+  String get subscriptionPlanPerYear => 'في السنة';
 
   @override
   String get subscriptionPlanSaved => 'تم حفظ الخطة';

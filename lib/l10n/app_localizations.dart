@@ -599,13 +599,13 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionPlansHeading.
   ///
   /// In en, this message translates to:
-  /// **'Choose a plan'**
+  /// **'Plans & pricing'**
   String get subscriptionPlansHeading;
 
   /// No description provided for @subscriptionPlansSubheading.
   ///
   /// In en, this message translates to:
-  /// **'Pick the period you are paying for before you upload proof — your admin sees this choice.'**
+  /// **'All amounts are in Israeli new shekels (₪). After you pay, upload your payment proof below.'**
   String get subscriptionPlansSubheading;
 
   /// No description provided for @subscriptionPlanWeekTitle.
@@ -617,7 +617,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionPlanWeekSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Short access'**
+  /// **'7 days of access'**
   String get subscriptionPlanWeekSubtitle;
 
   /// No description provided for @subscriptionPlanMonthTitle.
@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionPlanMonthSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Flexible monthly'**
+  /// **'Flexible — cancel anytime'**
   String get subscriptionPlanMonthSubtitle;
 
   /// No description provided for @subscriptionPlanMonthBadge.
@@ -647,8 +647,26 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionPlanYearSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Long-term access'**
+  /// **'Best value for long-term use'**
   String get subscriptionPlanYearSubtitle;
+
+  /// No description provided for @subscriptionPlanPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'per week'**
+  String get subscriptionPlanPerWeek;
+
+  /// No description provided for @subscriptionPlanPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get subscriptionPlanPerMonth;
+
+  /// No description provided for @subscriptionPlanPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get subscriptionPlanPerYear;
 
   /// No description provided for @subscriptionPlanSaved.
   ///

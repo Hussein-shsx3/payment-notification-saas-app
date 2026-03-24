@@ -27,8 +27,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String _end = '--';
   List<SubscriptionProofItem> _proofItems = [];
   final Map<String, bool> _proofExpandedMap = {};
-  SubscriptionPlanOption? _planPreference;
-  bool _savingPlan = false;
 
   @override
   void initState() {
@@ -64,8 +62,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           }
           _proofItems = SubscriptionProofItem.parseList(data);
           _proofExpandedMap.clear();
-          _planPreference =
-              SubscriptionPlanOptionApi.tryParse(data['subscriptionPlanPreference']?.toString());
         });
         if (mounted) {
           await context.read<AuthProvider>().refreshSubscription();
@@ -84,42 +80,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     setState(() {
       _proofExpandedMap[id] = !(_proofExpandedMap[id] ?? false);
     });
-  }
-
-  Future<void> _onPlanSelected(SubscriptionPlanOption plan) async {
-    if (_savingPlan) return;
-    if (_planPreference == plan) return;
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _savingPlan = true);
-    try {
-      final api = context.read<AuthProvider>().api;
-      final res = await api.put(
-        '/users/profile',
-        body: {'subscriptionPlanPreference': plan.apiValue},
-      );
-      if (!mounted) return;
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        setState(() => _planPreference = plan);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.subscriptionPlanSaved)),
-          );
-        }
-        await context.read<AuthProvider>().refreshSubscription();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.subscriptionPlanSaveFailed)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.subscriptionPlanSaveFailed)),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _savingPlan = false);
-    }
   }
 
   Future<void> _pickAndUpload(ImageSource source) async {
@@ -248,34 +208,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Stack(
-                        children: [
-                          SubscriptionPlanPicker(
-                            selected: _planPreference,
-                            busy: _savingPlan,
-                            onSelect: _onPlanSelected,
-                          ),
-                          if (_savingPlan)
-                            const Positioned.fill(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Color(0x66020617),
-                                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                                ),
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 28,
-                                    height: 28,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Color(0xFF06B6D4),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                      child: const SubscriptionPlanPricing(),
                     ),
                   ),
                   const SizedBox(height: 16),

@@ -275,23 +275,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionTitle => 'Subscription';
 
   @override
-  String get subscriptionPlansHeading => 'Choose a plan';
+  String get subscriptionPlansHeading => 'Plans & pricing';
 
   @override
   String get subscriptionPlansSubheading =>
-      'Pick the period you are paying for before you upload proof — your admin sees this choice.';
+      'All amounts are in Israeli new shekels (₪). After you pay, upload your payment proof below.';
 
   @override
   String get subscriptionPlanWeekTitle => '1 week';
 
   @override
-  String get subscriptionPlanWeekSubtitle => 'Short access';
+  String get subscriptionPlanWeekSubtitle => '7 days of access';
 
   @override
   String get subscriptionPlanMonthTitle => '1 month';
 
   @override
-  String get subscriptionPlanMonthSubtitle => 'Flexible monthly';
+  String get subscriptionPlanMonthSubtitle => 'Flexible — cancel anytime';
 
   @override
   String get subscriptionPlanMonthBadge => 'Popular';
@@ -300,7 +300,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionPlanYearTitle => '1 year';
 
   @override
-  String get subscriptionPlanYearSubtitle => 'Long-term access';
+  String get subscriptionPlanYearSubtitle => 'Best value for long-term use';
+
+  @override
+  String get subscriptionPlanPerWeek => 'per week';
+
+  @override
+  String get subscriptionPlanPerMonth => 'per month';
+
+  @override
+  String get subscriptionPlanPerYear => 'per year';
 
   @override
   String get subscriptionPlanSaved => 'Plan preference saved';

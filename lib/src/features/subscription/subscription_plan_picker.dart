@@ -2,52 +2,25 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 
-/// Matches server `subscriptionPlanPreference`: week | month | year.
-enum SubscriptionPlanOption {
-  week,
-  month,
-  year,
+/// Default list prices in ILS (Israeli new shekels). Change here to match your business.
+const double kSubscriptionPriceWeekIls = 29;
+const double kSubscriptionPriceMonthIls = 79;
+const double kSubscriptionPriceYearIls = 699;
+
+String _formatIls(double amount) {
+  if (amount == amount.roundToDouble()) {
+    return '₪${amount.toInt()}';
+  }
+  return '₪${amount.toStringAsFixed(2)}';
 }
 
-extension SubscriptionPlanOptionApi on SubscriptionPlanOption {
-  String get apiValue {
-    switch (this) {
-      case SubscriptionPlanOption.week:
-        return 'week';
-      case SubscriptionPlanOption.month:
-        return 'month';
-      case SubscriptionPlanOption.year:
-        return 'year';
-    }
-  }
+/// Read-only pricing cards (no tap) — shows salary/plan price in ₪ like a typical pricing page.
+class SubscriptionPlanPricing extends StatelessWidget {
+  const SubscriptionPlanPricing({super.key});
 
-  static SubscriptionPlanOption? tryParse(String? raw) {
-    if (raw == null || raw.isEmpty) return null;
-    switch (raw.trim().toLowerCase()) {
-      case 'week':
-        return SubscriptionPlanOption.week;
-      case 'month':
-        return SubscriptionPlanOption.month;
-      case 'year':
-        return SubscriptionPlanOption.year;
-      default:
-        return null;
-    }
-  }
-}
-
-class SubscriptionPlanPicker extends StatelessWidget {
-  const SubscriptionPlanPicker({
-    super.key,
-    required this.selected,
-    required this.onSelect,
-    this.busy = false,
-  });
-
-  final SubscriptionPlanOption? selected;
-  final ValueChanged<SubscriptionPlanOption> onSelect;
-  final bool busy;
-
+  static const _cyan = Color(0xFF06B6D4);
+  static const _slateCard = Color(0xFF0F172A);
+  static const _slateBorder = Color(0xFF334155);
   static const _slateMuted = Color(0xFF94A3B8);
 
   @override
@@ -75,43 +48,45 @@ class SubscriptionPlanPicker extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        _PlanTile(
+        _PricingCard(
           title: l10n.subscriptionPlanWeekTitle,
           subtitle: l10n.subscriptionPlanWeekSubtitle,
           icon: Icons.view_week_outlined,
-          selected: selected == SubscriptionPlanOption.week,
-          onTap: busy ? null : () => onSelect(SubscriptionPlanOption.week),
+          priceIls: kSubscriptionPriceWeekIls,
+          periodLabel: l10n.subscriptionPlanPerWeek,
+          emphasize: false,
         ),
         const SizedBox(height: 12),
-        _PlanTile(
+        _PricingCard(
           title: l10n.subscriptionPlanMonthTitle,
           subtitle: l10n.subscriptionPlanMonthSubtitle,
           icon: Icons.calendar_month_outlined,
-          selected: selected == SubscriptionPlanOption.month,
+          priceIls: kSubscriptionPriceMonthIls,
+          periodLabel: l10n.subscriptionPlanPerMonth,
           badge: l10n.subscriptionPlanMonthBadge,
           emphasize: true,
-          onTap: busy ? null : () => onSelect(SubscriptionPlanOption.month),
         ),
         const SizedBox(height: 12),
-        _PlanTile(
+        _PricingCard(
           title: l10n.subscriptionPlanYearTitle,
           subtitle: l10n.subscriptionPlanYearSubtitle,
           icon: Icons.event_outlined,
-          selected: selected == SubscriptionPlanOption.year,
-          onTap: busy ? null : () => onSelect(SubscriptionPlanOption.year),
+          priceIls: kSubscriptionPriceYearIls,
+          periodLabel: l10n.subscriptionPlanPerYear,
+          emphasize: false,
         ),
       ],
     );
   }
 }
 
-class _PlanTile extends StatelessWidget {
-  const _PlanTile({
+class _PricingCard extends StatelessWidget {
+  const _PricingCard({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.selected,
-    required this.onTap,
+    required this.priceIls,
+    required this.periodLabel,
     this.badge,
     this.emphasize = false,
   });
@@ -119,8 +94,8 @@ class _PlanTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final bool selected;
-  final VoidCallback? onTap;
+  final double priceIls;
+  final String periodLabel;
   final String? badge;
   final bool emphasize;
 
@@ -130,138 +105,138 @@ class _PlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = selected ? _cyan : _slateBorder;
-    final borderWidth = selected ? 2.0 : 1.0;
+    final borderColor = emphasize ? _cyan.withOpacity(0.65) : _slateBorder;
+    final borderWidth = emphasize ? 1.5 : 1.0;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: borderColor, width: borderWidth),
-            color: _slateCard,
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: _cyan.withOpacity(0.18),
-                      blurRadius: emphasize ? 20 : 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-            gradient: selected
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      _cyan.withOpacity(0.12),
-                      _slateCard,
-                    ],
-                  )
-                : null,
+        border: Border.all(color: borderColor, width: borderWidth),
+        color: _slateCard,
+        boxShadow: [
+          BoxShadow(
+            color: emphasize
+                ? _cyan.withOpacity(0.14)
+                : Colors.black.withOpacity(0.22),
+            blurRadius: emphasize ? 18 : 8,
+            offset: const Offset(0, 4),
           ),
-          padding: EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: emphasize ? 18 : 14,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: selected
-                      ? _cyan.withOpacity(0.2)
-                      : const Color(0xFF1E293B),
-                  border: Border.all(
-                    color: selected
-                        ? _cyan.withOpacity(0.45)
-                        : const Color(0xFF334155),
-                  ),
-                ),
-                child: Icon(
-                  icon,
-                  color: selected ? _cyan : const Color(0xFFCBD5E1),
-                  size: 24,
-                ),
+        ],
+        gradient: emphasize
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _cyan.withOpacity(0.08),
+                  _slateCard,
+                ],
+              )
+            : null,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: emphasize ? 18 : 14,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: emphasize ? _cyan.withOpacity(0.18) : const Color(0xFF1E293B),
+              border: Border.all(
+                color: emphasize ? _cyan.withOpacity(0.4) : const Color(0xFF334155),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+            ),
+            child: Icon(
+              icon,
+              color: emphasize ? _cyan : const Color(0xFFCBD5E1),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: emphasize ? 16.5 : 15,
-                              color: const Color(0xFFF1F5F9),
-                            ),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: emphasize ? 16.5 : 15,
+                          color: const Color(0xFFF1F5F9),
+                        ),
+                      ),
+                    ),
+                    if (badge != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _cyan.withOpacity(0.22),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _cyan.withOpacity(0.5)),
+                        ),
+                        child: Text(
+                          badge!,
+                          style: const TextStyle(
+                            color: _cyan,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
                           ),
                         ),
-                        if (badge != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _cyan.withOpacity(0.22),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: _cyan.withOpacity(0.5)),
-                            ),
-                            child: Text(
-                              badge!,
-                              style: const TextStyle(
-                                color: _cyan,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.3,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
                     Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        height: 1.3,
-                        color: Color(0xFF94A3B8),
+                      _formatIls(priceIls),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: emphasize ? 28 : 24,
+                        letterSpacing: -0.5,
+                        color: emphasize ? _cyan : const Color(0xFFF8FAFC),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        periodLabel,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              if (selected)
-                const Padding(
-                  padding: EdgeInsets.only(left: 4, top: 2),
-                  child: Icon(
-                    Icons.check_circle,
-                    color: _cyan,
-                    size: 26,
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
