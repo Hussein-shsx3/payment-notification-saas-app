@@ -1,4 +1,4 @@
-package com.example.mobile_app
+package com.paymentnotify.app
 
 import android.app.Notification
 import android.content.BroadcastReceiver

@@ -1,4 +1,4 @@
-package com.example.mobile_app
+package com.paymentnotify.app
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -14,7 +14,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
             intent.action == "android.intent.action.QUICKBOOT_POWERON") {
             Log.d(TAG, "Boot completed - ensuring notification listener is active")
-            
+
             // Check if notification listener permission is granted
             val flat = Settings.Secure.getString(
                 context.contentResolver,
@@ -22,7 +22,7 @@ class BootReceiver : BroadcastReceiver() {
             )
             val componentName = ComponentName(context, PaymentNotifyNotificationListenerService::class.java)
             val isEnabled = flat?.contains(componentName.flattenToString()) == true
-            
+
             if (isEnabled) {
                 Log.d(TAG, "Notification listener permission is granted - service will be started by system")
             } else {
