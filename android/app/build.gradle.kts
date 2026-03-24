@@ -16,8 +16,10 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.paymentnotify.app"
     compileSdk = flutter.compileSdkVersion
-    // Pin to installed NDK version on this machine to avoid broken NDK 26.3 install.
-    ndkVersion = "27.0.12077973"
+    // Pin NDK locally; omit on CI (GitHub Actions) so the runner uses its bundled NDK.
+    if (System.getenv("CI") != "true") {
+        ndkVersion = "27.0.12077973"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
