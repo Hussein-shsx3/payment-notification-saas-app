@@ -7,6 +7,7 @@ import '../api_client.dart';
 import 'auth_storage.dart';
 import 'register_outcome.dart';
 import '../../features/notifications/services/android_notification_capture_service.dart';
+import '../../features/notifications/services/system_inbox_tray_notifier.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthProvider()
@@ -99,6 +100,7 @@ class AuthProvider extends ChangeNotifier {
   @override
   void dispose() {
     _stopSubscriptionPolling();
+    SystemInboxTrayNotifier.instance.stop();
     super.dispose();
   }
 
@@ -115,8 +117,10 @@ class AuthProvider extends ChangeNotifier {
         await _storage.mirrorSecureTokensToSharedPreferences();
         await refreshSubscription();
         _startSubscriptionPolling();
+        unawaited(SystemInboxTrayNotifier.instance.start(_api));
       } else {
         _subscriptionActive = null;
+        SystemInboxTrayNotifier.instance.stop();
       }
     }
     _isLoading = false;
@@ -149,6 +153,7 @@ class AuthProvider extends ChangeNotifier {
         _isViewerMode = false;
         await refreshSubscription();
         _startSubscriptionPolling();
+        unawaited(SystemInboxTrayNotifier.instance.start(_api));
         notifyListeners();
         return true;
       }
@@ -190,6 +195,7 @@ class AuthProvider extends ChangeNotifier {
         _isViewerMode = true;
         _subscriptionActive = null;
         _stopSubscriptionPolling();
+        SystemInboxTrayNotifier.instance.stop();
         notifyListeners();
         return true;
       }
@@ -323,6 +329,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     _stopSubscriptionPolling();
+    SystemInboxTrayNotifier.instance.stop();
     await _storage.clearTokens();
     _isAuthenticated = false;
     _isViewerMode = false;
