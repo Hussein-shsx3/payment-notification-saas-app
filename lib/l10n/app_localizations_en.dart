@@ -162,10 +162,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationEmailInvalid => 'Enter a valid email address';
 
   @override
-  String get validationTokenRequired =>
-      'Paste the reset token or the link from the email';
-
-  @override
   String get forgotPasswordLink => 'Forgot password?';
 
   @override
@@ -173,7 +169,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPasswordSubtitle =>
-      'Enter your account email. We will send a link that works for 24 hours.';
+      'Enter your account email. We will send a link that works for 24 hours. You will set your new password on the website, not in this app.';
 
   @override
   String get forgotPasswordSubmit => 'Send reset link';
@@ -183,48 +179,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPasswordSuccess =>
-      'If an account exists for this email, check your inbox (and spam). Then set a new password below using the token from the email.';
-
-  @override
-  String get resetPasswordEnterTokenCta =>
-      'I have the token — set new password';
-
-  @override
-  String get resetPasswordTitle => 'Set new password';
-
-  @override
-  String get resetPasswordSubtitle =>
-      'Paste the reset link from the email, or only the long token. Then choose a new password.';
-
-  @override
-  String get resetPasswordTokenLabel => 'Token or link';
-
-  @override
-  String get resetPasswordTokenHint =>
-      'Long code from the email, or paste the full https://… link';
-
-  @override
-  String get resetPasswordNewLabel => 'New password';
-
-  @override
-  String get resetPasswordConfirmLabel => 'Confirm password';
-
-  @override
-  String get resetPasswordSubmit => 'Update password';
-
-  @override
-  String get resetPasswordSubmitting => 'Updating…';
-
-  @override
-  String get resetPasswordSuccess =>
-      'Password updated. Sign in with your new password.';
-
-  @override
-  String get resetPasswordMismatch => 'Passwords do not match.';
-
-  @override
-  String get resetPasswordTokenInvalid =>
-      'Could not read a token. Paste the long code from the email or the full reset link.';
+      'If an account exists for this email, check your inbox (and spam). Open the link in the email in your browser to set a new password. The link expires in 24 hours. Then return here and sign in.';
 
   @override
   String get accountAndSecurity => 'Account & security';

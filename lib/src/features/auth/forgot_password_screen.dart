@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
-import 'reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -79,24 +78,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               style: const TextStyle(fontSize: 14, height: 1.4),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             FilledButton(
                               style: FilledButton.styleFrom(
                                 backgroundColor: const Color(0xFF06B6D4),
                                 foregroundColor: const Color(0xFF020617),
                                 minimumSize: const Size.fromHeight(48),
                               ),
-                              onPressed: () {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => const ResetPasswordScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(l10n.resetPasswordEnterTokenCta),
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
                               onPressed: () => Navigator.of(context).pop(),
                               child: Text(l10n.backToLogin),
                             ),
