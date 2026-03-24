@@ -275,11 +275,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionTitle => 'Subscription';
 
   @override
-  String get subscriptionPlansHeading => 'Plans & pricing';
+  String get subscriptionPaymentProcessHeading => 'How payment works';
+
+  @override
+  String get subscriptionPaymentProcessIntro =>
+      'Subscription access is granted after your payment is verified. Please follow these steps in order.';
+
+  @override
+  String get subscriptionPaymentProcessStep1 =>
+      'Review the subscription fees below. All amounts are in Israeli new shekels (₪). Only weekly and monthly options are available.';
+
+  @override
+  String get subscriptionPaymentProcessStep2 =>
+      'Transfer the correct amount to the Palestine bank account number shown in Payment details above. You may use your bank’s mobile app or a branch.';
+
+  @override
+  String get subscriptionPaymentProcessStep3 =>
+      'Select whether you are paying for one week or one month, then upload a clear payment screenshot in the Payment proof section so we can verify and activate your subscription.';
+
+  @override
+  String get subscriptionBankPaymentHeading => 'Payment details';
+
+  @override
+  String get subscriptionBankPaymentBody =>
+      'Use this Palestine bank account number when you send your subscription payment. Double-check the amount matches your chosen plan (week or month).';
+
+  @override
+  String get subscriptionBankCopyCta => 'Copy';
+
+  @override
+  String get subscriptionBankCopied => 'Number copied to clipboard';
+
+  @override
+  String get subscriptionPlanSelectLabel => 'Which plan are you paying for?';
+
+  @override
+  String get subscriptionPlanSelectPrompt => 'Select week or month';
+
+  @override
+  String get subscriptionPlanSelectWeek => '1 week';
+
+  @override
+  String get subscriptionPlanSelectMonth => '1 month';
+
+  @override
+  String get subscriptionPlanRequiredBeforeUpload =>
+      'Please choose week or month before uploading a payment screenshot.';
+
+  @override
+  String get subscriptionAmountDueLabel => 'Amount to pay';
+
+  @override
+  String get subscriptionProofToggleShow => 'Show my payment screenshots';
+
+  @override
+  String get subscriptionProofToggleHide => 'Hide my payment screenshots';
+
+  @override
+  String get subscriptionPlansHeading => 'Subscription fees';
 
   @override
   String get subscriptionPlansSubheading =>
-      'All amounts are in Israeli new shekels (₪). After you pay, upload your payment proof below.';
+      'Two plans only — 1 week or 1 month. Prices are in Israeli new shekels (₪).';
 
   @override
   String get subscriptionPlanWeekTitle => '1 week';
@@ -357,7 +414,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscriptionProofSectionHint =>
-      'Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).';
+      'First select week or month above so your administrator knows what you paid for. Then upload a screenshot of your transfer. Max 5 MB (JPEG, PNG, WebP).';
 
   @override
   String get subscriptionProofUploadCta => 'Upload payment screenshot';

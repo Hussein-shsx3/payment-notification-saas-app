@@ -275,11 +275,68 @@ class AppLocalizationsAr extends AppLocalizations {
   String get subscriptionTitle => 'الاشتراك';
 
   @override
-  String get subscriptionPlansHeading => 'الخطط والأسعار';
+  String get subscriptionPaymentProcessHeading => 'آلية الدفع';
+
+  @override
+  String get subscriptionPaymentProcessIntro =>
+      'يُفعّل الاشتراك بعد التحقق من الدفع. يُرجى اتباع الخطوات التالية بالترتيب.';
+
+  @override
+  String get subscriptionPaymentProcessStep1 =>
+      'اطلع على رسوم الاشتراك أدناه. جميع المبالغ بالشيكل الجديد (₪). الخياران المتاحان: أسبوع أو شهر فقط.';
+
+  @override
+  String get subscriptionPaymentProcessStep2 =>
+      'حوّل المبلغ الصحيح إلى رقم الحساب البنكي الفلسطيني الموضّح في تفاصيل الدفع أعلاه. يمكنك استخدام تطبيق البنك أو الفرع.';
+
+  @override
+  String get subscriptionPaymentProcessStep3 =>
+      'حدّد ما إذا كنت تدفع عن أسبوع أو شهر، ثم ارفع لقطة شاشة واضحة للتحويل في قسم إثبات الدفع ليتمكن فريقنا من التحقق وتفعيل اشتراكك.';
+
+  @override
+  String get subscriptionBankPaymentHeading => 'تفاصيل الدفع';
+
+  @override
+  String get subscriptionBankPaymentBody =>
+      'استخدم رقم الحساب البنكي الفلسطيني التالي عند إرسال دفعة الاشتراك. تأكد أن المبلغ يطابق الخطة التي اخترتها (أسبوع أو شهر).';
+
+  @override
+  String get subscriptionBankCopyCta => 'نسخ';
+
+  @override
+  String get subscriptionBankCopied => 'تم نسخ الرقم';
+
+  @override
+  String get subscriptionPlanSelectLabel => 'ما الخطة التي تدفع عنها؟';
+
+  @override
+  String get subscriptionPlanSelectPrompt => 'اختر أسبوعاً أو شهراً';
+
+  @override
+  String get subscriptionPlanSelectWeek => 'أسبوع';
+
+  @override
+  String get subscriptionPlanSelectMonth => 'شهر';
+
+  @override
+  String get subscriptionPlanRequiredBeforeUpload =>
+      'يُرجى اختيار أسبوع أو شهر قبل رفع لقطة الدفع.';
+
+  @override
+  String get subscriptionAmountDueLabel => 'المبلغ المستحق';
+
+  @override
+  String get subscriptionProofToggleShow => 'عرض لقطات دفعي';
+
+  @override
+  String get subscriptionProofToggleHide => 'إخفاء لقطات الدفع';
+
+  @override
+  String get subscriptionPlansHeading => 'رسوم الاشتراك';
 
   @override
   String get subscriptionPlansSubheading =>
-      'جميع المبالغ بالشيكل الجديد (₪). بعد الدفع، ارفع إثبات التحويل أدناه.';
+      'خياران فقط — أسبوع أو شهر. الأسعار بالشيكل الجديد (₪).';
 
   @override
   String get subscriptionPlanWeekTitle => 'أسبوع';
@@ -357,7 +414,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get subscriptionProofSectionHint =>
-      'ارفع لقطة شاشة لدفع اشتراكك ليتحقق المسؤول. بحد أقصى 5 ميجابايت (JPEG أو PNG أو WebP).';
+      'أولاً اختر أسبوعاً أو شهراً أعلاه ليعرف المسؤول ما الذي دفعت عنه. ثم ارفع لقطة شاشة للتحويل. بحد أقصى 5 ميجابايت (JPEG أو PNG أو WebP).';
 
   @override
   String get subscriptionProofUploadCta => 'رفع لقطة الدفع';

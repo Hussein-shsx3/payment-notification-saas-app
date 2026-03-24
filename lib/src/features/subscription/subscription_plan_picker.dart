@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Default list prices in ILS (Israeli new shekels). Change here to match your business.
-const double kSubscriptionPriceWeekIls = 29;
-const double kSubscriptionPriceMonthIls = 79;
-const double kSubscriptionPriceYearIls = 699;
+const double kSubscriptionPriceWeekIls = 8;
+const double kSubscriptionPriceMonthIls = 18;
 
 String _formatIls(double amount) {
   if (amount == amount.roundToDouble()) {
@@ -18,9 +17,6 @@ String _formatIls(double amount) {
 class SubscriptionPlanPricing extends StatelessWidget {
   const SubscriptionPlanPricing({super.key});
 
-  static const _cyan = Color(0xFF06B6D4);
-  static const _slateCard = Color(0xFF0F172A);
-  static const _slateBorder = Color(0xFF334155);
   static const _slateMuted = Color(0xFF94A3B8);
 
   @override
@@ -65,15 +61,6 @@ class SubscriptionPlanPricing extends StatelessWidget {
           periodLabel: l10n.subscriptionPlanPerMonth,
           badge: l10n.subscriptionPlanMonthBadge,
           emphasize: true,
-        ),
-        const SizedBox(height: 12),
-        _PricingCard(
-          title: l10n.subscriptionPlanYearTitle,
-          subtitle: l10n.subscriptionPlanYearSubtitle,
-          icon: Icons.event_outlined,
-          priceIls: kSubscriptionPriceYearIls,
-          periodLabel: l10n.subscriptionPlanPerYear,
-          emphasize: false,
         ),
       ],
     );

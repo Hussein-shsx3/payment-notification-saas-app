@@ -596,16 +596,82 @@ abstract class AppLocalizations {
   /// **'Subscription'**
   String get subscriptionTitle;
 
+  /// No description provided for @subscriptionPaymentProcessHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'How payment works'**
+  String get subscriptionPaymentProcessHeading;
+
+  /// No description provided for @subscriptionPaymentProcessIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription access is granted after your payment is verified. Please follow these steps in order.'**
+  String get subscriptionPaymentProcessIntro;
+
+  /// No description provided for @subscriptionPaymentProcessStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the subscription fees at the bottom of this screen. All amounts are shown in Israeli new shekels (₪).'**
+  String get subscriptionPaymentProcessStep1;
+
+  /// No description provided for @subscriptionPaymentProcessStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your payment using the bank transfer details or instructions provided to you separately by your administrator.'**
+  String get subscriptionPaymentProcessStep2;
+
+  /// No description provided for @subscriptionPaymentProcessStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a clear screenshot of your completed payment in the Payment proof section so our team can verify and activate your subscription.'**
+  String get subscriptionPaymentProcessStep3;
+
+  /// No description provided for @subscriptionBankPaymentHeading.
+  String get subscriptionBankPaymentHeading;
+
+  /// No description provided for @subscriptionBankPaymentBody.
+  String get subscriptionBankPaymentBody;
+
+  /// No description provided for @subscriptionBankCopyCta.
+  String get subscriptionBankCopyCta;
+
+  /// No description provided for @subscriptionBankCopied.
+  String get subscriptionBankCopied;
+
+  /// No description provided for @subscriptionPlanSelectLabel.
+  String get subscriptionPlanSelectLabel;
+
+  /// No description provided for @subscriptionPlanSelectPrompt.
+  String get subscriptionPlanSelectPrompt;
+
+  /// No description provided for @subscriptionPlanSelectWeek.
+  String get subscriptionPlanSelectWeek;
+
+  /// No description provided for @subscriptionPlanSelectMonth.
+  String get subscriptionPlanSelectMonth;
+
+  /// No description provided for @subscriptionPlanRequiredBeforeUpload.
+  String get subscriptionPlanRequiredBeforeUpload;
+
+  /// No description provided for @subscriptionAmountDueLabel.
+  String get subscriptionAmountDueLabel;
+
+  /// No description provided for @subscriptionProofToggleShow.
+  String get subscriptionProofToggleShow;
+
+  /// No description provided for @subscriptionProofToggleHide.
+  String get subscriptionProofToggleHide;
+
   /// No description provided for @subscriptionPlansHeading.
   ///
   /// In en, this message translates to:
-  /// **'Plans & pricing'**
+  /// **'Subscription fees'**
   String get subscriptionPlansHeading;
 
   /// No description provided for @subscriptionPlansSubheading.
   ///
   /// In en, this message translates to:
-  /// **'All amounts are in Israeli new shekels (₪). After you pay, upload your payment proof below.'**
+  /// **'Two plans only — 1 week or 1 month. Prices are in Israeli new shekels (₪).'**
   String get subscriptionPlansSubheading;
 
   /// No description provided for @subscriptionPlanWeekTitle.
