@@ -23,6 +23,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   late final AndroidNotificationCaptureService _captureService;
   bool _hasPermission = false;
   bool _openingSettings = false;
+  /// True when any admin/system notification has `isRead != true`.
+  bool _hasUnreadSystemNotifications = false;
 
   @override
   void initState() {
@@ -30,6 +32,28 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.addObserver(this);
     _captureService = AndroidNotificationCaptureService();
     _refreshCaptureState();
+  }
+
+  Future<void> _refreshUnreadSystemBadge() async {
+    final auth = context.read<AuthProvider>();
+    if (auth.isViewerMode) return;
+    try {
+      final res = await auth.api.get('/notifications?limit=50');
+      if (!mounted) return;
+      if (res.statusCode < 200 || res.statusCode >= 300) return;
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      final container = body['data'] as Map<String, dynamic>?;
+      if (container == null) return;
+      final raw = container['data'];
+      if (raw is! List) return;
+      var unread = 0;
+      for (final e in raw) {
+        if (e is Map && e['isRead'] != true) unread++;
+      }
+      setState(() => _hasUnreadSystemNotifications = unread > 0);
+    } catch (_) {
+      // leave previous badge state
+    }
   }
 
   Future<void> _refreshCaptureState() async {
@@ -40,6 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     setState(() {
       _hasPermission = granted;
     });
+    await _refreshUnreadSystemBadge();
   }
 
   @override
@@ -56,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _showSystemNotifications(BuildContext context, AuthProvider auth) async {
-    showModalBottomSheet<void>(
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => DraggableScrollableSheet(
@@ -67,9 +92,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         builder: (_, scrollController) => _SystemNotificationsSheet(
           api: auth.api,
           scrollController: scrollController,
+          onUnreadMayHaveChanged: () {
+            if (mounted) _refreshUnreadSystemBadge();
+          },
         ),
       ),
     );
+    if (mounted) await _refreshUnreadSystemBadge();
   }
 
   @override
@@ -90,8 +119,28 @@ class _DashboardScreenState extends State<DashboardScreen>
         actions: [
           IconButton(
             onPressed: () => _showSystemNotifications(context, auth),
-            icon: const Icon(Icons.notifications_outlined),
             tooltip: l10n.systemNotifications,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                const Icon(Icons.notifications_outlined),
+                if (_hasUnreadSystemNotifications)
+                  Positioned(
+                    right: -1,
+                    top: -1,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF0B1220), width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           IconButton(
             onPressed: () async => auth.logout(),
@@ -204,10 +253,12 @@ class _SystemNotificationsSheet extends StatefulWidget {
   const _SystemNotificationsSheet({
     required this.api,
     required this.scrollController,
+    this.onUnreadMayHaveChanged,
   });
 
   final ApiClient api;
   final ScrollController scrollController;
+  final VoidCallback? onUnreadMayHaveChanged;
 
   @override
   State<_SystemNotificationsSheet> createState() => _SystemNotificationsSheetState();
@@ -240,6 +291,7 @@ class _SystemNotificationsSheetState extends State<_SystemNotificationsSheet> {
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
         if (mounted) setState(() => _items = list);
+        widget.onUnreadMayHaveChanged?.call();
       } else {
         if (mounted) setState(() => _error = l10n.failedToLoadWithCode(res.statusCode));
       }
