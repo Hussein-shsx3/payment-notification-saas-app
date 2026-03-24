@@ -45,6 +45,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signInSubtitle => 'سجّل الدخول بالبريد الإلكتروني أو رقم الجوال.';
 
   @override
+  String get loginModeMain => 'الحساب الرئيسي';
+
+  @override
+  String get loginModeViewer => 'عارض';
+
+  @override
+  String get viewerLoginSubtitle =>
+      'نفس البريد كالحساب الرئيسي. استخدم كلمة مرور العارض من الإعدادات (الحساب الرئيسي). للعرض فقط: قائمة المدفوعات واللغة.';
+
+  @override
+  String get viewerLoginButton => 'دخول كعارض';
+
+  @override
+  String get viewerReadOnlyBadge => 'جلسة للعرض فقط';
+
+  @override
+  String get bottomNavPayments => 'المدفوعات';
+
+  @override
+  String get viewerPasswordSection => 'كلمة مرور دخول العارض';
+
+  @override
+  String get viewerPasswordSectionDesc =>
+      'تسمح لشخص آخر بفتح التطبيق بنفس البريد وكلمة مرور منفصلة لمشاهدة إشعارات الدفع فقط (دون تعديل أو التقاط أو اشتراك).';
+
+  @override
+  String get viewerPasswordField => 'كلمة مرور العارض الجديدة';
+
+  @override
+  String get viewerPasswordConfirm => 'تأكيد كلمة مرور العارض';
+
+  @override
+  String get viewerPasswordSave => 'حفظ كلمة مرور العارض';
+
+  @override
+  String get viewerPasswordUpdated => 'تم حفظ كلمة مرور العارض';
+
+  @override
+  String get viewerPasswordMustMatch => 'كلمتا مرور العارض غير متطابقتين';
+
+  @override
   String get loggingIn => 'جاري الدخول…';
 
   @override

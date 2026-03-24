@@ -468,10 +468,14 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
 
             val receivedAt = System.currentTimeMillis()
 
-            val dedupeKeyRaw = "$packageName|$title|$message"
-            val dedupeKey = sha256Hex(dedupeKeyRaw).take(24)
+            // Banks update the same status-bar notification in place (time text, extra lines).
+            // Title/message then change and content-based dedupe fails. The system key is stable
+            // for that notification until it is dismissed.
+            val instanceKey = sbn.key?.takeIf { it.isNotBlank() }
+                ?: "$packageName|${sbn.id}|${sbn.tag ?: ""}"
+            val dedupeKey = sha256Hex(instanceKey).take(24)
             if (isDuplicate(this, dedupeKey)) {
-                Log.d(TAG, "Duplicate detected: $dedupeKey")
+                Log.d(TAG, "Duplicate instance (same tray notification): ${dedupeKey.take(8)}…")
                 return
             }
 
@@ -487,6 +491,7 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             payload.put("title", title)
             payload.put("message", message)
             payload.put("receivedAt", receivedAt)
+            payload.put("notificationKey", instanceKey)
 
             val sent = sendPayloadWithRefresh(this, apiBaseUrl, payload, accessToken, refreshToken)
             if (!sent) {

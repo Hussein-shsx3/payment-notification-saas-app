@@ -12,12 +12,13 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider()
       : _storage = AuthStorage(),
         _isLoading = true,
-        _isAuthenticated = false {
+        _isAuthenticated = false,
+        _isViewerMode = false {
     _api = ApiClient(
       getAccessToken: _storage.getAccessToken,
       getRefreshToken: _storage.getRefreshToken,
       saveTokens: (accessToken, refreshToken) =>
-          _storage.saveTokens(accessToken: accessToken, refreshToken: refreshToken),
+          _storage.saveTokensPreservingMode(accessToken: accessToken, refreshToken: refreshToken),
       onRefreshFailed: _handleRefreshFailed,
     );
     _init();
@@ -36,6 +37,7 @@ class AuthProvider extends ChangeNotifier {
 
   bool _isLoading;
   bool _isAuthenticated;
+  bool _isViewerMode;
   String? _errorMessage;
   bool? _subscriptionActive;
   Timer? _subscriptionPollTimer;
@@ -45,12 +47,18 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
+  bool get isViewerMode => _isViewerMode;
   String? get errorMessage => _errorMessage;
   bool get isSubscriptionActive => _subscriptionActive == true;
   ApiClient get api => _api;
 
   Future<void> refreshSubscription() async {
     if (!_isAuthenticated) {
+      _subscriptionActive = null;
+      notifyListeners();
+      return;
+    }
+    if (_isViewerMode) {
       _subscriptionActive = null;
       notifyListeners();
       return;
@@ -97,14 +105,19 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _init() async {
     final accessToken = await _storage.getAccessToken();
     final refreshToken = await _storage.getRefreshToken();
+    _isViewerMode = (await _storage.getAccessMode()) == AuthStorage.accessModeViewer;
     _isAuthenticated = accessToken != null &&
         accessToken.isNotEmpty &&
         refreshToken != null &&
         refreshToken.isNotEmpty;
     if (_isAuthenticated) {
-      await _storage.mirrorSecureTokensToSharedPreferences();
-      await refreshSubscription();
-      _startSubscriptionPolling();
+      if (!_isViewerMode) {
+        await _storage.mirrorSecureTokensToSharedPreferences();
+        await refreshSubscription();
+        _startSubscriptionPolling();
+      } else {
+        _subscriptionActive = null;
+      }
     }
     _isLoading = false;
     notifyListeners();
@@ -127,13 +140,56 @@ class AuthProvider extends ChangeNotifier {
         final accessToken = data['accessToken'] as String? ?? '';
         final refreshToken = data['refreshToken'] as String? ?? '';
 
-        await _storage.saveTokens(
+        await _storage.saveSession(
           accessToken: accessToken,
           refreshToken: refreshToken,
+          accessMode: AuthStorage.accessModeFull,
         );
         _isAuthenticated = true;
+        _isViewerMode = false;
         await refreshSubscription();
         _startSubscriptionPolling();
+        notifyListeners();
+        return true;
+      }
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      _errorMessage = body['message']?.toString() ?? 'Login failed';
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Network error. Please try again.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> loginViewer({
+    required String email,
+    required String password,
+  }) async {
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final response = await _api.post('/auth/login-viewer', body: {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      });
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final accessToken = data['accessToken'] as String? ?? '';
+        final refreshToken = data['refreshToken'] as String? ?? '';
+
+        await _storage.saveSession(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          accessMode: AuthStorage.accessModeViewer,
+        );
+        _isAuthenticated = true;
+        _isViewerMode = true;
+        _subscriptionActive = null;
+        _stopSubscriptionPolling();
         notifyListeners();
         return true;
       }
@@ -252,10 +308,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<({bool ok, String? message})> setViewerPassword(String password) async {
+    try {
+      final response = await _api.put('/users/viewer-password', body: {'password': password});
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return (ok: true, message: null);
+      }
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return (ok: false, message: body['message']?.toString() ?? 'Failed');
+    } catch (_) {
+      return (ok: false, message: 'Network error. Please try again.');
+    }
+  }
+
   Future<void> logout() async {
     _stopSubscriptionPolling();
     await _storage.clearTokens();
     _isAuthenticated = false;
+    _isViewerMode = false;
     _subscriptionActive = null;
     notifyListeners();
     // Do not block the UI on notification listener teardown (can stall on some devices).

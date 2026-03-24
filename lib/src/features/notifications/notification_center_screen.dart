@@ -15,7 +15,10 @@ enum _DateFilter {
 }
 
 class NotificationCenterScreen extends StatefulWidget {
-  const NotificationCenterScreen({super.key});
+  const NotificationCenterScreen({super.key, this.readOnly = false});
+
+  /// When true (viewer session), hides delete and direction editing.
+  final bool readOnly;
 
   @override
   State<NotificationCenterScreen> createState() => _NotificationCenterScreenState();
@@ -269,31 +272,40 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                   onChanged: _onFilterChanged,
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n.paginationSummary(_paymentTotal, _paymentPage, _paymentTotalPages),
-                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                if (!widget.readOnly)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.paginationSummary(_paymentTotal, _paymentPage, _paymentTotalPages),
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                          ),
                         ),
-                      ),
-                      FilledButton.tonal(
-                        style: FilledButton.styleFrom(
-                          foregroundColor: const Color(0xFFF8FAFC),
-                          backgroundColor: const Color(0xFF475569),
+                        FilledButton.tonal(
+                          style: FilledButton.styleFrom(
+                            foregroundColor: const Color(0xFFF8FAFC),
+                            backgroundColor: const Color(0xFF475569),
+                          ),
+                          onPressed: _deletingPayments ? null : _deleteAllPayments,
+                          child: Text(_deletingPayments ? l10n.deleting : l10n.deleteAll),
                         ),
-                        onPressed: _deletingPayments ? null : _deleteAllPayments,
-                        child: Text(_deletingPayments ? l10n.deleting : l10n.deleteAll),
-                      ),
-                    ],
+                      ],
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      l10n.paginationSummary(_paymentTotal, _paymentPage, _paymentTotalPages),
+                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                    ),
                   ),
-                ),
                 const SizedBox(height: 12),
                 if (_error != null) ...[
                   Text(
@@ -350,15 +362,16 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                                     ),
                                   ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                                  onPressed: () => _deleteSingle(id),
-                                  tooltip: l10n.delete,
-                                ),
+                                if (!widget.readOnly)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                    onPressed: () => _deleteSingle(id),
+                                    tooltip: l10n.delete,
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 10),
-                            if (_patchingDirectionIds.contains(id))
+                            if (!widget.readOnly && _patchingDirectionIds.contains(id))
                               const Padding(
                                 padding: EdgeInsets.only(bottom: 8),
                                 child: LinearProgressIndicator(
@@ -366,36 +379,45 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                                   color: Color(0xFF06B6D4),
                                 ),
                               ),
-                            DropdownButtonFormField<String>(
-                              value: norm,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                labelText: l10n.paymentDirectionLabel,
-                                border: const OutlineInputBorder(),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            if (widget.readOnly)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  '${l10n.paymentDirectionLabel}: $dirLabel',
+                                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                                ),
+                              )
+                            else
+                              DropdownButtonFormField<String>(
+                                value: norm,
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  labelText: l10n.paymentDirectionLabel,
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
+                                items: [
+                                  DropdownMenuItem(
+                                    value: 'incoming',
+                                    child: Text(l10n.directionReceived),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'outgoing',
+                                    child: Text(l10n.directionSent),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'unknown',
+                                    child: Text(l10n.directionUnknown),
+                                  ),
+                                ],
+                                onChanged: id.isEmpty || _patchingDirectionIds.contains(id)
+                                    ? null
+                                    : (v) {
+                                        if (v != null && v != norm) {
+                                          _setPaymentDirection(id, v);
+                                        }
+                                      },
                               ),
-                              items: [
-                                DropdownMenuItem(
-                                  value: 'incoming',
-                                  child: Text(l10n.directionReceived),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'outgoing',
-                                  child: Text(l10n.directionSent),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'unknown',
-                                  child: Text(l10n.directionUnknown),
-                                ),
-                              ],
-                              onChanged: id.isEmpty || _patchingDirectionIds.contains(id)
-                                  ? null
-                                  : (v) {
-                                      if (v != null && v != norm) {
-                                        _setPaymentDirection(id, v);
-                                      }
-                                    },
-                            ),
                             const SizedBox(height: 8),
                             Text(
                               bodyText.toString(),

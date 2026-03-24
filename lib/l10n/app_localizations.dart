@@ -170,6 +170,84 @@ abstract class AppLocalizations {
   /// **'Sign in with your email or phone number.'**
   String get signInSubtitle;
 
+  /// No description provided for @loginModeMain.
+  ///
+  /// In en, this message translates to:
+  /// **'Main account'**
+  String get loginModeMain;
+
+  /// No description provided for @loginModeViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewer'**
+  String get loginModeViewer;
+
+  /// No description provided for @viewerLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Same email as the main account. Use the viewer password set in Settings (main account). Read-only: payments list and language only.'**
+  String get viewerLoginSubtitle;
+
+  /// No description provided for @viewerLoginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in as viewer'**
+  String get viewerLoginButton;
+
+  /// No description provided for @viewerReadOnlyBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only session'**
+  String get viewerReadOnlyBadge;
+
+  /// No description provided for @bottomNavPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments'**
+  String get bottomNavPayments;
+
+  /// No description provided for @viewerPasswordSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewer login password'**
+  String get viewerPasswordSection;
+
+  /// No description provided for @viewerPasswordSectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets someone else open the app with the same email and a separate password to only view payment notifications (no edits, capture, or subscription).'**
+  String get viewerPasswordSectionDesc;
+
+  /// No description provided for @viewerPasswordField.
+  ///
+  /// In en, this message translates to:
+  /// **'New viewer password'**
+  String get viewerPasswordField;
+
+  /// No description provided for @viewerPasswordConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm viewer password'**
+  String get viewerPasswordConfirm;
+
+  /// No description provided for @viewerPasswordSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save viewer password'**
+  String get viewerPasswordSave;
+
+  /// No description provided for @viewerPasswordUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewer password saved'**
+  String get viewerPasswordUpdated;
+
+  /// No description provided for @viewerPasswordMustMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewer passwords do not match'**
+  String get viewerPasswordMustMatch;
+
   /// No description provided for @loggingIn.
   ///
   /// In en, this message translates to:

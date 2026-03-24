@@ -8,7 +8,10 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/validation/password_policy.dart';
 import '../../core/locale/locale_controller.dart';
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.viewerMode = false});
+
+  /// Read-only session: language and logout only (no profile or passwords).
+  final bool viewerMode;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -22,12 +25,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _currentPwController = TextEditingController();
   final _newPwController = TextEditingController();
   final _confirmPwController = TextEditingController();
+  final _viewerPwController = TextEditingController();
+  final _viewerPwConfirmController = TextEditingController();
 
   bool _loading = true;
   bool _savingProfile = false;
   bool _savingPassword = false;
+  bool _savingViewerPassword = false;
   String? _profileMessage;
   String? _passwordMessage;
+  String? _viewerPasswordMessage;
 
   static const _border = OutlineInputBorder(
     borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -64,6 +71,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _currentPwController.dispose();
     _newPwController.dispose();
     _confirmPwController.dispose();
+    _viewerPwController.dispose();
+    _viewerPwConfirmController.dispose();
     super.dispose();
   }
 
@@ -115,6 +124,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _profileMessage = l10n.networkError;
     } finally {
       if (mounted) setState(() => _savingProfile = false);
+    }
+  }
+
+  Future<void> _saveViewerPassword() async {
+    final l10n = AppLocalizations.of(context)!;
+    final next = _viewerPwController.text;
+    final confirm = _viewerPwConfirmController.text;
+    if (next.isEmpty) {
+      setState(() => _viewerPasswordMessage = l10n.fillPasswordFields);
+      return;
+    }
+    if (next != confirm) {
+      setState(() => _viewerPasswordMessage = l10n.viewerPasswordMustMatch);
+      return;
+    }
+    if (!isStrongPassword(next)) {
+      setState(() => _viewerPasswordMessage = l10n.passwordPolicyError);
+      return;
+    }
+    setState(() {
+      _savingViewerPassword = true;
+      _viewerPasswordMessage = null;
+    });
+    try {
+      final auth = context.read<AuthProvider>();
+      final r = await auth.setViewerPassword(next);
+      if (!mounted) return;
+      setState(() {
+        if (r.ok) {
+          _viewerPwController.clear();
+          _viewerPwConfirmController.clear();
+          _viewerPasswordMessage = l10n.viewerPasswordUpdated;
+        } else {
+          _viewerPasswordMessage = r.message;
+        }
+      });
+    } finally {
+      if (mounted) setState(() => _savingViewerPassword = false);
     }
   }
 
@@ -172,6 +219,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.settings)),
         body: const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4))),
+      );
+    }
+
+    if (widget.viewerMode) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.settings),
+          actions: [
+            IconButton(
+              onPressed: () => context.read<AuthProvider>().logout(),
+              icon: const Icon(Icons.logout),
+              tooltip: l10n.logout,
+            ),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                l10n.viewerReadOnlyBadge,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+            ),
+            _SettingsCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.language,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  SegmentedButton<Locale>(
+                    segments: [
+                      ButtonSegment<Locale>(
+                        value: const Locale('en'),
+                        label: Text(l10n.languageEnglish),
+                      ),
+                      ButtonSegment<Locale>(
+                        value: const Locale('ar'),
+                        label: Text(l10n.languageArabic),
+                      ),
+                    ],
+                    selected: {localeCtrl.locale},
+                    onSelectionChanged: (set) {
+                      final loc = set.first;
+                      localeCtrl.setLocale(loc);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -346,6 +453,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: _passwordMessage == l10n.passwordUpdated
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFFF87171),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          _SettingsCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.viewerPasswordSection,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.viewerPasswordSectionDesc,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: _viewerPwController,
+                  obscureText: true,
+                  decoration: _fieldDecoration(l10n.viewerPasswordField),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _viewerPwConfirmController,
+                  obscureText: true,
+                  decoration: _fieldDecoration(l10n.viewerPasswordConfirm),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: _savingViewerPassword ? null : _saveViewerPassword,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF06B6D4),
+                    side: const BorderSide(color: Color(0xFF06B6D4)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text(_savingViewerPassword ? l10n.updatingPassword : l10n.viewerPasswordSave),
+                ),
+                if (_viewerPasswordMessage != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    _viewerPasswordMessage!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _viewerPasswordMessage == l10n.viewerPasswordUpdated
                           ? const Color(0xFF4ADE80)
                           : const Color(0xFFF87171),
                     ),

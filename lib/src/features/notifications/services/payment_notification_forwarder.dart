@@ -71,8 +71,10 @@ class PaymentNotificationForwarder {
     return ApiClient(
       getAccessToken: _storage.getAccessToken,
       getRefreshToken: _storage.getRefreshToken,
-      saveTokens: (accessToken, refreshToken) =>
-          _storage.saveTokens(accessToken: accessToken, refreshToken: refreshToken),
+      saveTokens: (accessToken, refreshToken) => _storage.saveTokensPreservingMode(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          ),
     );
   }
 

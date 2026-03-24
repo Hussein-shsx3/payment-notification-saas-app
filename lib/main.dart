@@ -10,6 +10,7 @@ import 'src/core/background/workmanager_service.dart';
 import 'src/core/locale/locale_controller.dart';
 import 'src/features/auth/login_screen.dart';
 import 'src/features/shell/main_shell.dart';
+import 'src/features/shell/viewer_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
 
           return MaterialApp(
             // Reset navigator when auth changes so logout/login never leaves a stale route stack.
-            key: ValueKey<bool>(auth.isAuthenticated),
+            key: ValueKey<String>('${auth.isAuthenticated}_${auth.isViewerMode}'),
             debugShowCheckedModeBanner: false,
             title: 'Payment Notify',
             locale: localeCtrl.locale,
@@ -85,7 +86,7 @@ class MyApp extends StatelessWidget {
             home: auth.isLoading
                 ? const _LoadingScreen()
                 : (auth.isAuthenticated
-                    ? const MainShell()
+                    ? (auth.isViewerMode ? const ViewerShell() : const MainShell())
                     : const LoginScreen()),
           );
         },
