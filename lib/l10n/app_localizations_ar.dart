@@ -160,6 +160,73 @@ class AppLocalizationsAr extends AppLocalizations {
   String get validationPhoneRequired => 'رقم الجوال مطلوب';
 
   @override
+  String get validationEmailInvalid => 'أدخل بريداً إلكترونياً صالحاً';
+
+  @override
+  String get validationTokenRequired =>
+      'الصق رمز إعادة التعيين أو الرابط من البريد';
+
+  @override
+  String get forgotPasswordLink => 'نسيت كلمة المرور؟';
+
+  @override
+  String get forgotPasswordTitle => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'أدخل بريد حسابك. سنرسل رابطاً صالحاً لمدة 24 ساعة.';
+
+  @override
+  String get forgotPasswordSubmit => 'إرسال رابط الاستعادة';
+
+  @override
+  String get forgotPasswordSending => 'جاري الإرسال…';
+
+  @override
+  String get forgotPasswordSuccess =>
+      'إذا وُجد حساب لهذا البريد، تحقق من الوارد (والبريد غير المرغوب). ثم عيّن كلمة مرور جديدة أدناه باستخدام الرمز من البريد.';
+
+  @override
+  String get resetPasswordEnterTokenCta => 'لدي الرمز — تعيين كلمة مرور جديدة';
+
+  @override
+  String get resetPasswordTitle => 'تعيين كلمة مرور جديدة';
+
+  @override
+  String get resetPasswordSubtitle =>
+      'الصق رابط إعادة التعيين من البريد، أو الرمز الطويل فقط. ثم اختر كلمة مرور جديدة.';
+
+  @override
+  String get resetPasswordTokenLabel => 'الرمز أو الرابط';
+
+  @override
+  String get resetPasswordTokenHint =>
+      'الرمز الطويل من البريد، أو الصق الرابط https://… كاملاً';
+
+  @override
+  String get resetPasswordNewLabel => 'كلمة المرور الجديدة';
+
+  @override
+  String get resetPasswordConfirmLabel => 'تأكيد كلمة المرور';
+
+  @override
+  String get resetPasswordSubmit => 'تحديث كلمة المرور';
+
+  @override
+  String get resetPasswordSubmitting => 'جاري التحديث…';
+
+  @override
+  String get resetPasswordSuccess =>
+      'تم تحديث كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.';
+
+  @override
+  String get resetPasswordMismatch => 'كلمتا المرور غير متطابقتين.';
+
+  @override
+  String get resetPasswordTokenInvalid =>
+      'تعذّر قراءة الرمز. الصق الرمز الطويل من البريد أو رابط إعادة التعيين كاملاً.';
+
+  @override
   String get accountAndSecurity => 'الحساب والأمان';
 
   @override

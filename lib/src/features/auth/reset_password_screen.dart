@@ -4,51 +4,78 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
-import '../shell/main_shell.dart';
-import 'forgot_password_screen.dart';
-import 'register_screen.dart';
+import 'reset_password_token.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ResetPasswordScreen extends StatefulWidget {
+  const ResetPasswordScreen({super.key, this.initialToken});
+
+  /// If provided (e.g. deep link later), token field is prefilled.
+  final String? initialToken;
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailOrPhoneController = TextEditingController();
+  final _tokenController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.initialToken != null && widget.initialToken!.trim().isNotEmpty) {
+      _tokenController.text = widget.initialToken!.trim();
+    }
+  }
+
+  @override
   void dispose() {
-    _emailOrPhoneController.dispose();
+    _tokenController.dispose();
     _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _submitting = true;
-    });
+    final token = extractPasswordResetToken(_tokenController.text);
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.resetPasswordTokenInvalid)),
+      );
+      return;
+    }
+
+    if (_passwordController.text != _confirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.resetPasswordMismatch)),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
 
     final auth = context.read<AuthProvider>();
-    final success = await auth.login(
-      emailOrPhone: _emailOrPhoneController.text,
+    final result = await auth.completePasswordReset(
+      token: token,
       password: _passwordController.text,
     );
 
     if (!mounted) return;
-    setState(() {
-      _submitting = false;
-    });
+    setState(() => _submitting = false);
 
-    if (success) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const MainShell()),
+    if (result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.resetPasswordSuccess)),
+      );
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.errorMessage ?? 'Error')),
       );
     }
   }
@@ -56,10 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final error = context.watch<AuthProvider>().errorMessage;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.login)),
+      appBar: AppBar(title: Text(l10n.resetPasswordTitle)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -78,25 +104,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Center(child: AppLogo(size: 52)),
                         const SizedBox(height: 12),
                         Text(
-                          l10n.appTitle,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.signInSubtitle,
+                          l10n.resetPasswordSubtitle,
                           style: const TextStyle(fontSize: 13, color: Colors.white70),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
-                          controller: _emailOrPhoneController,
-                          keyboardType: TextInputType.text,
+                          controller: _tokenController,
+                          maxLines: 2,
                           decoration: InputDecoration(
-                            labelText: l10n.emailOrPhone,
+                            labelText: l10n.resetPasswordTokenLabel,
+                            hintText: l10n.resetPasswordTokenHint,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return l10n.validationEmailOrPhoneRequired;
+                              return l10n.validationTokenRequired;
                             }
                             return null;
                           },
@@ -106,7 +128,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
-                            labelText: l10n.password,
+                            labelText: l10n.resetPasswordNewLabel,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.length < 8) {
+                              return l10n.passwordTooShort;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _confirmController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: l10n.resetPasswordConfirmLabel,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
@@ -116,56 +153,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: TextButton(
-                            onPressed: _submitting
-                                ? null
-                                : () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => const ForgotPasswordScreen(),
-                                      ),
-                                    );
-                                  },
-                            child: Text(l10n.forgotPasswordLink),
-                          ),
-                        ),
-                        if (error != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            error,
-                            style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-                          ),
-                        ],
                         const SizedBox(height: 16),
                         FilledButton(
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF06B6D4),
                             foregroundColor: const Color(0xFF020617),
                             minimumSize: const Size.fromHeight(50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
                           ),
                           onPressed: _submitting ? null : _submit,
                           child: Text(
-                            _submitting ? l10n.loggingIn : l10n.login,
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                            _submitting ? l10n.resetPasswordSubmitting : l10n.resetPasswordSubmit,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
-                        const SizedBox(height: 8),
                         TextButton(
-                          onPressed: _submitting
-                              ? null
-                              : () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => const RegisterScreen(),
-                                    ),
-                                  );
-                                },
-                          child: Text(l10n.createNewAccount),
+                          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
+                          child: Text(l10n.backToLogin),
                         ),
                       ],
                     ),

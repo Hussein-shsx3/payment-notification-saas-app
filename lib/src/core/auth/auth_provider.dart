@@ -229,6 +229,52 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Sends password reset email (24h link). Does not require authentication.
+  Future<({bool success, String? errorMessage})> requestPasswordReset({
+    required String email,
+    required String locale,
+  }) async {
+    try {
+      final response = await _api.post('/auth/forgot-password', body: {
+        'email': email.trim().toLowerCase(),
+        'locale': locale == 'ar' ? 'ar' : 'en',
+      });
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return (success: true, errorMessage: null);
+      }
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return (
+        success: false,
+        errorMessage: body['message']?.toString() ?? 'Request failed',
+      );
+    } catch (_) {
+      return (success: false, errorMessage: 'Network error. Please try again.');
+    }
+  }
+
+  /// Completes reset using token from the email (or pasted link).
+  Future<({bool success, String? errorMessage})> completePasswordReset({
+    required String token,
+    required String password,
+  }) async {
+    try {
+      final response = await _api.post('/auth/reset-password', body: {
+        'token': token.trim(),
+        'password': password,
+      });
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return (success: true, errorMessage: null);
+      }
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return (
+        success: false,
+        errorMessage: body['message']?.toString() ?? 'Reset failed',
+      );
+    } catch (_) {
+      return (success: false, errorMessage: 'Network error. Please try again.');
+    }
+  }
+
   Future<void> logout() async {
     _stopSubscriptionPolling();
     await _storage.clearTokens();

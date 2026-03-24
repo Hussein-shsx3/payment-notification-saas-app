@@ -380,6 +380,126 @@ abstract class AppLocalizations {
   /// **'Phone number is required'**
   String get validationPhoneRequired;
 
+  /// No description provided for @validationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get validationEmailInvalid;
+
+  /// No description provided for @validationTokenRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the reset token or the link from the email'**
+  String get validationTokenRequired;
+
+  /// No description provided for @forgotPasswordLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPasswordLink;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your account email. We will send a link that works for 24 hours.'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @forgotPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get forgotPasswordSubmit;
+
+  /// No description provided for @forgotPasswordSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get forgotPasswordSending;
+
+  /// No description provided for @forgotPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'If an account exists for this email, check your inbox (and spam). Then set a new password below using the token from the email.'**
+  String get forgotPasswordSuccess;
+
+  /// No description provided for @resetPasswordEnterTokenCta.
+  ///
+  /// In en, this message translates to:
+  /// **'I have the token — set new password'**
+  String get resetPasswordEnterTokenCta;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the reset link from the email, or only the long token. Then choose a new password.'**
+  String get resetPasswordSubtitle;
+
+  /// No description provided for @resetPasswordTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Token or link'**
+  String get resetPasswordTokenLabel;
+
+  /// No description provided for @resetPasswordTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Long code from the email, or paste the full https://… link'**
+  String get resetPasswordTokenHint;
+
+  /// No description provided for @resetPasswordNewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get resetPasswordNewLabel;
+
+  /// No description provided for @resetPasswordConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get resetPasswordConfirmLabel;
+
+  /// No description provided for @resetPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get resetPasswordSubmit;
+
+  /// No description provided for @resetPasswordSubmitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating…'**
+  String get resetPasswordSubmitting;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated. Sign in with your new password.'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match.'**
+  String get resetPasswordMismatch;
+
+  /// No description provided for @resetPasswordTokenInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read a token. Paste the long code from the email or the full reset link.'**
+  String get resetPasswordTokenInvalid;
+
   /// No description provided for @accountAndSecurity.
   ///
   /// In en, this message translates to:
