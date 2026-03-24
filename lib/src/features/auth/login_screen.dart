@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../shared/widgets/app_logo.dart';
+import '../../shared/widgets/app_segmented_button_style.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -103,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 12),
                         SegmentedButton<_LoginTab>(
+                          style: appDarkSegmentedButtonStyle(),
                           segments: [
                             ButtonSegment<_LoginTab>(
                               value: _LoginTab.main,

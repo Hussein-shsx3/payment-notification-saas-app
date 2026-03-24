@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/validation/password_policy.dart';
 import '../../core/locale/locale_controller.dart';
+import '../../shared/widgets/app_segmented_button_style.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, this.viewerMode = false});
 
@@ -258,6 +259,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   SegmentedButton<Locale>(
+                    style: appDarkSegmentedButtonStyle(),
                     segments: [
                       ButtonSegment<Locale>(
                         value: const Locale('en'),
@@ -316,6 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 SegmentedButton<Locale>(
+                  style: appDarkSegmentedButtonStyle(),
                   segments: [
                     ButtonSegment<Locale>(
                       value: const Locale('en'),
