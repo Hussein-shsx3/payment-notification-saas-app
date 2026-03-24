@@ -611,55 +611,91 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionPaymentProcessStep1.
   ///
   /// In en, this message translates to:
-  /// **'Review the subscription fees at the bottom of this screen. All amounts are shown in Israeli new shekels (₪).'**
+  /// **'Review the subscription fees below. All amounts are in Israeli new shekels (₪). Only weekly and monthly options are available.'**
   String get subscriptionPaymentProcessStep1;
 
   /// No description provided for @subscriptionPaymentProcessStep2.
   ///
   /// In en, this message translates to:
-  /// **'Complete your payment using the bank transfer details or instructions provided to you separately by your administrator.'**
+  /// **'Transfer the correct amount to the Palestine bank account number shown in Payment details above. You may use your bank’s mobile app or a branch.'**
   String get subscriptionPaymentProcessStep2;
 
   /// No description provided for @subscriptionPaymentProcessStep3.
   ///
   /// In en, this message translates to:
-  /// **'Upload a clear screenshot of your completed payment in the Payment proof section so our team can verify and activate your subscription.'**
+  /// **'Select whether you are paying for one week or one month, then upload a clear payment screenshot in the Payment proof section so we can verify and activate your subscription.'**
   String get subscriptionPaymentProcessStep3;
 
   /// No description provided for @subscriptionBankPaymentHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment details'**
   String get subscriptionBankPaymentHeading;
 
   /// No description provided for @subscriptionBankPaymentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this Palestine bank account number when you send your subscription payment. Double-check the amount matches your chosen plan (week or month).'**
   String get subscriptionBankPaymentBody;
 
   /// No description provided for @subscriptionBankCopyCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
   String get subscriptionBankCopyCta;
 
   /// No description provided for @subscriptionBankCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Number copied to clipboard'**
   String get subscriptionBankCopied;
 
   /// No description provided for @subscriptionPlanSelectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Which plan are you paying for?'**
   String get subscriptionPlanSelectLabel;
 
   /// No description provided for @subscriptionPlanSelectPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Select week or month'**
   String get subscriptionPlanSelectPrompt;
 
   /// No description provided for @subscriptionPlanSelectWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week'**
   String get subscriptionPlanSelectWeek;
 
   /// No description provided for @subscriptionPlanSelectMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month'**
   String get subscriptionPlanSelectMonth;
 
   /// No description provided for @subscriptionPlanRequiredBeforeUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose week or month before uploading a payment screenshot.'**
   String get subscriptionPlanRequiredBeforeUpload;
 
   /// No description provided for @subscriptionAmountDueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to pay'**
   String get subscriptionAmountDueLabel;
 
   /// No description provided for @subscriptionProofToggleShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my payment screenshots'**
   String get subscriptionProofToggleShow;
 
   /// No description provided for @subscriptionProofToggleHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide my payment screenshots'**
   String get subscriptionProofToggleHide;
 
   /// No description provided for @subscriptionPlansHeading.
@@ -809,7 +845,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionProofSectionHint.
   ///
   /// In en, this message translates to:
-  /// **'Upload a screenshot of your subscription payment so your administrator can verify it. Max 5 MB (JPEG, PNG, WebP).'**
+  /// **'First select week or month above so your administrator knows what you paid for. Then upload a screenshot of your transfer. Max 5 MB (JPEG, PNG, WebP).'**
   String get subscriptionProofSectionHint;
 
   /// No description provided for @subscriptionProofUploadCta.
