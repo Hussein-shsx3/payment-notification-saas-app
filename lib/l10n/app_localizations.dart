@@ -711,9 +711,15 @@ abstract class AppLocalizations {
   String get offlineQueueHint;
 
   /// No description provided for @captureAndroidReliabilityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Some phones (Xiaomi / Redmi / POCO) may block background capture. Turn on autostart for this app, set battery to unrestricted, lock the app in recents, and ensure notification access is allowed (including restricted settings if sideloaded).'**
   String get captureAndroidReliabilityHint;
 
   /// No description provided for @openAppSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App settings'**
   String get openAppSettings;
 
   /// No description provided for @subscriptionTitle.
