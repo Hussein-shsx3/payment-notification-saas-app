@@ -61,6 +61,7 @@
   "validationEmailRequired": "البريد الإلكتروني مطلوب",
   "validationPhoneRequired": "رقم الجوال مطلوب",
   "validationEmailInvalid": "أدخل بريداً إلكترونياً صالحاً",
+  "validationEmailOrPhoneInvalid": "أدخل بريداً صالحاً (يحتوي @) أو رقم جوال لا يقل عن 7 أرقام",
   "forgotPasswordLink": "نسيت كلمة المرور؟",
   "forgotPasswordTitle": "إعادة تعيين كلمة المرور",
   "forgotPasswordSubtitle": "أدخل بريد حسابك. سنرسل رابطاً صالحاً لمدة 24 ساعة. ستُعيّن كلمة المرور الجديدة على الموقع وليس داخل التطبيق.",

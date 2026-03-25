@@ -175,9 +175,10 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
 
         val packageLower = packageName.lowercase()
 
-        // PalPay, Jawwal Pay, Palestine Bank (BOP), Cash / e-finance variants — package name substrings.
+        // PalPay, Jawwal Pay, Palestine Bank (BOP), Cash / e-finance — Gaza & West Bank common IDs.
         val knownPaymentPackages = listOf(
-            "palpay", "com.palpay", "jawwal", "jawwalpay", "ps.jawwal", "com.jawwal",
+            "palpay", "com.palpay", "net.palpay", "ps.palpay",
+            "jawwal", "jawwalpay", "ps.jawwal", "com.jawwal",
             "bankofpalestine", "bank of palestine", "com.bop", "bop.mobile", "albop", "efinance",
             "palestinebank", "cash.pal", "wallet.ps"
         )
@@ -211,6 +212,7 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             "تم خصم", "تم التحويل الى", "تم التحويل إلى", "حولت", "حوالة صادرة", "صادرة من حسابك",
             "تم سحب", "شراء",
             "تحويل بنكي", "تحويل دفع لصديق", "عملية ناجحة", "إشعار عملية", "اشعار عملية", "عملية مالية",
+            "تم بنجاح", "بنجاح", "تمت العملية", "دفعة", "إيداع", "ايداع",
             "حسابك", "لحسابك", "بمبلغ", "مبلغ", "رصيد",
             "payment", "transfer", "deposit", "wallet", "محفظة"
         )
@@ -223,7 +225,9 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         val hasBankOp = bankOperationHints.any { text.contains(it) }
 
         val hasBankKeywords = text.contains("bank") || text.contains("بنك") ||
-            text.contains("bop") || text.contains("palestine") || text.contains("فلسطين")
+            text.contains("bop") || text.contains("palestine") || text.contains("فلسطين") ||
+            text.contains("jawwal") || text.contains("palpay") || text.contains("جوال") ||
+            text.contains("بالباي") || text.contains("بال باي") || text.contains("ايبرق")
 
         val isIburaq = isSmsApp && (
             text.contains("iburaq") || text.contains("ايبرق") || text.contains("البراق")

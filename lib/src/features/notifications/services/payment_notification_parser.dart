@@ -311,6 +311,8 @@ class PaymentNotificationParser {
     return _containsAny(packageLower, [
       'palpay',
       'com.palpay',
+      'net.palpay',
+      'ps.palpay',
       'jawwal',
       'jawwalpay',
       'ps.jawwal',
@@ -344,7 +346,13 @@ class PaymentNotificationParser {
         textLower.contains('بنك') ||
         textLower.contains('bop') ||
         textLower.contains('palestine') ||
-        textLower.contains('فلسطين');
+        textLower.contains('فلسطين') ||
+        textLower.contains('jawwal') ||
+        textLower.contains('palpay') ||
+        textLower.contains('جوال') ||
+        textLower.contains('بالباي') ||
+        textLower.contains('بال باي') ||
+        textLower.contains('ايبرق');
   }
 
   static bool _hasBankOperationHints(String textLower) {
@@ -429,6 +437,12 @@ class PaymentNotificationParser {
       'إشعار عملية',
       'اشعار عملية',
       'عملية مالية',
+      'تم بنجاح',
+      'بنجاح',
+      'تمت العملية',
+      'دفعة',
+      'إيداع',
+      'ايداع',
       'حسابك',
       'لحسابك',
       'بمبلغ',

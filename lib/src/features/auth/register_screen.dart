@@ -114,8 +114,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             labelText: l10n.email,
                             border: const OutlineInputBorder(),
                           ),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? l10n.validationEmailRequired : null,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return l10n.validationEmailRequired;
+                            }
+                            final t = v.trim();
+                            final i = t.indexOf('@');
+                            if (i <= 0 || i == t.length - 1) {
+                              return l10n.validationEmailInvalid;
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 12),
                         TextFormField(

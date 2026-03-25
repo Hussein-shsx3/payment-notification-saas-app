@@ -139,8 +139,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               border: const OutlineInputBorder(),
                             ),
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return l10n.validationEmailOrPhoneRequired;
+                              final t = value?.trim() ?? '';
+                              if (t.isEmpty) return l10n.validationEmailOrPhoneRequired;
+                              if (t.contains('@')) {
+                                final i = t.indexOf('@');
+                                if (i <= 0 || i == t.length - 1) {
+                                  return l10n.validationEmailInvalid;
+                                }
+                                return null;
+                              }
+                              final digitCount = RegExp(r'\d').allMatches(t).length;
+                              if (digitCount < 7) {
+                                return l10n.validationEmailOrPhoneInvalid;
                               }
                               return null;
                             },

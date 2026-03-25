@@ -204,6 +204,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get validationEmailInvalid => 'أدخل بريداً إلكترونياً صالحاً';
 
   @override
+  String get validationEmailOrPhoneInvalid =>
+      'أدخل بريداً صالحاً (يحتوي @) أو رقم جوال لا يقل عن 7 أرقام';
+
+  @override
   String get forgotPasswordLink => 'نسيت كلمة المرور؟';
 
   @override

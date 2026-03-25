@@ -203,6 +203,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationEmailInvalid => 'Enter a valid email address';
 
   @override
+  String get validationEmailOrPhoneInvalid =>
+      'Enter a valid email (with @) or a phone number with at least 7 digits';
+
+  @override
   String get forgotPasswordLink => 'Forgot password?';
 
   @override

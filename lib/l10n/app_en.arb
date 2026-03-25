@@ -61,6 +61,7 @@
   "validationEmailRequired": "Email is required",
   "validationPhoneRequired": "Phone number is required",
   "validationEmailInvalid": "Enter a valid email address",
+  "validationEmailOrPhoneInvalid": "Enter a valid email (with @) or a phone number with at least 7 digits",
   "forgotPasswordLink": "Forgot password?",
   "forgotPasswordTitle": "Reset password",
   "forgotPasswordSubtitle": "Enter your account email. We will send a link that works for 24 hours. You will set your new password on the website, not in this app.",
