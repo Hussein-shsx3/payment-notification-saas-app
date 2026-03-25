@@ -88,6 +88,12 @@ object PaymentNotifyFilters {
             (text.contains("بمبلغ") || text.contains("مبلغ"))
         if (isPalestineBankTransferLine && (hasStrongHint || hasBankOp)) return true
 
+        // BOP "Pay to friend" — title/body use تحويل دفع / الدفع لصديق, not "تحويل بنكي" (package may be unknown).
+        val isPalestineBankFriendPaymentLine =
+            (text.contains("تحويل دفع") || text.contains("الدفع لصديق") || text.contains("دفع لصديق")) &&
+                (text.contains("بمبلغ") || text.contains("مبلغ") || text.contains("ils") || text.contains("nis"))
+        if (isPalestineBankFriendPaymentLine) return true
+
         return false
     }
 

@@ -319,7 +319,21 @@ class PaymentNotificationParser {
     final palestineLine = textLower.contains('تحويل بنكي') &&
         (textLower.contains('بمبلغ') || textLower.contains('مبلغ'));
     if (palestineLine && (strong || bankOp)) return true;
+    if (_isPalestineBankFriendPaymentLine(textLower)) return true;
     return false;
+  }
+
+  /// BOP friend payment tray — "تحويل دفع لصديق" not "تحويل بنكي".
+  static bool _isPalestineBankFriendPaymentLine(String textLower) {
+    final friend = textLower.contains('تحويل دفع') ||
+        textLower.contains('الدفع لصديق') ||
+        textLower.contains('دفع لصديق');
+    final money = textLower.contains('بمبلغ') ||
+        textLower.contains('مبلغ') ||
+        textLower.contains('ils') ||
+        textLower.contains('nis') ||
+        textLower.contains('₪');
+    return friend && money;
   }
 
   /// Align with Android [looksLikeMoneyFingerprintFromKnownBankApp].
