@@ -115,6 +115,7 @@ class AuthProvider extends ChangeNotifier {
     if (_isAuthenticated) {
       if (!_isViewerMode) {
         await _storage.mirrorSecureTokensToSharedPreferences();
+        await AndroidNotificationCaptureService.flushNativeQueue();
         await refreshSubscription();
         _startSubscriptionPolling();
         unawaited(SystemInboxTrayNotifier.instance.start(_api));
@@ -151,6 +152,7 @@ class AuthProvider extends ChangeNotifier {
         );
         _isAuthenticated = true;
         _isViewerMode = false;
+        await AndroidNotificationCaptureService.flushNativeQueue();
         await refreshSubscription();
         _startSubscriptionPolling();
         unawaited(SystemInboxTrayNotifier.instance.start(_api));

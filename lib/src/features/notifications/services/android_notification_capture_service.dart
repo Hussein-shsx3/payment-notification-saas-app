@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -51,6 +52,15 @@ class AndroidNotificationCaptureService {
       data: 'package:${info.packageName}',
     );
     await intent.launch();
+  }
+
+  /// Native offline queue — call after login / token mirror (main account).
+  static Future<void> flushNativeQueue() async {
+    if (kIsWeb) return;
+    try {
+      const ch = MethodChannel('com.paymentnotify/native_capture');
+      await ch.invokeMethod<void>('flushQueue');
+    } catch (_) {}
   }
 
   Future<void> start() async {
