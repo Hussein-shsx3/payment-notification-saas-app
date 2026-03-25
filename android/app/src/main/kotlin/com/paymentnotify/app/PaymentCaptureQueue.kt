@@ -114,6 +114,10 @@ object PaymentCaptureQueue {
         return Pair(code, response)
     }
 
+    /** True when the capture should stay queued for retry (auth, rate limit, server errors). */
+    private fun shouldQueueRetryForCapture(code: Int): Boolean =
+        code == 401 || code == 403 || code >= 500 || code == 429 || code == 408
+
     private fun sendPayloadWithRefresh(
         context: Context,
         baseUrl: String,
@@ -146,16 +150,17 @@ object PaymentCaptureQueue {
                         val retryHeaders = mapOf("Authorization" to "Bearer $newAccessToken")
                         val (retryCode, retryBody) = postJson("$baseUrl/notifications/capture", payload, retryHeaders)
                         Log.d(TAG, "Capture retry response: $retryCode $retryBody")
-                        return retryCode in 200..299
+                        if (retryCode in 200..299) return true
+                        if (shouldQueueRetryForCapture(retryCode)) return false
+                        return true
                     }
                 } else {
                     Log.e(TAG, "Refresh failed: $rCode $rBody")
                 }
+                return false
             }
 
-            if (code == 401) return false
-
-            if (code >= 500 || code == 429) return false
+            if (shouldQueueRetryForCapture(code)) return false
             return true
         } catch (e: Exception) {
             Log.e(TAG, "sendPayloadWithRefresh error", e)
