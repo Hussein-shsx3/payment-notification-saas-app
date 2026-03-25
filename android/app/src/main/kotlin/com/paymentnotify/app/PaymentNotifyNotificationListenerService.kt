@@ -91,7 +91,7 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
 
     private fun scheduleDebouncedFlush() {
         mainHandler.removeCallbacks(debouncedFlushRunnable)
-        mainHandler.postDelayed(debouncedFlushRunnable, 1200L)
+        mainHandler.postDelayed(debouncedFlushRunnable, 450L)
     }
 
     private fun registerConnectivityFlush() {

@@ -307,13 +307,64 @@ class PaymentNotificationParser {
     final bankKw = _hasBankKeywords(textLower);
     final isIburaq = isSms && _containsAny(haystack, ['iburaq', 'ايبرق', 'البراق']);
 
-    if (isKnown) return strong || bankOp;
+    if (isKnown) {
+      return strong || bankOp || _looksLikeMoneyFingerprintFromKnownBankApp(textLower);
+    }
     if (isIburaq && strong) return true;
-    if (isSms && bankKw && strong) return true;
+    if (isSms &&
+        bankKw &&
+        (strong || _looksLikeMoneyFingerprintFromKnownBankApp(textLower))) {
+      return true;
+    }
     final palestineLine = textLower.contains('تحويل بنكي') &&
         (textLower.contains('بمبلغ') || textLower.contains('مبلغ'));
     if (palestineLine && (strong || bankOp)) return true;
     return false;
+  }
+
+  /// Align with Android [looksLikeMoneyFingerprintFromKnownBankApp].
+  static bool _looksLikeMoneyFingerprintFromKnownBankApp(String textLower) {
+    if (!RegExp(r'\d').hasMatch(textLower)) return false;
+    return _containsAny(textLower, [
+      'مبلغ',
+      'بمبلغ',
+      'رصيد',
+      'حساب',
+      'حوالة',
+      'عملية',
+      'شيكل',
+      'شيقل',
+      'نيس',
+      '₪',
+      'ils',
+      'nis',
+      'jod',
+      'usd',
+      'eur',
+      'gbp',
+      'transfer',
+      'payment',
+      'deposit',
+      'credit',
+      'debit',
+      'amount',
+      'balance',
+      'بنك',
+      'bank',
+      'bop',
+      'palestine',
+      'فلسطين',
+      'تحويل بنكي',
+      'إشعار',
+      'اشعار',
+      'إيداع',
+      'ايداع',
+      'استلام',
+      'استقبال',
+      'واردة',
+      'وارد',
+      'صادرة',
+    ]);
   }
 
   static bool _isKnownPaymentAppPackage(String packageLower) {

@@ -70,28 +70,48 @@ object PaymentNotifyFilters {
         )
         val hasBankOp = bankOperationHints.any { text.contains(it) }
 
-        val hasBankKeywords = text.contains("bank") || text.contains("بنك") ||
-            text.contains("bop") || text.contains("palestine") || text.contains("فلسطين") ||
-            text.contains("jawwal") || text.contains("palpay") || text.contains("جوال") ||
-            text.contains("بالباي") || text.contains("بال باي") || text.contains("ايبرق")
-
         val isIburaq = isSmsApp && (
             text.contains("iburaq") || text.contains("ايبرق") || text.contains("البراق")
             )
 
         if (isKnownPaymentApp) {
-            return hasStrongHint || hasBankOp
+            return hasStrongHint || hasBankOp || looksLikeMoneyFingerprintFromKnownBankApp(text)
         }
 
         if (isIburaq && hasStrongHint) return true
 
-        if (isSmsApp && hasBankKeywords && hasStrongHint) return true
+        if (isSmsApp && bankKeywordsMatch(text) && (hasStrongHint || looksLikeMoneyFingerprintFromKnownBankApp(text))) {
+            return true
+        }
 
         val isPalestineBankTransferLine = text.contains("تحويل بنكي") &&
             (text.contains("بمبلغ") || text.contains("مبلغ"))
         if (isPalestineBankTransferLine && (hasStrongHint || hasBankOp)) return true
 
         return false
+    }
+
+    /**
+     * Known bank/wallet apps: digits + money/bank cue — catches incoming templates that omit our "strong" phrases.
+     * Still blocked by falsePositives / junk / internal-transfer rules above.
+     */
+    private fun looksLikeMoneyFingerprintFromKnownBankApp(text: String): Boolean {
+        if (!text.any { it.isDigit() }) return false
+        val cues = listOf(
+            "مبلغ", "بمبلغ", "رصيد", "حساب", "حوالة", "عملية", "شيكل", "شيقل", "نيس",
+            "₪", "ils", "nis", "jod", "usd", "eur", "gbp",
+            "transfer", "payment", "deposit", "credit", "debit", "amount", "balance",
+            "بنك", "bank", "bop", "palestine", "فلسطين", "تحويل بنكي", "إشعار", "اشعار",
+            "إيداع", "ايداع", "استلام", "استقبال", "واردة", "وارد", "صادرة",
+        )
+        return cues.any { text.contains(it) }
+    }
+
+    private fun bankKeywordsMatch(text: String): Boolean {
+        return text.contains("bank") || text.contains("بنك") ||
+            text.contains("bop") || text.contains("palestine") || text.contains("فلسطين") ||
+            text.contains("jawwal") || text.contains("palpay") || text.contains("جوال") ||
+            text.contains("بالباي") || text.contains("بال باي") || text.contains("ايبرق")
     }
 
     private fun isInternalAccountTransferOnly(text: String): Boolean {

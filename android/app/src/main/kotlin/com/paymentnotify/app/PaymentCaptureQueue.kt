@@ -10,6 +10,7 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.concurrent.Executors
 
 /**
  * Background capture + offline queue. Must not run network on the main thread
@@ -20,6 +21,9 @@ object PaymentCaptureQueue {
     const val API_BASE_URL = "https://payment-notification-saas-server.onrender.com/api"
     private const val QUEUE_KEY = "pending_payment_queue"
     private const val QUEUE_MAX_ITEMS = 300
+
+    /** Drains the offline queue without blocking the current capture POST on the listener executor. */
+    private val queueFlushExecutor = Executors.newSingleThreadExecutor()
 
     private fun prefs(context: Context): SharedPreferences {
         return context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
@@ -50,7 +54,8 @@ object PaymentCaptureQueue {
         return sb.toString()
     }
 
-    private fun isDuplicate(context: Context, key: String, ttlMs: Long = 24 * 60 * 60 * 1000): Boolean {
+    /** Short window: suppress only rapid re-posts of the exact same tray slot + same text (OEM spam). */
+    private fun isDuplicate(context: Context, key: String, ttlMs: Long = 90_000L): Boolean {
         val now = System.currentTimeMillis()
         val p = prefs(context)
         val last = p.getLong("dedupe_$key", -1L)
@@ -94,8 +99,8 @@ object PaymentCaptureQueue {
     private fun postJson(url: String, body: JSONObject, headers: Map<String, String>): Pair<Int, String> {
         val conn = URL(url).openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
-        conn.connectTimeout = 20000
-        conn.readTimeout = 20000
+        conn.connectTimeout = 10000
+        conn.readTimeout = 10000
         conn.doOutput = true
         headers.forEach { (k, v) -> conn.setRequestProperty(k, v) }
         conn.setRequestProperty("Content-Type", "application/json")
@@ -195,6 +200,18 @@ object PaymentCaptureQueue {
         Log.d(TAG, "Queue flush done. Remaining=${remaining.size}")
     }
 
+    /** Non-blocking: pending queue is drained on a separate thread so new captures are not delayed. */
+    fun scheduleFlushQueue(context: Context) {
+        val app = context.applicationContext
+        queueFlushExecutor.execute {
+            try {
+                flushQueue(app)
+            } catch (e: Exception) {
+                Log.e(TAG, "scheduleFlushQueue error", e)
+            }
+        }
+    }
+
     /**
      * Full pipeline: filter → dedupe → POST or enqueue (runs on background thread).
      */
@@ -213,9 +230,11 @@ object PaymentCaptureQueue {
             return
         }
 
-        val dedupeKey = sha256Hex(instanceKey).take(24)
+        // Include title+message so different transfers are not dropped when the OS reuses sbn.key.
+        val dedupeRaw = "$instanceKey\u0000$title\u0000$message"
+        val dedupeKey = sha256Hex(dedupeRaw)
         if (isDuplicate(context, dedupeKey)) {
-            Log.d(TAG, "Duplicate instance (same tray notification): ${dedupeKey.take(8)}…")
+            Log.d(TAG, "Duplicate post (same key+text within TTL): ${dedupeKey.take(12)}…")
             return
         }
 
@@ -238,6 +257,6 @@ object PaymentCaptureQueue {
         if (!sent) {
             enqueuePayload(context, payload)
         }
-        flushQueue(context)
+        scheduleFlushQueue(context)
     }
 }
