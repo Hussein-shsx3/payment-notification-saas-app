@@ -61,6 +61,8 @@ object PaymentNotifyFilters {
             "تم بنجاح", "بنجاح", "تمت العملية", "دفعة", "إيداع", "ايداع",
             "حسابك", "لحسابك", "بمبلغ", "مبلغ", "رصيد",
             "payment", "transfer", "deposit", "wallet", "محفظة",
+            "شحن", "شحن محفظة", "حساب جاري", "بقيمة", "من جوال", "jawwal pay", "جوال باي",
+            "has been accepted", "has been credited", "transaction",
         )
         val hasStrongHint = strongPaymentHints.any { text.contains(it) }
 
@@ -94,6 +96,9 @@ object PaymentNotifyFilters {
                 (text.contains("بمبلغ") || text.contains("مبلغ") || text.contains("ils") || text.contains("nis"))
         if (isPalestineBankFriendPaymentLine) return true
 
+        // Incoming to BOP account/wallet (receive from Jawwal Pay etc.) — wording differs from outgoing.
+        if (isPalestineBankIncomingAccountLine(text)) return true
+
         return false
     }
 
@@ -109,8 +114,49 @@ object PaymentNotifyFilters {
             "transfer", "payment", "deposit", "credit", "debit", "amount", "balance",
             "بنك", "bank", "bop", "palestine", "فلسطين", "تحويل بنكي", "إشعار", "اشعار",
             "إيداع", "ايداع", "استلام", "استقبال", "واردة", "وارد", "صادرة",
+            "شحن", "بقيمة", "جاري", "transaction", "jawwal pay", "جوال باي",
         )
         return cues.any { text.contains(it) }
+    }
+
+    private fun isPalestineBankIncomingAccountLine(text: String): Boolean {
+        if (!text.any { it.isDigit() }) return false
+        val incomingCue =
+            text.contains("شحن") ||
+                text.contains("حوالة واردة") ||
+                text.contains("واردة لحسابك") ||
+                text.contains("واردة إلى حسابك") ||
+                text.contains("واردة الى حسابك") ||
+                text.contains("إيداع") ||
+                text.contains("ايداع") ||
+                text.contains("استلام") ||
+                text.contains("استقبال") ||
+                text.contains("من جوال") ||
+                text.contains("jawwal pay") ||
+                text.contains("جوال باي") ||
+                text.contains("credited") ||
+                text.contains("deposited") ||
+                text.contains("has been credited") ||
+                text.contains("has been accepted") ||
+                text.contains("تم إضافة") ||
+                text.contains("تم اضافة") ||
+                text.contains("قيد إيداع") ||
+                text.contains("اضافة مبلغ")
+        val bankOrMoney =
+            text.contains("bop") ||
+                text.contains("بنك") ||
+                text.contains("bank") ||
+                text.contains("فلسطين") ||
+                text.contains("palestine") ||
+                text.contains("ils") ||
+                text.contains("nis") ||
+                text.contains("₪") ||
+                text.contains("مبلغ") ||
+                text.contains("بمبلغ") ||
+                text.contains("بقيمة") ||
+                text.contains("شيكل") ||
+                text.contains("شيقل")
+        return incomingCue && bankOrMoney
     }
 
     private fun bankKeywordsMatch(text: String): Boolean {

@@ -279,6 +279,11 @@ class PaymentNotificationParser {
       'واردة',
       'للمحفظة',
       'إلى محفظتك',
+      'has been accepted',
+      'has been credited',
+      'accepted with',
+      'money transfer',
+      'شحن',
     ]);
   }
 
@@ -320,6 +325,7 @@ class PaymentNotificationParser {
         (textLower.contains('بمبلغ') || textLower.contains('مبلغ'));
     if (palestineLine && (strong || bankOp)) return true;
     if (_isPalestineBankFriendPaymentLine(textLower)) return true;
+    if (_isPalestineBankIncomingAccountLine(textLower)) return true;
     return false;
   }
 
@@ -334,6 +340,45 @@ class PaymentNotificationParser {
         textLower.contains('nis') ||
         textLower.contains('₪');
     return friend && money;
+  }
+
+  /// Incoming to BOP account/wallet (align with server [_isPalestineBankIncomingAccountLine]).
+  static bool _isPalestineBankIncomingAccountLine(String textLower) {
+    if (!RegExp(r'\d').hasMatch(textLower)) return false;
+    final incomingCue = textLower.contains('شحن') ||
+        textLower.contains('حوالة واردة') ||
+        textLower.contains('واردة لحسابك') ||
+        textLower.contains('واردة إلى حسابك') ||
+        textLower.contains('واردة الى حسابك') ||
+        textLower.contains('إيداع') ||
+        textLower.contains('ايداع') ||
+        textLower.contains('استلام') ||
+        textLower.contains('استقبال') ||
+        textLower.contains('من جوال') ||
+        textLower.contains('jawwal pay') ||
+        textLower.contains('جوال باي') ||
+        textLower.contains('credited') ||
+        textLower.contains('deposited') ||
+        textLower.contains('has been credited') ||
+        textLower.contains('has been accepted') ||
+        textLower.contains('تم إضافة') ||
+        textLower.contains('تم اضافة') ||
+        textLower.contains('قيد إيداع') ||
+        textLower.contains('اضافة مبلغ');
+    final bankOrMoney = textLower.contains('bop') ||
+        textLower.contains('بنك') ||
+        textLower.contains('bank') ||
+        textLower.contains('فلسطين') ||
+        textLower.contains('palestine') ||
+        textLower.contains('ils') ||
+        textLower.contains('nis') ||
+        textLower.contains('₪') ||
+        textLower.contains('مبلغ') ||
+        textLower.contains('بمبلغ') ||
+        textLower.contains('بقيمة') ||
+        textLower.contains('شيكل') ||
+        textLower.contains('شيقل');
+    return incomingCue && bankOrMoney;
   }
 
   /// Align with Android [looksLikeMoneyFingerprintFromKnownBankApp].
@@ -378,6 +423,12 @@ class PaymentNotificationParser {
       'واردة',
       'وارد',
       'صادرة',
+      'شحن',
+      'بقيمة',
+      'جاري',
+      'transaction',
+      'jawwal pay',
+      'جوال باي',
     ]);
   }
 
@@ -533,6 +584,16 @@ class PaymentNotificationParser {
       'deposit',
       'wallet',
       'محفظة',
+      'شحن',
+      'شحن محفظة',
+      'حساب جاري',
+      'بقيمة',
+      'من جوال',
+      'jawwal pay',
+      'جوال باي',
+      'has been accepted',
+      'has been credited',
+      'transaction',
     ]);
   }
 
