@@ -62,6 +62,10 @@ class PaymentNotificationParser {
       return null;
     }
 
+    if (_isLikelyNonPaymentJunk(haystack.toLowerCase())) {
+      return null;
+    }
+
     final combinedForAmount = _normalizeDigits('$title\n$message').trim();
     final combinedLower = combinedForAmount.toLowerCase();
     if (_isInternalAccountTransferOnly(combinedLower)) {
@@ -100,11 +104,17 @@ class PaymentNotificationParser {
     sender = senderMatch?.group(1)?.trim();
 
     final fullText = '$titleLower $messageLower';
-    final hasPaymentIntent = _isPaymentIntent(fullText);
     final hasValidAmount = amount != null && amount > 0;
 
-    // Keep only real payment/transfer notifications with a positive amount.
-    if (!hasPaymentIntent || !hasValidAmount) {
+    if (!hasValidAmount) {
+      return null;
+    }
+
+    if (!_passesCaptureFilter(
+          packageLower: packageLower,
+          titleLower: titleLower,
+          messageLower: messageLower,
+        )) {
       return null;
     }
 
@@ -152,14 +162,7 @@ class PaymentNotificationParser {
       return 'Palestine Bank';
     }
 
-    final isSmsApp = _containsAny(packageName, [
-      'com.google.android.apps.messaging',
-      'com.samsung.android.messaging',
-      'com.android.mms',
-      'com.android.messaging',
-      'com.miui.mms',
-      'com.huawei.message',
-    ]);
+    final isSmsApp = _isSmsAppPackage(packageName);
 
     // Check for Iburaq transfer via SMS
     if (isSmsApp && _containsAny(input, ['iburaq', 'ايبرق', 'البراق'])) {
@@ -282,22 +285,94 @@ class PaymentNotificationParser {
     return 'unknown';
   }
 
-  /// Incoming + outgoing + neutral (we only exclude internal account↔account above).
-  static bool _isPaymentIntent(String input) {
-    return _containsAny(input, [
-      // English — received
+  /// Same gate as native [PaymentNotifyNotificationListenerService.shouldRoughlyLookLikePayment].
+  static bool _passesCaptureFilter({
+    required String packageLower,
+    required String titleLower,
+    required String messageLower,
+  }) {
+    final textLower = '$titleLower $messageLower';
+    final haystack = '$packageLower $titleLower $messageLower';
+
+    final isKnown = _isKnownPaymentAppPackage(packageLower);
+    final isSms = _isSmsAppPackage(packageLower);
+    final strong = _hasStrongPaymentHint(textLower);
+    final bankOp = _hasBankOperationHints(textLower);
+    final bankKw = _hasBankKeywords(textLower);
+    final isIburaq = isSms && _containsAny(haystack, ['iburaq', 'ايبرق', 'البراق']);
+
+    if (isKnown) return strong || bankOp;
+    if (isIburaq && strong) return true;
+    if (isSms && bankKw && strong) return true;
+    return false;
+  }
+
+  static bool _isKnownPaymentAppPackage(String packageLower) {
+    return _containsAny(packageLower, [
+      'palpay',
+      'com.palpay',
+      'jawwal',
+      'jawwalpay',
+      'ps.jawwal',
+      'com.jawwal',
+      'bankofpalestine',
+      'com.bop',
+      'bop.mobile',
+      'albop',
+      'efinance',
+      'palestinebank',
+      'cash.pal',
+      'wallet.ps',
+    ]);
+  }
+
+  static bool _isSmsAppPackage(String packageLower) {
+    return _containsAny(packageLower, [
+      'com.google.android.apps.messaging',
+      'com.samsung.android.messaging',
+      'com.android.mms',
+      'com.android.messaging',
+      'com.miui.mms',
+      'com.huawei.message',
+      'com.oneplus.mms',
+      'com.coloros.mms',
+    ]);
+  }
+
+  static bool _hasBankKeywords(String textLower) {
+    return textLower.contains('bank') ||
+        textLower.contains('بنك') ||
+        textLower.contains('bop') ||
+        textLower.contains('palestine') ||
+        textLower.contains('فلسطين');
+  }
+
+  static bool _hasBankOperationHints(String textLower) {
+    return _containsAny(textLower, [
+      'تحويل بنكي',
+      'بنك فلسطين',
+      'شيكل',
+      'شيقل',
+      'نيس',
+      '₪',
+      'ils',
+      'nis',
+      'jod',
+      'usd',
+    ]);
+  }
+
+  static bool _hasStrongPaymentHint(String textLower) {
+    return _containsAny(textLower, [
       'received',
       'credited',
       'deposited',
-      'you received',
       'payment received',
       'transfer received',
-      'incoming',
-      'you got',
+      'you received',
       'account credited',
       'credit alert',
       'cash in',
-      // English — sent
       'you sent',
       'you transferred',
       'you paid',
@@ -308,39 +383,24 @@ class PaymentNotificationParser {
       'outgoing transfer',
       'money sent',
       'transaction sent',
-      'deducted for',
-      'debited for',
+      'deducted',
       'debited',
       'withdrawal',
       'cash out',
-      // English — common bank templates (short / currency-led)
-      'transaction',
-      'purchase',
-      'spent',
-      'amount',
-      'debit',
-      'nis',
-      'ils',
-      'jod',
-      'usd',
-      'gbp',
-      'eur',
-      // Arabic — received
       'تم استلام',
       'تم ايداع',
       'تم إيداع',
       'استلمت',
       'وصلك',
-      'تم تحويل لك',
-      'تم الايداع',
-      'تم الإيداع',
       'وردت',
       'تم استقبال',
       'حوالة واردة',
-      'حوالة واردة لحسابك',
       'واردة لحسابك',
       'واردة الى حسابك',
       'واردة إلى حسابك',
+      'تم تحويل لك',
+      'تم الايداع',
+      'تم الإيداع',
       'تمت إضافة',
       'تم اضافه',
       'اضافة الى حسابك',
@@ -349,50 +409,37 @@ class PaymentNotificationParser {
       'تم إضافة',
       'إشعار إيداع',
       'اشعار ايداع',
-      // Arabic — sent
       'تم ارسال',
       'ارسلت',
-      'قمت بارسال',
       'تم الدفع لـ',
       'تم الدفع إلى',
       'تم الدفع ل',
       'دفعت',
-      'تم خصم لـ',
+      'تم خصم',
       'تم التحويل الى',
       'تم التحويل إلى',
       'حولت',
-      'ارسال الى',
-      'إرسال إلى',
       'حوالة صادرة',
       'صادرة من حسابك',
       'تم سحب',
-      'سحب',
       'شراء',
-      // Palestine Bank / local
       'تحويل بنكي',
       'تحويل دفع لصديق',
-      'تم بنجاح',
-      'بنجاح',
       'عملية ناجحة',
       'إشعار عملية',
       'اشعار عملية',
       'عملية مالية',
+      'حسابك',
+      'لحسابك',
+      'بمبلغ',
+      'مبلغ',
+      'رصيد',
       'شيكل',
       'شيقل',
       'نيس',
-      'موبايل',
-      'بمبلغ',
-      // General
       'payment',
       'transfer',
       'deposit',
-      'credited',
-      'تحويل',
-      'ايداع',
-      'حوالة',
-      'دفعة',
-      'مبلغ',
-      'عملية',
       'wallet',
       'محفظة',
     ]);
@@ -439,7 +486,8 @@ class PaymentNotificationParser {
   }
 
   static bool _isFalsePositive(String input) {
-    return _containsAny(input, [
+    final lower = input.toLowerCase();
+    return _containsAny(lower, [
       'otp',
       'one-time password',
       'verification code',
@@ -452,6 +500,35 @@ class PaymentNotificationParser {
       'رمز التحقق',
       'رمز التأكيد',
       'code:',
+      'two-factor',
+      'authenticator',
+      'signed in from',
+      'new device',
+    ]);
+  }
+
+  static bool _isLikelyNonPaymentJunk(String lower) {
+    return _containsAny(lower, [
+      'steps',
+      'calories',
+      'followers',
+      'likes',
+      'views',
+      'score',
+      'level ',
+      'weather',
+      'youtube',
+      'tiktok',
+      'instagram',
+      'delivery',
+      'tracking',
+      'promo code',
+      'خصم',
+      'عرض',
+      'طقس',
+      'متابع',
+      'لعبة',
+      'نقاط',
     ]);
   }
 
@@ -484,14 +561,7 @@ class PaymentNotificationParser {
       return 'Palestine Bank';
     }
 
-    final isSmsApp = _containsAny(packageNameLower, [
-      'com.google.android.apps.messaging',
-      'com.samsung.android.messaging',
-      'com.android.mms',
-      'com.android.messaging',
-      'com.miui.mms',
-      'com.huawei.message',
-    ]);
+    final isSmsApp = _isSmsAppPackage(packageNameLower);
     if (isSmsApp && _containsAny(messageLower, ['iburaq', 'ايبرق', 'البراق'])) return 'Iburaq';
     if (isSmsApp) return 'SMS Payment';
     return 'Other';

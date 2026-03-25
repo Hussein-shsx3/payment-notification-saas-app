@@ -135,90 +135,113 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         return text.contains("حركة على بطاقة")
     }
 
+    /**
+     * Games, social, weather, promos — often contain digits but are not bank/wallet payments.
+     * Gaza/Palestine focus: we only forward when the app is a known wallet/bank/SMS path OR text is clearly money movement.
+     */
+    private fun isLikelyNonPaymentJunk(text: String): Boolean {
+        val junk = listOf(
+            "steps", "calories", "km walked", "followers", "following", "likes", "views", "new followers",
+            "level ", "score", "points", "achievement", "game", "match", "goal",
+            "weather", "°c", "°f", "humidity", "wind",
+            "youtube", "subscribe", "uploaded", "instagram", "facebook", "tiktok", "snapchat",
+            "delivery", "your order", "tracking", "shipped",
+            "promo code", "discount", "sale ends", "خصم", "عرض", "تخفيضات", "تسوق",
+            "new email", "inbox", "mailbox",
+            "battery", "charging", "wifi", "bluetooth connected",
+            "missed call", "incoming call", "voice message",
+            "طقس", "درجة الحرارة", "متابع", "إعجاب", "مشاهدة", "لعبة", "مستوى", "نقاط",
+            "خطوات", "سعرات", "إعلان", "فيديو", "ستوري"
+        )
+        if (junk.any { text.contains(it) }) return true
+        return false
+    }
+
     private fun shouldRoughlyLookLikePayment(title: String, message: String, packageName: String): Boolean {
         val text = (title + " " + message).lowercase()
 
         if (isInternalAccountTransferOnly(text)) return false
         if (isCardMovementExcluded(text)) return false
+        if (isLikelyNonPaymentJunk(text)) return false
 
-        // Quick skip for common false positives (OTP, verification codes, etc.)
         val falsePositives = listOf(
-            "otp", "verification code", "confirm code", "password reset", "login code", "code:",
-            "رمز التحقق", "رمز التأكيد"
+            "otp", "one-time", "verification code", "confirm code", "password reset", "login code", "code:",
+            "activation code", "security code", "two-factor", "2fa", "authenticator",
+            "رمز التحقق", "رمز التأكيد", "رمز الدخول", "تأكيد الهوية", "تحقق من", "ادخل الرمز",
+            "new login", "signed in from", "new device",
+            "captcha", "recaptcha"
         )
         if (falsePositives.any { text.contains(it) }) return false
 
-        // Incoming + outgoing + neutral money movement (we only exclude internal account↔account above).
-        val paymentHints = listOf(
-            "received", "credited", "deposited", "you received", "payment received",
-            "transfer received", "incoming", "you got", "account credited", "credit alert", "cash in",
-            "you sent", "you transferred", "you paid", "sent to", "payment to", "transfer to",
-            "paid to", "outgoing transfer", "money sent", "transaction sent", "deducted for",
-            "debited for", "debited", "withdrawal", "cash out",
-            "transaction", "purchase", "spent", "amount", "debit",
-            "gbp", "eur",
-            "تم استلام", "تم ايداع", "استلمت", "وصلك", "تم تحويل لك", "تم الايداع",
-            "تم إيداع", "تم الإيداع", "وردت", "تم استقبال", "حوالة واردة", "حوالة واردة لحسابك",
-            "واردة الى حسابك", "واردة إلى حسابك", "واردة لحسابك",
-            "تمت إضافة", "تم اضافه", "اضافة الى حسابك", "إضافة إلى حسابك", "تم اضافة", "تم إضافة",
-            "إشعار إيداع", "اشعار ايداع",
-            "تم ارسال", "ارسلت", "تم الدفع لـ", "تم الدفع إلى", "تم الدفع ل", "دفعت",
-            "تم خصم لـ", "تم التحويل الى", "تم التحويل إلى", "حولت", "ارسال الى", "إرسال إلى",
-            "حوالة صادرة", "صادرة من حسابك", "تم سحب", "سحب", "شراء",
-            "تحويل بنكي", "تحويل دفع لصديق", "بنكي", "تم بنجاح", "بنجاح",
-            "عملية ناجحة", "إشعار عملية", "اشعار عملية", "عملية مالية",
-            "رصيد", "مبلغ", "حسابك", "لحسابك", "شيكل", "شيقل", "نيس",
-            "موبايل", "بمبلغ", "payment", "transfer", "deposit", "credited",
-            "تحويل", "ايداع", "حوالة", "دفعة", "wallet", "محفظة", "ils", "nis", "jod", "usd"
-        )
-
-        // Check for recognized payment sources
         val packageLower = packageName.lowercase()
-        val isKnownPaymentApp = listOf(
-            "palpay", "jawwal", "bankofpalestine", "bop", "com.bop",
-            "com.palpay", "com.jawwal", "ps.jawwal", "bank of palestine",
-            "com.bop.mobile", "bop.mobile", "bankofpalestine", "albop",
-            "بال باي", "بالباي", "جوال باي", "بنك فلسطين"
-        ).any { packageLower.contains(it) }
 
-        // Check for SMS apps (for Iburaq and bank SMS)
-        val isSmsApp = listOf(
+        // PalPay, Jawwal Pay, Palestine Bank (BOP), Cash / e-finance variants — package name substrings.
+        val knownPaymentPackages = listOf(
+            "palpay", "com.palpay", "jawwal", "jawwalpay", "ps.jawwal", "com.jawwal",
+            "bankofpalestine", "bank of palestine", "com.bop", "bop.mobile", "albop", "efinance",
+            "palestinebank", "cash.pal", "wallet.ps"
+        )
+        val isKnownPaymentApp = knownPaymentPackages.any { packageLower.contains(it) }
+
+        val smsPackages = listOf(
             "com.google.android.apps.messaging",
             "com.samsung.android.messaging",
             "com.android.mms",
             "com.android.messaging",
             "com.miui.mms",
-            "com.huawei.message"
-        ).any { packageLower.contains(it) }
-
-        // Check for Iburaq transfer via SMS
-        val isIburaqTransfer = isSmsApp && (
-            text.contains("iburaq") || text.contains("ايبرق") || text.contains("البراق")
+            "com.huawei.message",
+            "com.oneplus.mms",
+            "com.coloros.mms"
         )
+        val isSmsApp = smsPackages.any { packageLower.contains(it) }
 
-        // Check for bank SMS with payment keywords
+        // Strong money-movement phrases (EN + AR) — avoid bare "transaction" / "amount" alone (too many false positives).
+        val strongPaymentHints = listOf(
+            "received", "credited", "deposited", "payment received", "transfer received",
+            "you received", "account credited", "credit alert", "cash in",
+            "you sent", "you transferred", "you paid", "sent to", "payment to", "transfer to",
+            "paid to", "outgoing transfer", "money sent", "transaction sent",
+            "deducted", "debited", "withdrawal", "cash out",
+            "تم استلام", "تم ايداع", "تم إيداع", "استلمت", "وصلك", "وردت", "تم استقبال",
+            "حوالة واردة", "واردة لحسابك", "واردة الى حسابك", "واردة إلى حسابك",
+            "تم تحويل لك", "تم الايداع", "تم الإيداع",
+            "تمت إضافة", "تم اضافه", "اضافة الى حسابك", "إضافة إلى حسابك", "تم اضافة", "تم إضافة",
+            "إشعار إيداع", "اشعار ايداع",
+            "تم ارسال", "ارسلت", "تم الدفع لـ", "تم الدفع إلى", "تم الدفع ل", "دفعت",
+            "تم خصم", "تم التحويل الى", "تم التحويل إلى", "حولت", "حوالة صادرة", "صادرة من حسابك",
+            "تم سحب", "شراء",
+            "تحويل بنكي", "تحويل دفع لصديق", "عملية ناجحة", "إشعار عملية", "اشعار عملية", "عملية مالية",
+            "حسابك", "لحسابك", "بمبلغ", "مبلغ", "رصيد",
+            "payment", "transfer", "deposit", "wallet", "محفظة"
+        )
+        val hasStrongHint = strongPaymentHints.any { text.contains(it) }
+
+        val bankOperationHints = listOf(
+            "تحويل بنكي", "بنك فلسطين", "شيكل", "شيقل", "نيس", "₪",
+            "ils", "nis", "jod", "usd"
+        )
+        val hasBankOp = bankOperationHints.any { text.contains(it) }
+
         val hasBankKeywords = text.contains("bank") || text.contains("بنك") ||
-            text.contains("bop") || text.contains("palestine")
+            text.contains("bop") || text.contains("palestine") || text.contains("فلسطين")
 
-        val hasPaymentHint = paymentHints.any { text.contains(it) }
+        val isIburaq = isSmsApp && (
+            text.contains("iburaq") || text.contains("ايبرق") || text.contains("البراق")
+            )
 
-        // Strong BOP / local banking wording (titles like "تحويل بنكي" may carry little else)
-        val hasBankOperationHint = listOf(
-            "تحويل بنكي", "بنك فلسطين", "مبلغ", "رصيد", "حسابك",
-            "لحسابك", "عملية", "إشعار", "اشعار", "شيكل", "شيقل", "نيس", "ils", "nis"
-        ).any { text.contains(it) }
-
-        val genericMoneyHint = listOf(
-            "مبلغ", "بمبلغ", "ils", "jod", "usd", "nis", "شيكل", "دفع", "تحويل",
-            "transfer", "payment", "pay", "wallet", "palpay", "جوال"
-        ).any { text.contains(it) }
-
-        return when {
-            isKnownPaymentApp && (hasPaymentHint || hasBankOperationHint) -> true
-            isIburaqTransfer && hasPaymentHint -> true
-            isSmsApp && hasBankKeywords && hasPaymentHint -> true
-            else -> hasPaymentHint || hasBankOperationHint || genericMoneyHint
+        // Known wallet/bank app: forward when text looks like money (PalPay / Jawwal / BOP templates).
+        if (isKnownPaymentApp) {
+            return hasStrongHint || hasBankOp
         }
+
+        // Iburaq (SMS rail): require strong hint as well.
+        if (isIburaq && hasStrongHint) return true
+
+        // Bank SMS (generic): must look like a bank + strong payment wording (stricter than before).
+        if (isSmsApp && hasBankKeywords && hasStrongHint) return true
+
+        // Do NOT forward random apps that only matched weak words like "amount" or "transaction".
+        return false
     }
 
     private fun readQueue(context: Context): MutableList<JSONObject> {

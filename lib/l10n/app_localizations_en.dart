@@ -336,6 +336,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Offline queue auto-flushes when internet returns and every 30s.';
 
   @override
+  String get captureAndroidReliabilityHint =>
+      'Some phones (Xiaomi / Redmi / POCO) may block background capture. Turn on autostart for this app, set battery to unrestricted, lock the app in recents, and ensure notification access is allowed (including restricted settings if sideloaded).';
+
+  @override
+  String get openAppSettings => 'App settings';
+
+  @override
   String get subscriptionTitle => 'Subscription';
 
   @override

@@ -4,6 +4,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'capture_settings_service.dart';
 import 'payment_notification_forwarder.dart';
@@ -38,6 +39,16 @@ class AndroidNotificationCaptureService {
   Future<void> openPermissionSettings() async {
     const intent = AndroidIntent(
       action: 'android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS',
+    );
+    await intent.launch();
+  }
+
+  /// Battery / MIUI autostart live under per-app system settings on many OEMs.
+  Future<void> openAppDetailsSettings() async {
+    final info = await PackageInfo.fromPlatform();
+    final intent = AndroidIntent(
+      action: 'android.settings.APPLICATION_DETAILS_SETTINGS',
+      data: 'package:${info.packageName}',
     );
     await intent.launch();
   }

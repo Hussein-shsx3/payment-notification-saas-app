@@ -336,6 +336,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'تُفرغ قائمة الانتظار تلقائياً عند عودة الإنترنت وكل 30 ثانية.';
 
   @override
+  String get captureAndroidReliabilityHint =>
+      'قد تمنع بعض الهواتف (شاومي / ريدمي / بوكو) التقاط الخلفية. فعّل التشغيل التلقائي، وضع البطارية بدون قيود، قفل التطبيق في التطبيقات الأخيرة، وتأكد من السماح بإشعارات النظام (بما فيها الإعدادات المقيدة إذا ثبّتت التطبيق خارج المتجر).';
+
+  @override
+  String get openAppSettings => 'إعدادات التطبيق';
+
+  @override
   String get subscriptionTitle => 'الاشتراك';
 
   @override

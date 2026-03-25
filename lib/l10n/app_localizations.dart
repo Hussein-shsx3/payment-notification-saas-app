@@ -710,6 +710,12 @@ abstract class AppLocalizations {
   /// **'Offline queue auto-flushes when internet returns and every 30s.'**
   String get offlineQueueHint;
 
+  /// No description provided for @captureAndroidReliabilityHint.
+  String get captureAndroidReliabilityHint;
+
+  /// No description provided for @openAppSettings.
+  String get openAppSettings;
+
   /// No description provided for @subscriptionTitle.
   ///
   /// In en, this message translates to:

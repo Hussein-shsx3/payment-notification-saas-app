@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -242,6 +243,22 @@ class _DashboardScreenState extends State<DashboardScreen>
               l10n.offlineQueueHint,
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
+            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.captureAndroidReliabilityHint,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  onPressed: () async {
+                    await _captureService.openAppDetailsSettings();
+                  },
+                  child: Text(l10n.openAppSettings),
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -102,6 +102,8 @@
   "notificationCenterTileSubtitle": "Payment notifications sent to target email",
   "settingsTileSubtitle": "Profile, phone, password, and language",
   "offlineQueueHint": "Offline queue auto-flushes when internet returns and every 30s.",
+  "captureAndroidReliabilityHint": "Some phones (Xiaomi / Redmi / POCO) may block background capture. Turn on autostart for this app, set battery to unrestricted, lock the app in recents, and ensure notification access is allowed (including restricted settings if sideloaded).",
+  "openAppSettings": "App settings",
   "subscriptionTitle": "Subscription",
   "subscriptionPaymentProcessHeading": "How payment works",
   "subscriptionPaymentProcessIntro": "Subscription access is granted after your payment is verified. Please follow these steps in order.",
