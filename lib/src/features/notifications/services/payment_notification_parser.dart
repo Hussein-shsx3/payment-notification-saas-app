@@ -33,6 +33,10 @@ class PaymentNotificationParser {
     r'مبلغ[\s:]*(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)',
     caseSensitive: false,
   );
+  static final RegExp _amountAfterBimablagRegex = RegExp(
+    r'بمبلغ[\s:]*(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)',
+    caseSensitive: false,
+  );
   static final RegExp _transactionIdRegex = RegExp(
     r'(?:tx(?:n)?|transaction|ref|reference|رقم العملية|رقم المرجع)[\s:#-]*([A-Za-z0-9\-]{4,})',
     caseSensitive: false,
@@ -79,6 +83,8 @@ class PaymentNotificationParser {
         _amountRegex.firstMatch(combinedForAmount) ?? _amountRegex.firstMatch(normalizedMessage);
     amountMatch ??= _amountAfterMablagRegex.firstMatch(combinedForAmount) ??
         _amountAfterMablagRegex.firstMatch(normalizedMessage);
+    amountMatch ??= _amountAfterBimablagRegex.firstMatch(combinedForAmount) ??
+        _amountAfterBimablagRegex.firstMatch(normalizedMessage);
 
     double? amount;
     String? currency;
@@ -304,6 +310,9 @@ class PaymentNotificationParser {
     if (isKnown) return strong || bankOp;
     if (isIburaq && strong) return true;
     if (isSms && bankKw && strong) return true;
+    final palestineLine = textLower.contains('تحويل بنكي') &&
+        (textLower.contains('بمبلغ') || textLower.contains('مبلغ'));
+    if (palestineLine && (strong || bankOp)) return true;
     return false;
   }
 
@@ -323,6 +332,9 @@ class PaymentNotificationParser {
       'albop',
       'efinance',
       'palestinebank',
+      'palestine.bank',
+      'bop.ps',
+      'ps.bop',
       'cash.pal',
       'wallet.ps',
     ]);

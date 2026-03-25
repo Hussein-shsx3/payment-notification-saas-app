@@ -179,8 +179,8 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         val knownPaymentPackages = listOf(
             "palpay", "com.palpay", "net.palpay", "ps.palpay",
             "jawwal", "jawwalpay", "ps.jawwal", "com.jawwal",
-            "bankofpalestine", "bank of palestine", "com.bop", "bop.mobile", "albop", "efinance",
-            "palestinebank", "cash.pal", "wallet.ps"
+            "bankofpalestine", "bank of palestine", "com.bop", "bop.mobile", "bop.ps", "ps.bop",
+            "albop", "efinance", "palestinebank", "palestine.bank", "cash.pal", "wallet.ps"
         )
         val isKnownPaymentApp = knownPaymentPackages.any { packageLower.contains(it) }
 
@@ -243,6 +243,12 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
 
         // Bank SMS (generic): must look like a bank + strong payment wording (stricter than before).
         if (isSmsApp && hasBankKeywords && hasStrongHint) return true
+
+        // BOP / Palestine Bank mobile line (package id may not match known list on some OEM builds):
+        // "موبايل: تحويل بنكي: … بمبلغ 55.00 ILS"
+        val isPalestineBankTransferLine = text.contains("تحويل بنكي") &&
+            (text.contains("بمبلغ") || text.contains("مبلغ"))
+        if (isPalestineBankTransferLine && (hasStrongHint || hasBankOp)) return true
 
         // Do NOT forward random apps that only matched weak words like "amount" or "transaction".
         return false
@@ -318,6 +324,9 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
                     Log.e(TAG, "Refresh failed: $rCode $rBody")
                 }
             }
+
+            // Still unauthorized after refresh attempt — queue so we can retry when network/session recovers.
+            if (code == 401) return false
 
             // 5xx / 429: not delivered — caller should queue for retry.
             if (code >= 500 || code == 429) return false
