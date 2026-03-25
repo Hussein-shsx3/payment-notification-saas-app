@@ -465,6 +465,9 @@ abstract class AppLocalizations {
   String get validationEmailInvalid;
 
   /// No description provided for @validationEmailOrPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email (with @) or a phone number with at least 7 digits'**
   String get validationEmailOrPhoneInvalid;
 
   /// No description provided for @forgotPasswordLink.
