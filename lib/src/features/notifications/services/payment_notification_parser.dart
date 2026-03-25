@@ -316,6 +316,7 @@ class PaymentNotificationParser {
       return strong || bankOp || _looksLikeMoneyFingerprintFromKnownBankApp(textLower);
     }
     if (isIburaq && strong) return true;
+    if (isSms && _isSmsIburaqIncomingWireLine(textLower)) return true;
     if (isSms &&
         bankKw &&
         (strong || _looksLikeMoneyFingerprintFromKnownBankApp(textLower))) {
@@ -364,7 +365,12 @@ class PaymentNotificationParser {
         textLower.contains('تم إضافة') ||
         textLower.contains('تم اضافة') ||
         textLower.contains('قيد إيداع') ||
-        textLower.contains('اضافة مبلغ');
+        textLower.contains('اضافة مبلغ') ||
+        textLower.contains('رصيدكم') ||
+        textLower.contains('المتوفر') ||
+        textLower.contains('iburaq') ||
+        textLower.contains('ايبرق') ||
+        textLower.contains('البراق');
     final bankOrMoney = textLower.contains('bop') ||
         textLower.contains('بنك') ||
         textLower.contains('bank') ||
@@ -377,8 +383,26 @@ class PaymentNotificationParser {
         textLower.contains('بمبلغ') ||
         textLower.contains('بقيمة') ||
         textLower.contains('شيكل') ||
-        textLower.contains('شيقل');
+        textLower.contains('شيقل') ||
+        textLower.contains('رصيد');
     return incomingCue && bankOrMoney;
+  }
+
+  /// Iburaq SMS (align with server [_isSmsIburaqIncomingWireLine]).
+  static bool _isSmsIburaqIncomingWireLine(String textLower) {
+    if (!RegExp(r'\d').hasMatch(textLower)) return false;
+    final wire = textLower.contains('حوالة واردة') ||
+        textLower.contains('واردة لحسابك') ||
+        textLower.contains('واردة إلى حسابك') ||
+        textLower.contains('واردة الى حسابك');
+    final money = textLower.contains('بمبلغ') ||
+        textLower.contains('مبلغ') ||
+        textLower.contains('شيكل') ||
+        textLower.contains('شيقل') ||
+        textLower.contains('رصيد') ||
+        textLower.contains('رصيدكم') ||
+        textLower.contains('المتوفر');
+    return wire && money;
   }
 
   /// Align with Android [looksLikeMoneyFingerprintFromKnownBankApp].
@@ -457,16 +481,21 @@ class PaymentNotificationParser {
   }
 
   static bool _isSmsAppPackage(String packageLower) {
-    return _containsAny(packageLower, [
-      'com.google.android.apps.messaging',
-      'com.samsung.android.messaging',
-      'com.android.mms',
-      'com.android.messaging',
-      'com.miui.mms',
-      'com.huawei.message',
-      'com.oneplus.mms',
-      'com.coloros.mms',
-    ]);
+    if (_containsAny(packageLower, [
+          'com.google.android.apps.messaging',
+          'com.samsung.android.messaging',
+          'com.android.mms',
+          'com.android.messaging',
+          'com.miui.mms',
+          'com.huawei.message',
+          'com.oneplus.mms',
+          'com.coloros.mms',
+        ])) {
+      return true;
+    }
+    return packageLower.contains('messaging') ||
+        packageLower.contains('mms') ||
+        (packageLower.contains('sms') && packageLower.contains('android'));
   }
 
   static bool _hasBankKeywords(String textLower) {

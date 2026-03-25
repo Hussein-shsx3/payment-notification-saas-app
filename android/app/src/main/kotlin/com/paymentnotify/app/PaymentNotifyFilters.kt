@@ -41,7 +41,12 @@ object PaymentNotifyFilters {
             "com.oneplus.mms",
             "com.coloros.mms",
         )
-        val isSmsApp = smsPackages.any { packageLower.contains(it) }
+        // Include generic "messaging" / mms so OEM SMS apps not in the list still count (Iburaq SMS tray).
+        val isSmsApp =
+            smsPackages.any { packageLower.contains(it) } ||
+                packageLower.contains("messaging") ||
+                packageLower.contains("mms") ||
+                (packageLower.contains("sms") && packageLower.contains("android"))
 
         val strongPaymentHints = listOf(
             "received", "credited", "deposited", "payment received", "transfer received",
@@ -82,6 +87,9 @@ object PaymentNotifyFilters {
 
         if (isIburaq && hasStrongHint) return true
 
+        // Iburaq / SMS rail: "حوالة واردة لحسابك بمبلغ … شيكل. رصيدكم المتوفر …" (no "bank" keyword in body).
+        if (isSmsApp && isSmsIburaqIncomingWireLine(text)) return true
+
         if (isSmsApp && bankKeywordsMatch(text) && (hasStrongHint || looksLikeMoneyFingerprintFromKnownBankApp(text))) {
             return true
         }
@@ -119,6 +127,24 @@ object PaymentNotifyFilters {
         return cues.any { text.contains(it) }
     }
 
+    private fun isSmsIburaqIncomingWireLine(text: String): Boolean {
+        if (!text.any { it.isDigit() }) return false
+        val wire =
+            text.contains("حوالة واردة") ||
+                text.contains("واردة لحسابك") ||
+                text.contains("واردة إلى حسابك") ||
+                text.contains("واردة الى حسابك")
+        val money =
+            text.contains("بمبلغ") ||
+                text.contains("مبلغ") ||
+                text.contains("شيكل") ||
+                text.contains("شيقل") ||
+                text.contains("رصيد") ||
+                text.contains("رصيدكم") ||
+                text.contains("المتوفر")
+        return wire && money
+    }
+
     private fun isPalestineBankIncomingAccountLine(text: String): Boolean {
         if (!text.any { it.isDigit() }) return false
         val incomingCue =
@@ -141,7 +167,12 @@ object PaymentNotifyFilters {
                 text.contains("تم إضافة") ||
                 text.contains("تم اضافة") ||
                 text.contains("قيد إيداع") ||
-                text.contains("اضافة مبلغ")
+                text.contains("اضافة مبلغ") ||
+                text.contains("رصيدكم") ||
+                text.contains("المتوفر") ||
+                text.contains("iburaq") ||
+                text.contains("ايبرق") ||
+                text.contains("البراق")
         val bankOrMoney =
             text.contains("bop") ||
                 text.contains("بنك") ||
@@ -155,7 +186,8 @@ object PaymentNotifyFilters {
                 text.contains("بمبلغ") ||
                 text.contains("بقيمة") ||
                 text.contains("شيكل") ||
-                text.contains("شيقل")
+                text.contains("شيقل") ||
+                text.contains("رصيد")
         return incomingCue && bankOrMoney
     }
 
