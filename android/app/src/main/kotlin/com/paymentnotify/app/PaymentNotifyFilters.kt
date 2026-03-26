@@ -11,13 +11,17 @@ object PaymentNotifyFilters {
         if (isInternalAccountTransferOnly(text)) return false
         if (isCardMovementExcluded(text)) return false
         if (isLikelyNonPaymentJunk(text)) return false
+        if (isOtpOrStepUpVerificationMessage(text)) return false
 
         val falsePositives = listOf(
             "otp", "one-time", "verification code", "confirm code", "password reset", "login code", "code:",
-            "activation code", "security code", "two-factor", "2fa", "authenticator",
+            "code :", "activation code", "security code", "two-factor", "2fa", "authenticator",
             "رمز التحقق", "رمز التأكيد", "رمز الدخول", "تأكيد الهوية", "تحقق من", "ادخل الرمز",
             "new login", "signed in from", "new device",
             "captcha", "recaptcha",
+            "كلمة السر المؤقتة", "كلمه السر المؤقتة", "السر المؤقتة",
+            "يرجى استخدام كلمة السر", "استخدم كلمة السر",
+            "temporary password", "temp password", "one time password",
         )
         if (falsePositives.any { text.contains(it) }) return false
 
@@ -214,6 +218,24 @@ object PaymentNotifyFilters {
 
     private fun isCardMovementExcluded(text: String): Boolean {
         return text.contains("حركة على بطاقة")
+    }
+
+    /**
+     * Bank step-up: "Code : 350441 يرجى استخدام كلمة السر المؤقتة لاستكمال الحركة" — not a payment alert.
+     */
+    private fun isOtpOrStepUpVerificationMessage(text: String): Boolean {
+        val t = text.lowercase()
+        if (t.contains("كلمة السر المؤقتة") || t.contains("كلمه السر المؤقتة")) return true
+        if (t.contains("يرجى استخدام كلمة السر") || t.contains("استخدم كلمة السر المؤقتة")) return true
+        if (t.contains("لاستكمال الحركة") && (t.contains("مؤقت") || t.contains("code") || t.contains("رمز"))) {
+            return true
+        }
+        if (Regex("""code\s*:\s*\d""", RegexOption.IGNORE_CASE).containsMatchIn(t) &&
+            (t.contains("مؤقت") || t.contains("استكمال") || t.contains("يرجى"))
+        ) {
+            return true
+        }
+        return false
     }
 
     private fun isLikelyNonPaymentJunk(text: String): Boolean {

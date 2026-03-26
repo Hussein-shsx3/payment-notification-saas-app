@@ -69,6 +69,9 @@ class PaymentNotificationParser {
     if (_isFalsePositive(haystack)) {
       return null;
     }
+    if (_isOtpOrStepUpVerificationMessage(haystack.toLowerCase())) {
+      return null;
+    }
 
     if (_isLikelyNonPaymentJunk(haystack.toLowerCase())) {
       return null;
@@ -713,11 +716,39 @@ class PaymentNotificationParser {
       'رمز التحقق',
       'رمز التأكيد',
       'code:',
+      'code :',
       'two-factor',
       'authenticator',
       'signed in from',
       'new device',
+      'كلمة السر المؤقتة',
+      'كلمه السر المؤقتة',
+      'السر المؤقتة',
+      'يرجى استخدام كلمة السر',
+      'استخدم كلمة السر',
+      'temporary password',
+      'temp password',
+      'one time password',
     ]);
+  }
+
+  /// Bank step-up SMS — not a payment (align with Android [isOtpOrStepUpVerificationMessage]).
+  static bool _isOtpOrStepUpVerificationMessage(String lower) {
+    if (lower.contains('كلمة السر المؤقتة') || lower.contains('كلمه السر المؤقتة')) {
+      return true;
+    }
+    if (lower.contains('يرجى استخدام كلمة السر') || lower.contains('استخدم كلمة السر المؤقتة')) {
+      return true;
+    }
+    if (lower.contains('لاستكمال الحركة') &&
+        (lower.contains('مؤقت') || lower.contains('code') || lower.contains('رمز'))) {
+      return true;
+    }
+    if (RegExp(r'code\s*:\s*\d', caseSensitive: false).hasMatch(lower) &&
+        (lower.contains('مؤقت') || lower.contains('استكمال') || lower.contains('يرجى'))) {
+      return true;
+    }
+    return false;
   }
 
   static bool _isLikelyNonPaymentJunk(String lower) {

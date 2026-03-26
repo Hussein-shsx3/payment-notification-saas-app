@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="payment_capture_channel_name">Payment capture</string>
+    <string name="payment_capture_fg_title">Listening for bank payments</string>
+    <string name="payment_capture_fg_text">Capture runs in the background after you enable notification access.</string>
+</resources>

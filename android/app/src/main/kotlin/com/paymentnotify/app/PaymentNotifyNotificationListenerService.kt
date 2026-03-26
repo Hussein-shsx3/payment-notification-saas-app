@@ -1,10 +1,14 @@
 package com.paymentnotify.app
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Build
@@ -21,6 +25,10 @@ import java.util.concurrent.Executors
  */
 class PaymentNotifyNotificationListenerService : NotificationListenerService() {
     private val TAG = "PaymentNotifyListener"
+
+    /** Keeps the listener process in a foreground state so OEMs are less likely to kill capture when the UI is closed. */
+    private val fgNotificationId = 71001
+    private val fgChannelId = "payment_capture_listener"
 
     private val ioExecutor = Executors.newSingleThreadExecutor()
 
@@ -140,6 +148,60 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         }
     }
 
+    private fun ensureCaptureForeground() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val nm = getSystemService(NotificationManager::class.java)!!
+                val ch = NotificationChannel(
+                    fgChannelId,
+                    getString(R.string.payment_capture_channel_name),
+                    NotificationManager.IMPORTANCE_LOW,
+                )
+                ch.setShowBadge(false)
+                nm.createNotificationChannel(ch)
+            }
+            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Notification.Builder(this, fgChannelId)
+            } else {
+                @Suppress("DEPRECATION")
+                Notification.Builder(this)
+            }
+            builder.setContentTitle(getString(R.string.payment_capture_fg_title))
+                .setContentText(getString(R.string.payment_capture_fg_text))
+                .setSmallIcon(android.R.drawable.stat_notify_sync)
+                .setOngoing(true)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                @Suppress("DEPRECATION")
+                builder.setPriority(Notification.PRIORITY_LOW)
+            }
+            val notification = builder.build()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    fgNotificationId,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                startForeground(fgNotificationId, notification)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "startForeground failed — capture may still work until process is killed", e)
+        }
+    }
+
+    private fun stopCaptureForeground() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(Service.STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
     private fun unregisterConnectivityFlush() {
         mainHandler.removeCallbacks(debouncedFlushRunnable)
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -161,17 +223,20 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        ensureCaptureForeground()
         registerConnectivityFlush()
         scheduleDebouncedFlush()
     }
 
     override fun onListenerDisconnected() {
         unregisterConnectivityFlush()
+        stopCaptureForeground()
         super.onListenerDisconnected()
     }
 
     override fun onDestroy() {
         unregisterConnectivityFlush()
+        stopCaptureForeground()
         ioExecutor.shutdown()
         super.onDestroy()
     }
