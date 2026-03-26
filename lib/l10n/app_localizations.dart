@@ -185,7 +185,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewerLoginSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Same email as the main account. Use the viewer password set in Settings (main account). Read-only: payments list and language only.'**
+  /// **'Same email or phone as the main account. Use the viewer password from Settings. Read-only: payments list and language only.'**
   String get viewerLoginSubtitle;
 
   /// No description provided for @viewerLoginButton.
@@ -215,7 +215,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewerPasswordSectionDesc.
   ///
   /// In en, this message translates to:
-  /// **'Lets someone else open the app with the same email and a separate password to only view payment notifications (no edits, capture, or subscription).'**
+  /// **'Lets someone else open the app with the same email or phone and a separate password to only view payment notifications (no edits, capture, or subscription).'**
   String get viewerPasswordSectionDesc;
 
   /// No description provided for @viewerPasswordField.
