@@ -54,6 +54,15 @@ object PaymentCaptureQueue {
         return sb.toString()
     }
 
+    private fun normalizeDigits(s: String): String {
+        if (s.isEmpty()) return s
+        val map = mapOf(
+            '٠' to '0', '١' to '1', '٢' to '2', '٣' to '3', '٤' to '4',
+            '٥' to '5', '٦' to '6', '٧' to '7', '٨' to '8', '٩' to '9',
+        )
+        return s.map { map[it] ?: it }.joinToString("")
+    }
+
     /** Short window: suppress only rapid re-posts of the exact same tray slot + same text (OEM spam). */
     private fun isDuplicate(context: Context, key: String, ttlMs: Long = 90_000L): Boolean {
         val now = System.currentTimeMillis()
@@ -225,16 +234,21 @@ object PaymentCaptureQueue {
     ) {
         if (title.isBlank() && message.isBlank()) return
 
-        if (!PaymentNotifyFilters.shouldRoughlyLookLikePayment(title, message, packageName)) {
-            Log.d(TAG, "Ignored non-payment: pkg=$packageName title=${title.take(80)}")
+        // Normalize digits for robust matching (Eastern Arabic numerals -> ASCII)
+        val normalizedTitle = normalizeDigits(title)
+        val normalizedMessage = normalizeDigits(message)
+
+        if (!PaymentNotifyFilters.shouldRoughlyLookLikePayment(normalizedTitle, normalizedMessage, packageName)) {
+            Log.d(TAG, "Ignored non-payment: pkg=$packageName title=${title.take(80)} message=${message.take(120)} normalized=${(normalizedTitle + " "+ normalizedMessage).take(120)}")
             return
         }
 
         // Include title+message so different transfers are not dropped when the OS reuses sbn.key.
-        val dedupeRaw = "$instanceKey\u0000$title\u0000$message"
+        // Use normalized title/message in dedupe key so numerals variations don't bypass dedupe
+        val dedupeRaw = "$instanceKey\u0000$normalizedTitle\u0000$normalizedMessage"
         val dedupeKey = sha256Hex(dedupeRaw)
         if (isDuplicate(context, dedupeKey)) {
-            Log.d(TAG, "Duplicate post (same key+text within TTL): ${dedupeKey.take(12)}…")
+            Log.d(TAG, "Duplicate post (same key+text within TTL): ${dedupeKey.take(12)}… pkg=$packageName")
             return
         }
 
@@ -244,6 +258,8 @@ object PaymentCaptureQueue {
         payload.put("message", message)
         payload.put("receivedAt", receivedAt)
         payload.put("notificationKey", instanceKey)
+
+        Log.d(TAG, "Prepared payload summary pkg=$packageName dedupe=${dedupeKey.take(12)} title=${title.take(80)} message=${message.take(120)}")
 
         val accessToken = getAccessToken(context)
         val refreshToken = getRefreshToken(context)

@@ -70,6 +70,15 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
         return chunks.joinToString("\n")
     }
 
+    private fun normalizeDigits(s: String): String {
+        if (s.isEmpty()) return s
+        val map = mapOf(
+            '٠' to '0', '١' to '1', '٢' to '2', '٣' to '3', '٤' to '4',
+            '٥' to '5', '٦' to '6', '٧' to '7', '٨' to '8', '٩' to '9',
+        )
+        return s.map { map[it] ?: it }.joinToString("")
+    }
+
     private fun sendFlutterBroadcast(sbn: StatusBarNotification, title: String, message: String) {
         try {
             val notification = sbn.notification ?: return
@@ -173,6 +182,20 @@ class PaymentNotifyNotificationListenerService : NotificationListenerService() {
             val notification = sbn.notification ?: return
             val title = getTitleText(notification)
             val message = getMessageText(notification)
+
+            // Quick structured debug: package, id, channel, title, message (truncated), extras keys
+            try {
+                val ch = notification.channelId ?: ""
+                val extras = notification.extras
+                val keys = extras?.keySet()?.joinToString(",") ?: ""
+                Log.d(TAG, "POST pkg=$packageName id=${sbn.id} tag=${sbn.tag} time=${sbn.postTime} ch=$ch title=${title.take(80)} message=${message.take(160)} extras=$keys")
+                val normalized = normalizeDigits(message)
+                if (normalized != message) {
+                    Log.d(TAG, "Normalized digits: ${normalized.take(120)}")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "debug log extras failed", e)
+            }
 
             sendFlutterBroadcast(sbn, title, message)
 
