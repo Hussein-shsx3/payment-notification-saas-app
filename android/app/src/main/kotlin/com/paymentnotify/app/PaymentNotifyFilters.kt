@@ -148,8 +148,7 @@ object PaymentNotifyFilters {
     private fun isPalestineBankIncomingAccountLine(text: String): Boolean {
         if (!text.any { it.isDigit() }) return false
         val incomingCue =
-            text.contains("شحن") ||
-                text.contains("حوالة واردة") ||
+            text.contains("حوالة واردة") ||
                 text.contains("واردة لحسابك") ||
                 text.contains("واردة إلى حسابك") ||
                 text.contains("واردة الى حسابك") ||

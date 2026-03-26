@@ -272,24 +272,37 @@ class PaymentNotificationParser {
       'تم إضافة',
       'إشعار إيداع',
       'اشعار ايداع',
-      '- wallet',
-      'wallet',
-      'محفظة',
       'وارد',
       'واردة',
-      'للمحفظة',
-      'إلى محفظتك',
       'has been accepted',
       'has been credited',
       'accepted with',
       'money transfer',
-      'شحن',
     ]);
   }
 
   static String _inferPaymentDirection(String fullTextLower) {
-    final sent = _isSentPayment(fullTextLower);
-    final inc = _isIncomingIndicators(fullTextLower);
+    final t = fullTextLower;
+    if (t.contains('حوالة واردة') ||
+        t.contains('واردة لحسابك') ||
+        (t.contains('واردة') && t.contains('لحسابك'))) {
+      return 'incoming';
+    }
+    if (t.contains('حوالة صادرة') ||
+        t.contains('صادرة من حسابك') ||
+        t.contains('تحويل دفع لصديق') ||
+        (t.contains('الدفع لصديق') && t.contains('بمبلغ')) ||
+        t.contains('موبايل: تحويل بنكي:') ||
+        t.contains('transfer to beneficiary') ||
+        t.contains('شحن محفظة') ||
+        (t.contains('شحن') && t.contains('محفظة')) ||
+        t.contains('تم إعادة شحن رصيدك') ||
+        t.contains('تم إعادة شحن') ||
+        (t.contains('شراء') && (t.contains('بمبلغ') || t.contains('ils')))) {
+      return 'outgoing';
+    }
+    final sent = _isSentPayment(t);
+    final inc = _isIncomingIndicators(t);
     if (sent && inc) return 'unknown';
     if (sent) return 'outgoing';
     if (inc) return 'incoming';
@@ -346,8 +359,7 @@ class PaymentNotificationParser {
   /// Incoming to BOP account/wallet (align with server [_isPalestineBankIncomingAccountLine]).
   static bool _isPalestineBankIncomingAccountLine(String textLower) {
     if (!RegExp(r'\d').hasMatch(textLower)) return false;
-    final incomingCue = textLower.contains('شحن') ||
-        textLower.contains('حوالة واردة') ||
+    final incomingCue = textLower.contains('حوالة واردة') ||
         textLower.contains('واردة لحسابك') ||
         textLower.contains('واردة إلى حسابك') ||
         textLower.contains('واردة الى حسابك') ||
@@ -663,6 +675,12 @@ class PaymentNotificationParser {
       'تم سحب',
       'سحب',
       'شراء',
+      'تحويل دفع لصديق',
+      'شحن محفظة',
+      'موبايل: تحويل بنكي:',
+      'تم إعادة شحن رصيدك',
+      'تم إعادة شحن',
+      'transfer to beneficiary',
     ]);
   }
 
