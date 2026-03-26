@@ -172,14 +172,16 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> loginViewer({
-    required String email,
+    required String emailOrPhone,
     required String password,
   }) async {
     _errorMessage = null;
     notifyListeners();
     try {
+      final trimmed = emailOrPhone.trim();
+      final identifier = trimmed.contains('@') ? trimmed.toLowerCase() : trimmed;
       final response = await _api.post('/auth/login-viewer', body: {
-        'email': email.trim().toLowerCase(),
+        'emailOrPhone': identifier,
         'password': password,
       });
 

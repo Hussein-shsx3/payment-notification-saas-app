@@ -23,7 +23,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailOrPhoneController = TextEditingController();
-  final _viewerEmailController = TextEditingController();
+  final _viewerEmailOrPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _submitting = false;
   _LoginTab _tab = _LoginTab.main;
@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _emailOrPhoneController.dispose();
-    _viewerEmailController.dispose();
+    _viewerEmailOrPhoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthProvider>();
     await auth.loginViewer(
-      email: _viewerEmailController.text,
+      emailOrPhone: _viewerEmailOrPhoneController.text,
       password: _passwordController.text,
     );
 
@@ -162,19 +162,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
-                            controller: _viewerEmailController,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: _viewerEmailOrPhoneController,
+                            keyboardType: TextInputType.text,
                             decoration: InputDecoration(
-                              labelText: l10n.email,
+                              labelText: l10n.emailOrPhone,
                               border: const OutlineInputBorder(),
                             ),
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return l10n.validationEmailRequired;
+                              final t = value?.trim() ?? '';
+                              if (t.isEmpty) return l10n.validationEmailOrPhoneRequired;
+                              if (t.contains('@')) {
+                                final i = t.indexOf('@');
+                                if (i <= 0 || i == t.length - 1) {
+                                  return l10n.validationEmailInvalid;
+                                }
+                                return null;
                               }
-                              final t = value.trim();
-                              if (!t.contains('@')) {
-                                return l10n.validationEmailInvalid;
+                              final digitCount = RegExp(r'\d').allMatches(t).length;
+                              if (digitCount < 7) {
+                                return l10n.validationEmailOrPhoneInvalid;
                               }
                               return null;
                             },

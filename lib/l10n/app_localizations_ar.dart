@@ -52,7 +52,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewerLoginSubtitle =>
-      'نفس البريد كالحساب الرئيسي. استخدم كلمة مرور العارض من الإعدادات (الحساب الرئيسي). للعرض فقط: قائمة المدفوعات واللغة.';
+      'نفس البريد أو رقم الجوال كالحساب الرئيسي. استخدم كلمة مرور العارض من الإعدادات. للعرض فقط: قائمة المدفوعات واللغة.';
 
   @override
   String get viewerLoginButton => 'دخول كعارض';
@@ -68,7 +68,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewerPasswordSectionDesc =>
-      'تسمح لشخص آخر بفتح التطبيق بنفس البريد وكلمة مرور منفصلة لمشاهدة إشعارات الدفع فقط (دون تعديل أو التقاط أو اشتراك).';
+      'تسمح لشخص آخر بفتح التطبيق بنفس البريد أو رقم الجوال وكلمة مرور منفصلة لمشاهدة إشعارات الدفع فقط (دون تعديل أو التقاط أو اشتراك).';
 
   @override
   String get viewerPasswordField => 'كلمة مرور العارض الجديدة';

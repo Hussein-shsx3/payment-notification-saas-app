@@ -52,7 +52,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewerLoginSubtitle =>
-      'Same email as the main account. Use the viewer password set in Settings (main account). Read-only: payments list and language only.';
+      'Same email or phone as the main account. Use the viewer password from Settings. Read-only: payments list and language only.';
 
   @override
   String get viewerLoginButton => 'Sign in as viewer';
@@ -68,7 +68,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewerPasswordSectionDesc =>
-      'Lets someone else open the app with the same email and a separate password to only view payment notifications (no edits, capture, or subscription).';
+      'Lets someone else open the app with the same email or phone and a separate password to only view payment notifications (no edits, capture, or subscription).';
 
   @override
   String get viewerPasswordField => 'New viewer password';
