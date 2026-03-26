@@ -41,12 +41,13 @@ object PaymentNotifyFilters {
             "com.oneplus.mms",
             "com.coloros.mms",
         )
-        // Include generic "messaging" / mms so OEM SMS apps not in the list still count (Iburaq SMS tray).
+        // Include generic "messaging" / mms / telephony so OEM SMS apps still count (Iburaq SMS tray).
         val isSmsApp =
             smsPackages.any { packageLower.contains(it) } ||
                 packageLower.contains("messaging") ||
                 packageLower.contains("mms") ||
-                (packageLower.contains("sms") && packageLower.contains("android"))
+                (packageLower.contains("sms") && packageLower.contains("android")) ||
+                packageLower.contains("telephony")
 
         val strongPaymentHints = listOf(
             "received", "credited", "deposited", "payment received", "transfer received",
@@ -90,6 +91,9 @@ object PaymentNotifyFilters {
         // Iburaq / SMS rail: "حوالة واردة لحسابك بمبلغ … شيكل. رصيدكم المتوفر …" (no "bank" keyword in body).
         if (isSmsApp && isSmsIburaqIncomingWireLine(text)) return true
 
+        // SMS tray: sender name may be only "البراق" in title; body has digits + payment phrase — skip narrow bankKw.
+        if (isSmsApp && text.any { it.isDigit() } && hasStrongHint) return true
+
         if (isSmsApp && bankKeywordsMatch(text) && (hasStrongHint || looksLikeMoneyFingerprintFromKnownBankApp(text))) {
             return true
         }
@@ -123,6 +127,7 @@ object PaymentNotifyFilters {
             "بنك", "bank", "bop", "palestine", "فلسطين", "تحويل بنكي", "إشعار", "اشعار",
             "إيداع", "ايداع", "استلام", "استقبال", "واردة", "وارد", "صادرة",
             "شحن", "بقيمة", "جاري", "transaction", "jawwal pay", "جوال باي",
+            "iburaq", "البراق", "ايبرق",
         )
         return cues.any { text.contains(it) }
     }
@@ -194,7 +199,9 @@ object PaymentNotifyFilters {
         return text.contains("bank") || text.contains("بنك") ||
             text.contains("bop") || text.contains("palestine") || text.contains("فلسطين") ||
             text.contains("jawwal") || text.contains("palpay") || text.contains("جوال") ||
-            text.contains("بالباي") || text.contains("بال باي") || text.contains("ايبرق")
+            text.contains("بالباي") || text.contains("بال باي") || text.contains("ايبرق") ||
+            text.contains("البراق") || text.contains("iburaq") ||
+            text.contains("بنك فلسطين") || text.contains("pal pay") || text.contains("محفظة")
     }
 
     private fun isInternalAccountTransferOnly(text: String): Boolean {

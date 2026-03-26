@@ -334,6 +334,7 @@ class PaymentNotificationParser {
     }
     if (isIburaq && strong) return true;
     if (isSms && _isSmsIburaqIncomingWireLine(textLower)) return true;
+    if (isSms && RegExp(r'\d').hasMatch(textLower) && strong) return true;
     if (isSms &&
         bankKw &&
         (strong || _looksLikeMoneyFingerprintFromKnownBankApp(textLower))) {
@@ -469,6 +470,9 @@ class PaymentNotificationParser {
       'transaction',
       'jawwal pay',
       'جوال باي',
+      'iburaq',
+      'البراق',
+      'ايبرق',
     ]);
   }
 
@@ -511,7 +515,8 @@ class PaymentNotificationParser {
     }
     return packageLower.contains('messaging') ||
         packageLower.contains('mms') ||
-        (packageLower.contains('sms') && packageLower.contains('android'));
+        (packageLower.contains('sms') && packageLower.contains('android')) ||
+        packageLower.contains('telephony');
   }
 
   static bool _hasBankKeywords(String textLower) {
@@ -525,7 +530,12 @@ class PaymentNotificationParser {
         textLower.contains('جوال') ||
         textLower.contains('بالباي') ||
         textLower.contains('بال باي') ||
-        textLower.contains('ايبرق');
+        textLower.contains('ايبرق') ||
+        textLower.contains('البراق') ||
+        textLower.contains('iburaq') ||
+        textLower.contains('بنك فلسطين') ||
+        textLower.contains('pal pay') ||
+        textLower.contains('محفظة');
   }
 
   static bool _hasBankOperationHints(String textLower) {
