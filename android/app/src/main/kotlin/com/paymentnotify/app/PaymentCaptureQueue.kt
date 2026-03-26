@@ -63,11 +63,17 @@ object PaymentCaptureQueue {
         return s.map { map[it] ?: it }.joinToString("")
     }
 
-    /** Align with server: drop "رصيدكم المتوفر هو …" from SMS body before send/store. */
+    /** Align with server: drop "رصيدكم المتوفر هو …" and optional ⁨BOP⁩ footer line. */
     private fun stripTrailingAvailableBalanceLine(s: String): String {
         var t = normalizeDigits(s.trim()).replace("\r\n", "\n")
-        val re = Regex("""[\s.،\n]+رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,\s]+$""", RegexOption.IGNORE_CASE)
+        val re = Regex("""[\s.،\n]*رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,]+""", RegexOption.IGNORE_CASE)
         t = re.replace(t, "").trim()
+        val markStrip = Regex("""[\u200c-\u200f\u202a-\u202e\u2066-\u2069\ufeff]+""")
+        t = t.split("\n").map { it.trim() }.filter { line ->
+            if (line.isEmpty()) return@filter false
+            val noMarks = markStrip.replace(line, "").trim()
+            !noMarks.equals("BOP", ignoreCase = true)
+        }.joinToString("\n").trim()
         return t.trimEnd('.', '،', ' ')
     }
 

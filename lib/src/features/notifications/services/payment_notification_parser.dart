@@ -768,12 +768,24 @@ class PaymentNotificationParser {
   }
 
   static String _stripTrailingAvailableBalanceLine(String normalized) {
-    var s = normalized.trim();
-    final re = RegExp(
-      r'[\s.،\n]+رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,\s]+$',
-      caseSensitive: false,
+    var s = normalized.trim().replaceAll(RegExp(r'\r\n'), '\n');
+    s = s.replaceAll(
+      RegExp(
+        r'[\s.،\n]*رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,]+',
+        caseSensitive: false,
+      ),
+      '',
     );
-    s = s.replaceAll(re, '').trim();
+    final markStrip = RegExp(r'[\u200c-\u200f\u202a-\u202e\u2066-\u2069\ufeff]+');
+    final lines = s
+        .split('\n')
+        .map((l) => l.trim())
+        .where((line) {
+          if (line.isEmpty) return false;
+          final noMarks = line.replaceAll(markStrip, '').trim();
+          return !RegExp(r'^BOP$', caseSensitive: false).hasMatch(noMarks);
+        });
+    s = lines.join('\n').trim();
     s = s.replaceAll(RegExp(r'[.،\s]+$'), '').trim();
     return s;
   }
