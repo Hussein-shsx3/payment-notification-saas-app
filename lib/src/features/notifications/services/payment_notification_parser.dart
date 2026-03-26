@@ -24,17 +24,21 @@ class ParsedPaymentNotification {
 }
 
 class PaymentNotificationParser {
+  /// Greedy \\d+ so 1200.00 is not parsed as 120 (align with server).
+  static const String _amountToken =
+      r'(?:(?:\d{1,3}(?:[,\s]\d{3})+|\d+)(?:[.,]\d{1,2})?)';
+
   /// Amount + optional currency (Gaza/Palestine: ₪ / NIS / شيكل / شيقل).
   static final RegExp _amountRegex = RegExp(
-    r'(?<!\d)(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(USD|US\$|ILS|NIS|JOD|JDS|\$|₪|شيكل|شيقل|دولار)?',
+    '(?<!\\d)($_amountToken)\\s*(USD|US\$|ILS|NIS|JOD|JDS|\\\$|₪|شيكل|شيقل|دولار)?',
     caseSensitive: false,
   );
   static final RegExp _amountAfterMablagRegex = RegExp(
-    r'مبلغ[\s:]*(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)',
+    'مبلغ[\\s:]*($_amountToken)',
     caseSensitive: false,
   );
   static final RegExp _amountAfterBimablagRegex = RegExp(
-    r'بمبلغ[\s:]*(\d{1,3}(?:[,\s]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)',
+    'بمبلغ[\\s:]*($_amountToken)\\s*(USD|US\$|ILS|NIS|JOD|JDS|\\\$|₪|شيكل|شيقل|دولار)?',
     caseSensitive: false,
   );
   static final RegExp _transactionIdRegex = RegExp(
@@ -80,11 +84,11 @@ class PaymentNotificationParser {
     }
 
     RegExpMatch? amountMatch =
-        _amountRegex.firstMatch(combinedForAmount) ?? _amountRegex.firstMatch(normalizedMessage);
+        _amountAfterBimablagRegex.firstMatch(combinedForAmount) ??
+            _amountAfterBimablagRegex.firstMatch(normalizedMessage);
     amountMatch ??= _amountAfterMablagRegex.firstMatch(combinedForAmount) ??
         _amountAfterMablagRegex.firstMatch(normalizedMessage);
-    amountMatch ??= _amountAfterBimablagRegex.firstMatch(combinedForAmount) ??
-        _amountAfterBimablagRegex.firstMatch(normalizedMessage);
+    amountMatch ??= _amountRegex.firstMatch(combinedForAmount) ?? _amountRegex.firstMatch(normalizedMessage);
 
     double? amount;
     String? currency;
