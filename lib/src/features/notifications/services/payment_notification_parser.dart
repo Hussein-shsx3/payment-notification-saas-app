@@ -56,7 +56,8 @@ class PaymentNotificationParser {
     required String message,
     required DateTime receivedAt,
   }) {
-    final normalizedMessage = _normalizeDigits(message);
+    final normalizedMessage =
+        _stripTrailingAvailableBalanceLine(_normalizeDigits(message));
     final packageLower = packageName.toLowerCase();
     final titleLower = title.toLowerCase();
     final messageLower = normalizedMessage.toLowerCase();
@@ -77,7 +78,8 @@ class PaymentNotificationParser {
       return null;
     }
 
-    final combinedForAmount = _normalizeDigits('$title\n$message').trim();
+    final combinedForAmount =
+        _normalizeDigits('$title\n$normalizedMessage').trim();
     final combinedLower = combinedForAmount.toLowerCase();
     if (_isInternalAccountTransferOnly(combinedLower)) {
       return null;
@@ -751,7 +753,33 @@ class PaymentNotificationParser {
     return false;
   }
 
+  /// Casual WhatsApp / chat — not a bank payment line.
+  static bool _isCasualWhatsAppJunk(String lower) {
+    if (lower.contains('whatsapp') || lower.contains('واتس')) return true;
+    if (lower.contains('ع الواتس') || lower.contains('عالواتس')) return true;
+    if (lower.contains('بعتلك الاشعار') || lower.contains('بعتلك الإشعار')) {
+      return true;
+    }
+    if (lower.contains('بعتلك') &&
+        (lower.contains('اشعار') || lower.contains('إشعار'))) {
+      return true;
+    }
+    return false;
+  }
+
+  static String _stripTrailingAvailableBalanceLine(String normalized) {
+    var s = normalized.trim();
+    final re = RegExp(
+      r'[\s.،\n]+رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,\s]+$',
+      caseSensitive: false,
+    );
+    s = s.replaceAll(re, '').trim();
+    s = s.replaceAll(RegExp(r'[.،\s]+$'), '').trim();
+    return s;
+  }
+
   static bool _isLikelyNonPaymentJunk(String lower) {
+    if (_isCasualWhatsAppJunk(lower)) return true;
     return _containsAny(lower, [
       'steps',
       'calories',

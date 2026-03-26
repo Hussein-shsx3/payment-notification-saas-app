@@ -63,6 +63,14 @@ object PaymentCaptureQueue {
         return s.map { map[it] ?: it }.joinToString("")
     }
 
+    /** Align with server: drop "رصيدكم المتوفر هو …" from SMS body before send/store. */
+    private fun stripTrailingAvailableBalanceLine(s: String): String {
+        var t = normalizeDigits(s.trim()).replace("\r\n", "\n")
+        val re = Regex("""[\s.،\n]+رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,\s]+$""", RegexOption.IGNORE_CASE)
+        t = re.replace(t, "").trim()
+        return t.trimEnd('.', '،', ' ')
+    }
+
     /** Short window: suppress only rapid re-posts of the exact same tray slot + same text (OEM spam). */
     private fun isDuplicate(context: Context, key: String, ttlMs: Long = 90_000L): Boolean {
         val now = System.currentTimeMillis()
@@ -234,9 +242,11 @@ object PaymentCaptureQueue {
     ) {
         if (title.isBlank() && message.isBlank()) return
 
+        val messageStripped = stripTrailingAvailableBalanceLine(message)
+
         // Normalize digits for robust matching (Eastern Arabic numerals -> ASCII)
         val normalizedTitle = normalizeDigits(title)
-        val normalizedMessage = normalizeDigits(message)
+        val normalizedMessage = normalizeDigits(messageStripped)
 
         if (!PaymentNotifyFilters.shouldRoughlyLookLikePayment(normalizedTitle, normalizedMessage, packageName)) {
             Log.d(TAG, "Ignored non-payment: pkg=$packageName title=${title.take(80)} message=${message.take(120)} normalized=${(normalizedTitle + " "+ normalizedMessage).take(120)}")
@@ -255,7 +265,7 @@ object PaymentCaptureQueue {
         val payload = JSONObject()
         payload.put("packageName", packageName)
         payload.put("title", title)
-        payload.put("message", message)
+        payload.put("message", messageStripped)
         payload.put("receivedAt", receivedAt)
         payload.put("notificationKey", instanceKey)
 

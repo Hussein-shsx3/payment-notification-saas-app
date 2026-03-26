@@ -11,6 +11,7 @@ object PaymentNotifyFilters {
         if (isInternalAccountTransferOnly(text)) return false
         if (isCardMovementExcluded(text)) return false
         if (isLikelyNonPaymentJunk(text)) return false
+        if (isCasualWhatsAppOrChatJunk(text)) return false
         if (isOtpOrStepUpVerificationMessage(text)) return false
 
         val falsePositives = listOf(
@@ -235,6 +236,16 @@ object PaymentNotifyFilters {
         ) {
             return true
         }
+        return false
+    }
+
+    /** Tray text about WhatsApp / "sent you the notification" — not a payment (e.g. Jawwal). */
+    private fun isCasualWhatsAppOrChatJunk(text: String): Boolean {
+        val t = text.lowercase()
+        if (t.contains("whatsapp") || t.contains("واتس")) return true
+        if (t.contains("ع الواتس") || t.contains("عالواتس")) return true
+        if (t.contains("بعتلك الاشعار") || t.contains("بعتلك الإشعار")) return true
+        if (t.contains("بعتلك") && (t.contains("اشعار") || t.contains("إشعار"))) return true
         return false
     }
 
