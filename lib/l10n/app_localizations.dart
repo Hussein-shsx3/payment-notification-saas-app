@@ -1238,10 +1238,16 @@ abstract class AppLocalizations {
   /// **'Unknown'**
   String get directionUnknown;
 
+  /// No description provided for @paymentDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment detected'**
+  String get paymentDetected;
+
   /// No description provided for @paymentDirectionLabel.
   ///
   /// In en, this message translates to:
-  /// **'Payment direction'**
+  /// **'Status'**
   String get paymentDirectionLabel;
 
   /// No description provided for @markAsReceived.

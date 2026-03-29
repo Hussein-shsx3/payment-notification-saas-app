@@ -630,7 +630,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get directionUnknown => 'Unknown';
 
   @override
-  String get paymentDirectionLabel => 'Payment direction';
+  String get paymentDetected => 'Payment detected';
+
+  @override
+  String get paymentDirectionLabel => 'Status';
 
   @override
   String get markAsReceived => 'Mark as received';

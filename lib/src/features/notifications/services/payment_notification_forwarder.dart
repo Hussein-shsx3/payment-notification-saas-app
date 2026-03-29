@@ -86,11 +86,14 @@ class PaymentNotificationForwarder {
     double? amount,
     String? currency,
     String? transactionId,
-    String direction = 'unknown',
+    String direction = 'detected',
   }) async {
-    final dir = direction == 'outgoing' || direction == 'incoming' || direction == 'unknown'
+    final dir = direction == 'outgoing' ||
+            direction == 'incoming' ||
+            direction == 'unknown' ||
+            direction == 'detected'
         ? direction
-        : 'unknown';
+        : 'detected';
     final payload = <String, dynamic>{
       'source': source,
       'title': title,

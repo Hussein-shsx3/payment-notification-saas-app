@@ -17,7 +17,7 @@ enum _DateFilter {
 class NotificationCenterScreen extends StatefulWidget {
   const NotificationCenterScreen({super.key, this.readOnly = false});
 
-  /// When true (viewer session), hides delete and direction editing.
+  /// When true (viewer session), hides delete only.
   final bool readOnly;
 
   @override
@@ -34,8 +34,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   static const int _paymentLimit = 15;
   _DateFilter _dateFilter = _DateFilter.all;
   List<Map<String, dynamic>> _paymentItems = const [];
-  /// Payment notification ids currently PATCHing direction.
-  final Set<String> _patchingDirectionIds = {};
 
   String _getFilterLabel(AppLocalizations l10n, _DateFilter f) {
     switch (f) {
@@ -52,18 +50,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     }
   }
 
-  String _directionLabel(AppLocalizations l10n, String? d) {
-    if (d == 'outgoing') return l10n.directionSent;
-    if (d == 'incoming') return l10n.directionReceived;
-    return l10n.directionUnknown;
-  }
-
-  /// Normalizes API `direction` to `incoming` | `outgoing` | `unknown`.
-  String _normalizeDirection(dynamic raw) {
-    final s = raw?.toString() ?? '';
-    if (s == 'incoming' || s == 'outgoing' || s == 'unknown') return s;
-    return 'unknown';
-  }
+  /// All stored payments show as detected (legacy incoming/outgoing/unknown are not distinguished in UI).
+  String _directionLabel(AppLocalizations l10n, String? _) => l10n.paymentDetected;
 
   (DateTime?, DateTime?) _getDateRange() {
     final now = DateTime.now();
@@ -214,35 +202,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     _load();
   }
 
-  Future<void> _setPaymentDirection(String id, String direction) async {
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _patchingDirectionIds.add(id));
-    try {
-      final api = context.read<AuthProvider>().api;
-      final res = await api.patch(
-        '/notifications/payments/$id/direction',
-        body: {'direction': direction},
-      );
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        await _load();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateFailed(res.statusCode))),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.networkError)),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _patchingDirectionIds.remove(id));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -329,8 +288,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     final title = (p['title'] ?? '').toString();
                     final msg = (p['message'] ?? '').toString();
                     final src = (p['source'] ?? '').toString();
-                    final norm = _normalizeDirection(p['direction']);
-                    final dirLabel = _directionLabel(l10n, norm);
+                    final dirLabel = _directionLabel(l10n, null);
                     final receivedAtRaw = (p['receivedAt'] ?? '').toString();
                     final receivedAtParsed = DateTime.tryParse(receivedAtRaw);
                     final receivedAtLabel = receivedAtParsed == null
@@ -371,53 +329,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            if (!widget.readOnly && _patchingDirectionIds.contains(id))
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: 8),
-                                child: LinearProgressIndicator(
-                                  minHeight: 2,
-                                  color: Color(0xFF06B6D4),
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                '${l10n.paymentDirectionLabel}: $dirLabel',
+                                style: const TextStyle(fontSize: 13, color: Colors.white70),
                               ),
-                            if (widget.readOnly)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text(
-                                  '${l10n.paymentDirectionLabel}: $dirLabel',
-                                  style: const TextStyle(fontSize: 13, color: Colors.white70),
-                                ),
-                              )
-                            else
-                              DropdownButtonFormField<String>(
-                                value: norm,
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: l10n.paymentDirectionLabel,
-                                  border: const OutlineInputBorder(),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                ),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: 'incoming',
-                                    child: Text(l10n.directionReceived),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'outgoing',
-                                    child: Text(l10n.directionSent),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'unknown',
-                                    child: Text(l10n.directionUnknown),
-                                  ),
-                                ],
-                                onChanged: id.isEmpty || _patchingDirectionIds.contains(id)
-                                    ? null
-                                    : (v) {
-                                        if (v != null && v != norm) {
-                                          _setPaymentDirection(id, v);
-                                        }
-                                      },
-                              ),
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               bodyText.toString(),

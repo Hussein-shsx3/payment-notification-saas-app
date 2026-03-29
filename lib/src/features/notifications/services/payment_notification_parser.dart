@@ -8,7 +8,7 @@ class ParsedPaymentNotification {
     required this.currency,
     required this.sender,
     required this.transactionId,
-    this.direction = 'unknown',
+    this.direction = 'detected',
   });
 
   final String source;
@@ -19,7 +19,7 @@ class ParsedPaymentNotification {
   final String? currency;
   final String? sender;
   final String? transactionId;
-  /// `incoming` = money in; `outgoing` = money out; `unknown` = fix in app.
+  /// Server stores `detected` (send/receive not inferred). Legacy: incoming/outgoing/unknown.
   final String direction;
 }
 
@@ -118,7 +118,6 @@ class PaymentNotificationParser {
         _senderRegex.firstMatch(normalizedMessage);
     sender = senderMatch?.group(1)?.trim();
 
-    final fullText = '$titleLower $messageLower';
     final hasValidAmount = amount != null && amount > 0;
 
     if (!hasValidAmount) {
@@ -133,7 +132,7 @@ class PaymentNotificationParser {
       return null;
     }
 
-    final direction = _inferPaymentDirection(fullText);
+    const direction = 'detected';
 
     final source = _detectSource(
           packageName: packageLower,
@@ -251,92 +250,6 @@ class PaymentNotificationParser {
     }
     if (t.contains('مبلغ الحركة') && t.contains('رقم البطاقة')) return true;
     return false;
-  }
-
-  static bool _isIncomingIndicators(String input) {
-    return _containsAny(input, [
-      'received',
-      'credited',
-      'deposited',
-      'you received',
-      'payment received',
-      'transfer received',
-      'incoming',
-      'you got',
-      'account credited',
-      'credit alert',
-      'cash in',
-      'تم استلام',
-      'تم ايداع',
-      'تم إيداع',
-      'استلمت',
-      'وصلك',
-      'تم تحويل لك',
-      'تم الايداع',
-      'تم الإيداع',
-      'وردت',
-      'تم استقبال',
-      'حوالة واردة',
-      'حوالة واردة لحسابك',
-      'واردة لحسابك',
-      'واردة الى حسابك',
-      'واردة إلى حسابك',
-      'تمت إضافة',
-      'تم اضافه',
-      'اضافة الى حسابك',
-      'إضافة إلى حسابك',
-      'تم اضافة',
-      'تم إضافة',
-      'إشعار إيداع',
-      'اشعار ايداع',
-      'وارد',
-      'واردة',
-      'has been accepted',
-      'has been credited',
-      'accepted with',
-      'money transfer',
-    ]);
-  }
-
-  /// BOP mobile + Transfer To Beneficiary — treat as received (align with server [_isTtbAmbiguousBeneficiaryTransfer]).
-  static bool _isTtbAmbiguousBeneficiaryTransfer(String fullTextLower) {
-    final t = fullTextLower;
-    if (!t.contains('موبايل: تحويل بنكي:')) return false;
-    if (t.contains('بين الحسابات')) return false;
-    return t.contains('transfer to beneficiary');
-  }
-
-  static String _inferPaymentDirection(String fullTextLower) {
-    final t = fullTextLower;
-    if (t.contains('تحويل دفع لصديق') ||
-        (t.contains('الدفع لصديق') && t.contains('بمبلغ'))) {
-      return 'unknown';
-    }
-    if (t.contains('حوالة واردة') ||
-        t.contains('واردة لحسابك') ||
-        (t.contains('واردة') && t.contains('لحسابك'))) {
-      return 'incoming';
-    }
-    if (_isTtbAmbiguousBeneficiaryTransfer(t)) {
-      return 'unknown';
-    }
-    if (t.contains('حوالة صادرة') ||
-        t.contains('صادرة من حسابك') ||
-        t.contains('موبايل: تحويل بنكي:') ||
-        t.contains('transfer to beneficiary') ||
-        t.contains('شحن محفظة') ||
-        (t.contains('شحن') && t.contains('محفظة')) ||
-        t.contains('تم إعادة شحن رصيدك') ||
-        t.contains('تم إعادة شحن') ||
-        (t.contains('شراء') && (t.contains('بمبلغ') || t.contains('ils')))) {
-      return 'outgoing';
-    }
-    final sent = _isSentPayment(t);
-    final inc = _isIncomingIndicators(t);
-    if (sent && inc) return 'unknown';
-    if (sent) return 'outgoing';
-    if (inc) return 'incoming';
-    return 'unknown';
   }
 
   /// Same gate as native [PaymentNotifyNotificationListenerService.shouldRoughlyLookLikePayment].
@@ -723,51 +636,6 @@ class PaymentNotificationParser {
       'has been accepted',
       'has been credited',
       'transaction',
-    ]);
-  }
-
-  static bool _isSentPayment(String input) {
-    return _containsAny(input, [
-      // English - sent/outgoing
-      'you sent',
-      'you transferred',
-      'you paid',
-      'sent to',
-      'payment to',
-      'transfer to',
-      'paid to',
-      'outgoing transfer',
-      'money sent',
-      'transaction sent',
-      'deducted for',
-      'debited for',
-      'debited',
-      'withdrawal',
-      'cash out',
-      // Arabic - sent/outgoing (avoid bare "تم الدفع" — banks use it for credits too)
-      'تم ارسال',
-      'ارسلت',
-      'قمت بارسال',
-      'تم الدفع لـ',
-      'تم الدفع إلى',
-      'تم الدفع ل',
-      'دفعت',
-      'تم خصم لـ',
-      'تم التحويل الى',
-      'تم التحويل إلى',
-      'حولت',
-      'ارسال الى',
-      'إرسال إلى',
-      'حوالة صادرة',
-      'صادرة من حسابك',
-      'تم سحب',
-      'سحب',
-      'شراء',
-      'شحن محفظة',
-      'موبايل: تحويل بنكي:',
-      'تم إعادة شحن رصيدك',
-      'تم إعادة شحن',
-      'transfer to beneficiary',
     ]);
   }
 
