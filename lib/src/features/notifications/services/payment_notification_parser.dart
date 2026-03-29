@@ -84,7 +84,7 @@ class PaymentNotificationParser {
     if (_isInternalAccountTransferOnly(combinedLower)) {
       return null;
     }
-    if (_isCardMovementExcluded(combinedLower)) {
+    if (_isCardSpendExcluded(combinedLower)) {
       return null;
     }
 
@@ -240,9 +240,17 @@ class PaymentNotificationParser {
     return false;
   }
 
-  /// Card purchase/ATM style alerts (e.g. حركة على بطاقة رقم … بقيمة) — not stored.
-  static bool _isCardMovementExcluded(String combinedLower) {
-    return combinedLower.contains('حركة على بطاقة');
+  /// POS/merchant card spend — not account transfers (align with server [_isCardSpendExcluded]).
+  static bool _isCardSpendExcluded(String combinedLower) {
+    final t = combinedLower;
+    if (t.contains('حركة على بطاقة')) return true;
+    if (t.contains('تم استلام حركتك من قبل التاجر')) return true;
+    if (t.contains('من قبل التاجر') &&
+        (t.contains('رقم البطاقة') || t.contains('البطاقة:'))) {
+      return true;
+    }
+    if (t.contains('مبلغ الحركة') && t.contains('رقم البطاقة')) return true;
+    return false;
   }
 
   static bool _isIncomingIndicators(String input) {
@@ -300,10 +308,9 @@ class PaymentNotificationParser {
 
   static String _inferPaymentDirection(String fullTextLower) {
     final t = fullTextLower;
-    // Same tray text for send and receive — store as received (align with server).
     if (t.contains('تحويل دفع لصديق') ||
         (t.contains('الدفع لصديق') && t.contains('بمبلغ'))) {
-      return 'incoming';
+      return 'unknown';
     }
     if (t.contains('حوالة واردة') ||
         t.contains('واردة لحسابك') ||
@@ -311,7 +318,7 @@ class PaymentNotificationParser {
       return 'incoming';
     }
     if (_isTtbAmbiguousBeneficiaryTransfer(t)) {
-      return 'incoming';
+      return 'unknown';
     }
     if (t.contains('حوالة صادرة') ||
         t.contains('صادرة من حسابك') ||
@@ -326,10 +333,10 @@ class PaymentNotificationParser {
     }
     final sent = _isSentPayment(t);
     final inc = _isIncomingIndicators(t);
-    if (sent && inc) return 'incoming';
+    if (sent && inc) return 'unknown';
     if (sent) return 'outgoing';
     if (inc) return 'incoming';
-    return 'incoming';
+    return 'unknown';
   }
 
   /// Same gate as native [PaymentNotifyNotificationListenerService.shouldRoughlyLookLikePayment].

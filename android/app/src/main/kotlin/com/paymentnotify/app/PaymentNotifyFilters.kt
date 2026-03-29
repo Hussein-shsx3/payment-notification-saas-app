@@ -9,7 +9,7 @@ object PaymentNotifyFilters {
         val text = (title + " " + message).lowercase()
 
         if (isInternalAccountTransferOnly(text)) return false
-        if (isCardMovementExcluded(text)) return false
+        if (isCardSpendExcluded(text)) return false
         if (isLikelyNonPaymentJunk(text)) return false
         if (isCasualWhatsAppOrChatJunk(text)) return false
         if (isOtpOrStepUpVerificationMessage(text)) return false
@@ -271,8 +271,14 @@ object PaymentNotifyFilters {
         return false
     }
 
-    private fun isCardMovementExcluded(text: String): Boolean {
-        return text.contains("حركة على بطاقة")
+    /** POS / merchant card spend — not transfers (حركة على بطاقة, التاجر, مبلغ الحركة + بطاقة). */
+    private fun isCardSpendExcluded(text: String): Boolean {
+        val t = text.lowercase()
+        if (t.contains("حركة على بطاقة")) return true
+        if (t.contains("تم استلام حركتك من قبل التاجر")) return true
+        if (t.contains("من قبل التاجر") && (t.contains("رقم البطاقة") || t.contains("البطاقة:"))) return true
+        if (t.contains("مبلغ الحركة") && t.contains("رقم البطاقة")) return true
+        return false
     }
 
     /**
