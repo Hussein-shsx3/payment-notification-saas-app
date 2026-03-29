@@ -337,6 +337,9 @@ class PaymentNotificationParser {
     if (isKnown) {
       return strong || bankOp || _looksLikeMoneyFingerprintFromKnownBankApp(textLower);
     }
+    if (isSms && !_smsHasRecognizedPaymentBrand(textLower)) {
+      return false;
+    }
     if (isIburaq && strong) return true;
     if (isSms && _isSmsIburaqIncomingWireLine(textLower)) return true;
     if (isSms && RegExp(r'\d').hasMatch(textLower) && strong) return true;
@@ -522,6 +525,51 @@ class PaymentNotificationParser {
         packageLower.contains('mms') ||
         (packageLower.contains('sms') && packageLower.contains('android')) ||
         packageLower.contains('telephony');
+  }
+
+  /// Title + body must name a real bank/wallet (SMS-only; align with Kotlin [smsHasRecognizedPaymentBrand]).
+  static bool _smsHasRecognizedPaymentBrand(String textLower) {
+    return _containsAny(textLower, [
+      'bop',
+      'bank of palestine',
+      'بنك فلسطين',
+      'palestine bank',
+      'bankofpalestine',
+      'jawwal',
+      'jawwal pay',
+      'palpay',
+      'pal pay',
+      'بالباي',
+      'بال باي',
+      'جوال باي',
+      'paypal',
+      'pay pal',
+      'iburaq',
+      'البراق',
+      'ايبرق',
+      'stripe',
+      'wise',
+      'transferwise',
+      'western union',
+      'moneygram',
+      'arab bank',
+      'البنك العربي',
+      'cairo amman',
+      'القاهرة عمان',
+      'qnb',
+      'fab',
+      'zain cash',
+      'orange money',
+      'cliq',
+      'تحويل بنكي',
+      'تحويل دفع',
+      'الدفع لصديق',
+      'دفع لصديق',
+      'مصرف فلسطين',
+      'efinance',
+      'cash.pal',
+      'wallet.ps',
+    ]);
   }
 
   static bool _hasBankKeywords(String textLower) {

@@ -54,6 +54,11 @@ object PaymentNotifyFilters {
                 (packageLower.contains("sms") && packageLower.contains("android")) ||
                 packageLower.contains("telephony")
 
+        // SMS tray only: must mention a real bank/wallet brand (avoid fake "payment-like" personal SMS).
+        if (isSmsApp && !isKnownPaymentApp && !smsHasRecognizedPaymentBrand(text)) {
+            return false
+        }
+
         val strongPaymentHints = listOf(
             "received", "credited", "deposited", "payment received", "transfer received",
             "you received", "account credited", "credit alert", "cash in",
@@ -198,6 +203,55 @@ object PaymentNotifyFilters {
                 text.contains("شيقل") ||
                 text.contains("رصيد")
         return incomingCue && bankOrMoney
+    }
+
+    /**
+     * Title + body must name a known institution (Gaza/Palestine + common intl). Used for SMS apps only.
+     */
+    private fun smsHasRecognizedPaymentBrand(text: String): Boolean {
+        val t = text.lowercase()
+        val brands = listOf(
+            "bop",
+            "bank of palestine",
+            "بنك فلسطين",
+            "palestine bank",
+            "bankofpalestine",
+            "jawwal",
+            "jawwal pay",
+            "palpay",
+            "pal pay",
+            "بالباي",
+            "بال باي",
+            "جوال باي",
+            "paypal",
+            "pay pal",
+            "iburaq",
+            "البراق",
+            "ايبرق",
+            "stripe",
+            "wise",
+            "transferwise",
+            "western union",
+            "moneygram",
+            "arab bank",
+            "البنك العربي",
+            "cairo amman",
+            "القاهرة عمان",
+            "qnb",
+            "fab",
+            "zain cash",
+            "orange money",
+            "cliq",
+            "تحويل بنكي",
+            "تحويل دفع",
+            "الدفع لصديق",
+            "دفع لصديق",
+            "مصرف فلسطين",
+            "efinance",
+            "cash.pal",
+            "wallet.ps",
+        )
+        return brands.any { t.contains(it) }
     }
 
     private fun bankKeywordsMatch(text: String): Boolean {
