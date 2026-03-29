@@ -290,17 +290,31 @@ class PaymentNotificationParser {
     ]);
   }
 
+  /// BOP mobile + Transfer To Beneficiary — treat as received (align with server [_isTtbAmbiguousBeneficiaryTransfer]).
+  static bool _isTtbAmbiguousBeneficiaryTransfer(String fullTextLower) {
+    final t = fullTextLower;
+    if (!t.contains('موبايل: تحويل بنكي:')) return false;
+    if (t.contains('بين الحسابات')) return false;
+    return t.contains('transfer to beneficiary');
+  }
+
   static String _inferPaymentDirection(String fullTextLower) {
     final t = fullTextLower;
+    // Same tray text for send and receive — store as received (align with server).
+    if (t.contains('تحويل دفع لصديق') ||
+        (t.contains('الدفع لصديق') && t.contains('بمبلغ'))) {
+      return 'incoming';
+    }
     if (t.contains('حوالة واردة') ||
         t.contains('واردة لحسابك') ||
         (t.contains('واردة') && t.contains('لحسابك'))) {
       return 'incoming';
     }
+    if (_isTtbAmbiguousBeneficiaryTransfer(t)) {
+      return 'incoming';
+    }
     if (t.contains('حوالة صادرة') ||
         t.contains('صادرة من حسابك') ||
-        t.contains('تحويل دفع لصديق') ||
-        (t.contains('الدفع لصديق') && t.contains('بمبلغ')) ||
         t.contains('موبايل: تحويل بنكي:') ||
         t.contains('transfer to beneficiary') ||
         t.contains('شحن محفظة') ||
@@ -312,10 +326,10 @@ class PaymentNotificationParser {
     }
     final sent = _isSentPayment(t);
     final inc = _isIncomingIndicators(t);
-    if (sent && inc) return 'unknown';
+    if (sent && inc) return 'incoming';
     if (sent) return 'outgoing';
     if (inc) return 'incoming';
-    return 'unknown';
+    return 'incoming';
   }
 
   /// Same gate as native [PaymentNotifyNotificationListenerService.shouldRoughlyLookLikePayment].
@@ -742,7 +756,6 @@ class PaymentNotificationParser {
       'تم سحب',
       'سحب',
       'شراء',
-      'تحويل دفع لصديق',
       'شحن محفظة',
       'موبايل: تحويل بنكي:',
       'تم إعادة شحن رصيدك',
