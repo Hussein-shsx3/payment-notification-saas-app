@@ -46,9 +46,46 @@ class PaymentNotificationParser {
     caseSensitive: false,
   );
   static final RegExp _senderRegex = RegExp(
-    r'(?:from|sender|from account|مرسل|من)[\s:]*([A-Za-z0-9 _\-]{3,30})',
+    r'(?:from|sender|from account|مرسل|من)[\s:]*([A-Za-z0-9 _\-\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9]{3,40})',
     caseSensitive: false,
   );
+  static const List<String> _trustedSenderKeywords = [
+    'bop',
+    'b o p',
+    'bank of palestine',
+    'palestine bank',
+    'bankofpalestine',
+    'بنك فلسطين',
+    'palpay',
+    'pal pay',
+    'jawwal pay',
+    'jawwal',
+    'جوال باي',
+    'جوال',
+    'iburaq',
+    'ايبرق',
+    'البراق',
+    'arab bank',
+    'البنك العربي',
+    'cairo amman bank',
+    'بنك القاهرة عمان',
+    'qnb',
+    'qnb palestine',
+    'bank of jerusalem',
+    'بنك القدس',
+    'national bank',
+    'the national bank',
+    'efinance',
+    'cash.pal',
+    'cash pal',
+    'wallet.ps',
+    'wallet ps',
+    'zain cash',
+    'cliq',
+    'wise',
+    'western union',
+    'moneygram',
+  ];
 
   static ParsedPaymentNotification? parse({
     required String packageName,
@@ -75,6 +112,10 @@ class PaymentNotificationParser {
     }
 
     if (_isLikelyNonPaymentJunk(haystack.toLowerCase())) {
+      return null;
+    }
+
+    if (_isOutgoingOrInternalMultiLang(haystack)) {
       return null;
     }
 
@@ -117,6 +158,15 @@ class PaymentNotificationParser {
     final senderMatch = _senderRegex.firstMatch(combinedForAmount.toLowerCase()) ??
         _senderRegex.firstMatch(normalizedMessage);
     sender = senderMatch?.group(1)?.trim();
+
+    if (!_isSenderTrusted(
+      sender: sender,
+      packageLower: packageLower,
+      titleLower: titleLower,
+      messageLower: messageLower,
+    )) {
+      return null;
+    }
 
     final hasValidAmount = amount != null && amount > 0;
 
@@ -229,6 +279,79 @@ class PaymentNotificationParser {
     return false;
   }
 
+  static bool _isSenderTrusted({
+    required String? sender,
+    required String packageLower,
+    required String titleLower,
+    required String messageLower,
+  }) {
+    if (!_isSmsAppPackage(packageLower)) {
+      return true;
+    }
+
+    final senderValue = _normalizeSender(sender);
+    final textLower = '$titleLower $messageLower';
+
+    if (senderValue.isEmpty) {
+      return _containsAny(textLower, _trustedSenderKeywords) || _isKnownPaymentAppPackage(packageLower);
+    }
+
+    if (_containsAny(senderValue, _trustedSenderKeywords)) {
+      return true;
+    }
+
+    if (_looksLikePhoneNumber(senderValue) || _isNumericOnly(senderValue)) {
+      return false;
+    }
+
+    if (_looksLikeKnownAppName(senderValue)) {
+      return true;
+    }
+
+    if (_looksLikePersonalName(senderValue)) {
+      return false;
+    }
+
+    return _containsAny(textLower, _trustedSenderKeywords) || _isKnownPaymentAppPackage(packageLower);
+  }
+
+  static String _normalizeSender(String? sender) {
+    final value = (sender ?? '').toLowerCase().trim();
+    if (value.isEmpty) return '';
+    return value.replaceAll(RegExp(r'[\u200e\u200f\u061c]'), '').replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  static bool _isNumericOnly(String value) {
+    final compact = value.replaceAll(RegExp(r'[\s\-\(\)\+\/]+'), '');
+    return compact.isNotEmpty && RegExp(r'^\d+$').hasMatch(compact);
+  }
+
+  static bool _looksLikePhoneNumber(String value) {
+    final compact = value.replaceAll(RegExp(r'[\s\-\(\)\+\/]+'), '');
+    if (!RegExp(r'\d').hasMatch(compact)) {
+      return false;
+    }
+    return RegExp(r'^[\d]+$').hasMatch(compact) || RegExp(r'^\d{2,4}\d{5,}$').hasMatch(compact);
+  }
+
+  static bool _looksLikeKnownAppName(String value) {
+    final hasLetters = RegExp(r'[A-Za-z\u0600-\u06FF]').hasMatch(value);
+    final hasDigits = RegExp(r'\d').hasMatch(value);
+    final compact = value.replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF0-9]+'), ' ').trim();
+    if (compact.isEmpty) return false;
+    if (_containsAny(compact, _trustedSenderKeywords)) return true;
+    return hasLetters && hasDigits;
+  }
+
+  static bool _looksLikePersonalName(String value) {
+    final compact = value.replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF]+'), ' ').trim();
+    if (compact.isEmpty) return false;
+    if (_containsAny(compact, _trustedSenderKeywords)) return false;
+    if (RegExp(r'\d').hasMatch(compact)) return false;
+    final parts = compact.split(RegExp(r'\s+')).where((part) => part.isNotEmpty).toList();
+    return parts.isNotEmpty && parts.length <= 4;
+  }
+
   /// Internal moves between the user's own accounts only (not stored).
   static bool _isInternalAccountTransferOnly(String combinedLower) {
     final t = combinedLower;
@@ -249,6 +372,54 @@ class PaymentNotificationParser {
       return true;
     }
     if (t.contains('مبلغ الحركة') && t.contains('رقم البطاقة')) return true;
+    return false;
+  }
+
+  /// Skip notifications that are clearly outgoing/internal transfers or purchases.
+  static bool _isOutgoingOrInternalMultiLang(String haystack) {
+    final t = haystack.toLowerCase();
+
+    final keywords = <String>[
+      'صادرة',
+      'شراء',
+      'حزمة',
+      'إلى الرقم',
+      'الى الرقم',
+      'قسيمة',
+      'بين الحسابات',
+      'حركة على بطاقة',
+      'outgoing',
+      'purchase',
+      'bundle',
+      'to the number',
+      'voucher',
+      'between accounts',
+      'card transaction',
+      'top-up',
+    ];
+    if (_containsAny(t, keywords)) return true;
+
+    final regexes = <RegExp>[
+      RegExp(r'حوالة\s+صادرة', caseSensitive: false),
+      RegExp(r'outgoing\s+transfer', caseSensitive: false),
+      RegExp(r'عملية\s+شراء', caseSensitive: false),
+      RegExp(r'purchase\s+successful', caseSensitive: false),
+      RegExp(r'إلى\s+الرقم\s+\d+', caseSensitive: false),
+      RegExp(r'الى\s+الرقم\s+\d+', caseSensitive: false),
+      RegExp(r'to\s+the\s+number\s+\d+', caseSensitive: false),
+      RegExp(r'شراء\s+.*\s+-\s+بطاقات', caseSensitive: false),
+      RegExp(r'vouchers?\s+purchase', caseSensitive: false),
+      RegExp(r'حركة\s+على\s+بطاقة', caseSensitive: false),
+      RegExp(r'transaction\s+on\s+card', caseSensitive: false),
+      RegExp(r'بين\s+الحسابات', caseSensitive: false),
+      RegExp(r'between\s+accounts', caseSensitive: false),
+      RegExp(r'internal\s+transfer', caseSensitive: false),
+    ];
+
+    for (final regex in regexes) {
+      if (regex.hasMatch(t)) return true;
+    }
+
     return false;
   }
 
