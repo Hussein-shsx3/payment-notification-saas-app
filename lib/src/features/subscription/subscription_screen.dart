@@ -41,7 +41,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   String _ilsAmountForPlan(SubscriptionPlanChoice plan) {
-    final v = plan == SubscriptionPlanChoice.week ? kSubscriptionPriceWeekIls : kSubscriptionPriceMonthIls;
+    final v = plan == SubscriptionPlanChoice.week
+        ? kSubscriptionPriceWeekIls
+        : kSubscriptionPriceMonthIls;
     if (v == v.roundToDouble()) {
       return '₪${v.toInt()}';
     }
@@ -69,15 +71,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _start = start == null ? '--' : formatDateDmyFromIso(start);
           _end = end == null ? '--' : formatDateDmyFromIso(end);
           if (statusFromApi != null && statusFromApi.isNotEmpty) {
-            _status = statusFromApi == 'active' ? l10n.statusActive : l10n.statusInactive;
+            _status = statusFromApi == 'active'
+                ? l10n.statusActive
+                : l10n.statusInactive;
           } else if (endDt == null) {
             _status = l10n.statusNoSubscription;
           } else {
-            _status = endDt.isAfter(now) ? l10n.statusActive : l10n.statusExpired;
+            _status = endDt.isAfter(now)
+                ? l10n.statusActive
+                : l10n.statusExpired;
           }
           _proofItems = SubscriptionProofItem.parseList(data);
           _proofExpandedMap.clear();
-          _planChoice = tryParseSubscriptionPlanChoice(data['subscriptionPlanPreference']?.toString());
+          _planChoice = tryParseSubscriptionPlanChoice(
+            data['subscriptionPlanPreference']?.toString(),
+          );
         });
         if (mounted) {
           await context.read<AuthProvider>().refreshSubscription();
@@ -109,9 +117,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (!mounted) return;
       if (res.statusCode >= 200 && res.statusCode < 300) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.subscriptionPlanSaved)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.subscriptionPlanSaved)));
         }
         await context.read<AuthProvider>().refreshSubscription();
       } else {
@@ -169,12 +177,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         return;
       }
       final name = xfile.name.isNotEmpty ? xfile.name : 'payment-proof.jpg';
-      final file = http.MultipartFile.fromBytes(
-        'image',
-        bytes,
-        filename: name,
+      final file = http.MultipartFile.fromBytes('image', bytes, filename: name);
+      final res = await api.postMultipart(
+        '/users/subscription-payment-proof',
+        file: file,
       );
-      final res = await api.postMultipart('/users/subscription-payment-proof', file: file);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -214,12 +221,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined, color: Color(0xFF06B6D4)),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: Color(0xFF06B6D4),
+              ),
               title: Text(l10n.subscriptionProofPickGallery),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera_outlined, color: Color(0xFF06B6D4)),
+              leading: const Icon(
+                Icons.photo_camera_outlined,
+                color: Color(0xFF06B6D4),
+              ),
               title: Text(l10n.subscriptionProofPickCamera),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
@@ -241,7 +254,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         child: _loading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
+              )
             : ListView(
                 children: [
                   Card(
@@ -262,13 +277,49 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             const SizedBox(height: 8),
                             Text(
                               _error!,
-                              style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                           const SizedBox(height: 10),
                           Text(
                             l10n.subscriptionFooterNote,
-                            style: const TextStyle(fontSize: 12, color: Colors.white70),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.subscriptionOffersHeading,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _OfferRow(
+                            icon: Icons.card_giftcard_outlined,
+                            title: l10n.subscriptionFreeTrialTitle,
+                            body: l10n.subscriptionFreeTrialBody,
+                          ),
+                          const SizedBox(height: 12),
+                          _OfferRow(
+                            icon: Icons.groups_outlined,
+                            title: l10n.subscriptionReferralTitle,
+                            body: l10n.subscriptionReferralBody,
                           ),
                         ],
                       ),
@@ -316,7 +367,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 value: _planChoice,
                                 hint: Text(
                                   l10n.subscriptionPlanSelectPrompt,
-                                  style: const TextStyle(color: Color(0xFF64748B)),
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                  ),
                                 ),
                                 isExpanded: true,
                                 dropdownColor: const Color(0xFF0F172A),
@@ -325,28 +378,41 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   fontSize: 15,
                                 ),
                                 decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF334155)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF334155),
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF334155)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF334155),
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF06B6D4)),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF06B6D4),
+                                    ),
                                   ),
                                 ),
                                 items: [
                                   DropdownMenuItem(
                                     value: SubscriptionPlanChoice.week,
-                                    child: Text(l10n.subscriptionPlanSelectWeek),
+                                    child: Text(
+                                      l10n.subscriptionPlanSelectWeek,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: SubscriptionPlanChoice.month,
-                                    child: Text(l10n.subscriptionPlanSelectMonth),
+                                    child: Text(
+                                      l10n.subscriptionPlanSelectMonth,
+                                    ),
                                   ),
                                 ],
                                 onChanged: _savingPlan
@@ -384,7 +450,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: Color(0x66020617),
-                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
                                 ),
                                 child: Center(
                                   child: SizedBox(
@@ -411,21 +479,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         children: [
                           Text(
                             l10n.subscriptionProofSectionTitle,
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             l10n.subscriptionProofSectionHint,
-                            style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), height: 1.35),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF94A3B8),
+                              height: 1.35,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           if (_proofItems.isNotEmpty) ...[
                             OutlinedButton.icon(
                               onPressed: () {
-                                setState(() => _proofImagesVisible = !_proofImagesVisible);
+                                setState(
+                                  () => _proofImagesVisible =
+                                      !_proofImagesVisible,
+                                );
                               },
                               icon: Icon(
-                                _proofImagesVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                _proofImagesVisible
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
                                 size: 20,
                                 color: const Color(0xFF06B6D4),
                               ),
@@ -439,8 +519,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFF334155)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(
+                                  color: Color(0xFF334155),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                             if (_proofImagesVisible) ...[
@@ -454,15 +538,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             const SizedBox(height: 8),
                           ],
                           FilledButton.icon(
-                            onPressed: (_uploading || _planChoice == null) ? null : _showSourcePicker,
+                            onPressed: (_uploading || _planChoice == null)
+                                ? null
+                                : _showSourcePicker,
                             icon: _uploading
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF020617)),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF020617),
+                                    ),
                                   )
-                                : const Icon(Icons.upload_file_outlined, size: 20),
-                            label: Text(_uploading ? l10n.subscriptionProofUploading : l10n.subscriptionProofUploadCta),
+                                : const Icon(
+                                    Icons.upload_file_outlined,
+                                    size: 20,
+                                  ),
+                            label: Text(
+                              _uploading
+                                  ? l10n.subscriptionProofUploading
+                                  : l10n.subscriptionProofUploadCta,
+                            ),
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF06B6D4),
                               foregroundColor: const Color(0xFF020617),
@@ -476,6 +572,61 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _OfferRow extends StatelessWidget {
+  const _OfferRow({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF334155)),
+          ),
+          child: Icon(icon, color: const Color(0xFF06B6D4), size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFF8FAFC),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                body,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF94A3B8),
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

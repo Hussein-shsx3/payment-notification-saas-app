@@ -11,15 +11,18 @@ import '../../features/notifications/services/system_inbox_tray_notifier.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthProvider()
-      : _storage = AuthStorage(),
-        _isLoading = true,
-        _isAuthenticated = false,
-        _isViewerMode = false {
+    : _storage = AuthStorage(),
+      _isLoading = true,
+      _isAuthenticated = false,
+      _isViewerMode = false {
     _api = ApiClient(
       getAccessToken: _storage.getAccessToken,
       getRefreshToken: _storage.getRefreshToken,
       saveTokens: (accessToken, refreshToken) =>
-          _storage.saveTokensPreservingMode(accessToken: accessToken, refreshToken: refreshToken),
+          _storage.saveTokensPreservingMode(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          ),
       onRefreshFailed: _handleRefreshFailed,
     );
     _init();
@@ -107,8 +110,10 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _init() async {
     final accessToken = await _storage.getAccessToken();
     final refreshToken = await _storage.getRefreshToken();
-    _isViewerMode = (await _storage.getAccessMode()) == AuthStorage.accessModeViewer;
-    _isAuthenticated = accessToken != null &&
+    _isViewerMode =
+        (await _storage.getAccessMode()) == AuthStorage.accessModeViewer;
+    _isAuthenticated =
+        accessToken != null &&
         accessToken.isNotEmpty &&
         refreshToken != null &&
         refreshToken.isNotEmpty;
@@ -135,10 +140,14 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      final response = await _api.post('/auth/login', body: {
-        'email': emailOrPhone.trim(),
-        'password': password,
-      });
+      final response = await _api.post(
+        '/auth/login',
+        body: {
+          'email': emailOrPhone.trim(),
+          'password': password,
+          'sessionType': 'mobile',
+        },
+      );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -179,11 +188,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final trimmed = emailOrPhone.trim();
-      final identifier = trimmed.contains('@') ? trimmed.toLowerCase() : trimmed;
-      final response = await _api.post('/auth/login-viewer', body: {
-        'emailOrPhone': identifier,
-        'password': password,
-      });
+      final identifier = trimmed.contains('@')
+          ? trimmed.toLowerCase()
+          : trimmed;
+      final response = await _api.post(
+        '/auth/login-viewer',
+        body: {
+          'emailOrPhone': identifier,
+          'password': password,
+          'sessionType': 'mobile',
+        },
+      );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -225,13 +240,16 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      final response = await _api.post('/auth/register', body: {
-        'fullName': fullName.trim(),
-        'email': email.trim(),
-        'phoneNumber': phoneNumber.trim(),
-        'password': password,
-        'locale': locale,
-      });
+      final response = await _api.post(
+        '/auth/register',
+        body: {
+          'fullName': fullName.trim(),
+          'email': email.trim(),
+          'phoneNumber': phoneNumber.trim(),
+          'password': password,
+          'locale': locale,
+        },
+      );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -258,9 +276,10 @@ class AuthProvider extends ChangeNotifier {
   /// Confirms email using the 6-digit code (or legacy token).
   Future<bool> verifyEmail(String code) async {
     try {
-      final response = await _api.post('/auth/verify-email', body: {
-        'code': code.trim(),
-      });
+      final response = await _api.post(
+        '/auth/verify-email',
+        body: {'code': code.trim()},
+      );
       return response.statusCode >= 200 && response.statusCode < 300;
     } catch (_) {
       return false;
@@ -273,10 +292,10 @@ class AuthProvider extends ChangeNotifier {
     String locale = 'en',
   }) async {
     try {
-      final response = await _api.post('/auth/resend-verification', body: {
-        'email': email.trim(),
-        'locale': locale,
-      });
+      final response = await _api.post(
+        '/auth/resend-verification',
+        body: {'email': email.trim(), 'locale': locale},
+      );
       final ok = response.statusCode >= 200 && response.statusCode < 300;
       if (!ok) {
         return (httpOk: false, emailSent: null);
@@ -301,10 +320,13 @@ class AuthProvider extends ChangeNotifier {
     required String locale,
   }) async {
     try {
-      final response = await _api.post('/auth/forgot-password', body: {
-        'email': email.trim().toLowerCase(),
-        'locale': locale == 'ar' ? 'ar' : 'en',
-      });
+      final response = await _api.post(
+        '/auth/forgot-password',
+        body: {
+          'email': email.trim().toLowerCase(),
+          'locale': locale == 'ar' ? 'ar' : 'en',
+        },
+      );
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return (success: true, errorMessage: null);
       }
@@ -318,9 +340,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<({bool ok, String? message})> setViewerPassword(String password) async {
+  Future<({bool ok, String? message})> setViewerPassword(
+    String password,
+  ) async {
     try {
-      final response = await _api.put('/users/viewer-password', body: {'password': password});
+      final response = await _api.put(
+        '/users/viewer-password',
+        body: {'password': password},
+      );
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return (ok: true, message: null);
       }
@@ -342,9 +369,9 @@ class AuthProvider extends ChangeNotifier {
     // Do not block the UI on notification listener teardown (can stall on some devices).
     unawaited(
       _captureService.stop().timeout(
-            const Duration(seconds: 3),
-            onTimeout: () {},
-          ),
+        const Duration(seconds: 3),
+        onTimeout: () {},
+      ),
     );
   }
 }

@@ -414,6 +414,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'Two plans only — 1 week or 1 month. Prices are in Israeli new shekels (₪).';
 
   @override
+  String get subscriptionOffersHeading => 'Special offers';
+
+  @override
+  String get subscriptionFreeTrialTitle => 'Free first week';
+
+  @override
+  String get subscriptionFreeTrialBody =>
+      'New users get 7 days free before they choose a paid plan.';
+
+  @override
+  String get subscriptionReferralTitle => 'Invite 2 users, get 1 month free';
+
+  @override
+  String get subscriptionReferralBody =>
+      'When 2 invited users register and verify their email, we add 1 free month to your account.';
+
+  @override
   String get subscriptionPlanWeekTitle => '1 week';
 
   @override

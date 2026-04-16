@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Default list prices in ILS (Israeli new shekels). Change here to match your business.
-const double kSubscriptionPriceWeekIls = 8;
+const double kSubscriptionPriceWeekIls = 5;
 const double kSubscriptionPriceMonthIls = 18;
 
 String _formatIls(double amount) {
@@ -37,11 +37,7 @@ class SubscriptionPlanPricing extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           l10n.subscriptionPlansSubheading,
-          style: const TextStyle(
-            fontSize: 13,
-            height: 1.4,
-            color: _slateMuted,
-          ),
+          style: const TextStyle(fontSize: 13, height: 1.4, color: _slateMuted),
         ),
         const SizedBox(height: 18),
         _PricingCard(
@@ -113,10 +109,7 @@ class _PricingCard extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  _cyan.withOpacity(0.08),
-                  _slateCard,
-                ],
+                colors: [_cyan.withOpacity(0.08), _slateCard],
               )
             : null,
       ),
@@ -132,9 +125,13 @@ class _PricingCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: emphasize ? _cyan.withOpacity(0.18) : const Color(0xFF1E293B),
+              color: emphasize
+                  ? _cyan.withOpacity(0.18)
+                  : const Color(0xFF1E293B),
               border: Border.all(
-                color: emphasize ? _cyan.withOpacity(0.4) : const Color(0xFF334155),
+                color: emphasize
+                    ? _cyan.withOpacity(0.4)
+                    : const Color(0xFF334155),
               ),
             ),
             child: Icon(
@@ -164,7 +161,10 @@ class _PricingCard extends StatelessWidget {
                     if (badge != null) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _cyan.withOpacity(0.22),
                           borderRadius: BorderRadius.circular(20),

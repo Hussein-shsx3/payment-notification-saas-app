@@ -414,6 +414,23 @@ class AppLocalizationsAr extends AppLocalizations {
       'خياران فقط — أسبوع أو شهر. الأسعار بالشيكل الجديد (₪).';
 
   @override
+  String get subscriptionOffersHeading => 'عروض خاصة';
+
+  @override
+  String get subscriptionFreeTrialTitle => 'الأسبوع الأول مجاناً';
+
+  @override
+  String get subscriptionFreeTrialBody =>
+      'يحصل المستخدمون الجدد على 7 أيام مجانية قبل اختيار خطة مدفوعة.';
+
+  @override
+  String get subscriptionReferralTitle => 'ادعُ مستخدمين واحصل على شهر مجاناً';
+
+  @override
+  String get subscriptionReferralBody =>
+      'عندما يسجل مستخدمان مدعوان ويؤكدان بريدهما الإلكتروني، نضيف شهراً مجانياً إلى حسابك.';
+
+  @override
   String get subscriptionPlanWeekTitle => 'أسبوع';
 
   @override

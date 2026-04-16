@@ -8,10 +8,7 @@ import '../../shared/widgets/app_segmented_button_style.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
-enum _LoginTab {
-  main,
-  viewer,
-}
+enum _LoginTab { main, viewer }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -100,7 +97,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 12),
                         Text(
                           l10n.appTitle,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         SegmentedButton<_LoginTab>(
@@ -114,7 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ButtonSegment<_LoginTab>(
                               value: _LoginTab.viewer,
                               label: Text(l10n.loginModeViewer),
-                              icon: const Icon(Icons.visibility_outlined, size: 18),
+                              icon: const Icon(
+                                Icons.visibility_outlined,
+                                size: 18,
+                              ),
                             ),
                           ],
                           selected: {_tab},
@@ -128,7 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (_tab == _LoginTab.main) ...[
                           Text(
                             l10n.signInSubtitle,
-                            style: const TextStyle(fontSize: 13, color: Colors.white70),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white70,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -140,7 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               final t = value?.trim() ?? '';
-                              if (t.isEmpty) return l10n.validationEmailOrPhoneRequired;
+                              if (t.isEmpty)
+                                return l10n.validationEmailOrPhoneRequired;
                               if (t.contains('@')) {
                                 final i = t.indexOf('@');
                                 if (i <= 0 || i == t.length - 1) {
@@ -148,7 +155,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                                 return null;
                               }
-                              final digitCount = RegExp(r'\d').allMatches(t).length;
+                              final digitCount = RegExp(
+                                r'\d',
+                              ).allMatches(t).length;
                               if (digitCount < 7) {
                                 return l10n.validationEmailOrPhoneInvalid;
                               }
@@ -158,7 +167,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ] else ...[
                           Text(
                             l10n.viewerLoginSubtitle,
-                            style: const TextStyle(fontSize: 13, color: Colors.white70, height: 1.35),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white70,
+                              height: 1.35,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -170,7 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               final t = value?.trim() ?? '';
-                              if (t.isEmpty) return l10n.validationEmailOrPhoneRequired;
+                              if (t.isEmpty)
+                                return l10n.validationEmailOrPhoneRequired;
                               if (t.contains('@')) {
                                 final i = t.indexOf('@');
                                 if (i <= 0 || i == t.length - 1) {
@@ -178,7 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                                 return null;
                               }
-                              final digitCount = RegExp(r'\d').allMatches(t).length;
+                              final digitCount = RegExp(
+                                r'\d',
+                              ).allMatches(t).length;
                               if (digitCount < 7) {
                                 return l10n.validationEmailOrPhoneInvalid;
                               }
@@ -191,7 +207,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
-                            labelText: _tab == _LoginTab.main ? l10n.password : l10n.password,
+                            labelText: _tab == _LoginTab.main
+                                ? l10n.password
+                                : l10n.password,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
@@ -210,7 +228,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   : () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute<void>(
-                                          builder: (_) => const ForgotPasswordScreen(),
+                                          builder: (_) =>
+                                              const ForgotPasswordScreen(),
                                         ),
                                       );
                                     },
@@ -223,7 +242,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 8),
                           Text(
                             error,
-                            style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                         const SizedBox(height: 16),
@@ -238,12 +260,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           onPressed: _submitting
                               ? null
-                              : (_tab == _LoginTab.main ? _submitMain : _submitViewer),
+                              : (_tab == _LoginTab.main
+                                    ? _submitMain
+                                    : _submitViewer),
                           child: Text(
                             _submitting
                                 ? l10n.loggingIn
-                                : (_tab == _LoginTab.main ? l10n.login : l10n.viewerLoginButton),
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                : (_tab == _LoginTab.main
+                                      ? l10n.login
+                                      : l10n.viewerLoginButton),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                         if (_tab == _LoginTab.main) ...[

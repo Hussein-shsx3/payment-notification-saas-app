@@ -848,6 +848,36 @@ abstract class AppLocalizations {
   /// **'Two plans only — 1 week or 1 month. Prices are in Israeli new shekels (₪).'**
   String get subscriptionPlansSubheading;
 
+  /// No description provided for @subscriptionOffersHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Special offers'**
+  String get subscriptionOffersHeading;
+
+  /// No description provided for @subscriptionFreeTrialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free first week'**
+  String get subscriptionFreeTrialTitle;
+
+  /// No description provided for @subscriptionFreeTrialBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New users get 7 days free before they choose a paid plan.'**
+  String get subscriptionFreeTrialBody;
+
+  /// No description provided for @subscriptionReferralTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite 2 users, get 1 month free'**
+  String get subscriptionReferralTitle;
+
+  /// No description provided for @subscriptionReferralBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When 2 invited users register and verify their email, we add 1 free month to your account.'**
+  String get subscriptionReferralBody;
+
   /// No description provided for @subscriptionPlanWeekTitle.
   ///
   /// In en, this message translates to:
