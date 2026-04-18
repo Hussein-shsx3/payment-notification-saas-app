@@ -34,7 +34,9 @@ class _SupportScreenState extends State<SupportScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load(showFullScreenLoading: true));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _load(showFullScreenLoading: true),
+    );
   }
 
   String _formatMessageDate(BuildContext context, String? raw) {
@@ -116,7 +118,9 @@ class _SupportScreenState extends State<SupportScreen> {
   Future<void> _openWa() async {
     final d = _waDigits;
     if (d == null || d.isEmpty) return;
-    final uri = Uri.parse('https://wa.me/$d');
+    final uri = Uri.https('wa.me', '/$d', {
+      'text': 'Hello, I need support with the app.',
+    });
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -132,12 +136,16 @@ class _SupportScreenState extends State<SupportScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: l10n.supportRefresh,
-            onPressed: _loading ? null : () => _load(showFullScreenLoading: false),
+            onPressed: _loading
+                ? null
+                : () => _load(showFullScreenLoading: false),
           ),
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
+            )
           : RefreshIndicator(
               color: const Color(0xFF06B6D4),
               onRefresh: () => _load(showFullScreenLoading: false),
@@ -149,28 +157,47 @@ class _SupportScreenState extends State<SupportScreen> {
                   children: [
                     Text(
                       l10n.supportHelpText,
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8), height: 1.4),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF94A3B8),
+                        height: 1.4,
+                      ),
                     ),
-                    if (_whatsAppDisplay != null && _waDigits != null && _waDigits!.isNotEmpty) ...[
+                    if (_whatsAppDisplay != null &&
+                        _waDigits != null &&
+                        _waDigits!.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF022C22).withValues(alpha: 0.45),
+                          color: const Color(
+                            0xFF022C22,
+                          ).withValues(alpha: 0.45),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF065F46).withValues(alpha: 0.5)),
+                          border: Border.all(
+                            color: const Color(
+                              0xFF065F46,
+                            ).withValues(alpha: 0.5),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
                               l10n.supportWhatsAppIntro,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFFD1FAE5), height: 1.35),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFD1FAE5),
+                                height: 1.35,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               l10n.supportWhatsAppHint,
-                              style: const TextStyle(fontSize: 11, color: Color(0xFF6EE7B7)),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF6EE7B7),
+                              ),
                             ),
                             const SizedBox(height: 8),
                             FilledButton.icon(
@@ -189,7 +216,11 @@ class _SupportScreenState extends State<SupportScreen> {
                     const SizedBox(height: 20),
                     Row(
                       children: [
-                        const Icon(Icons.chat_bubble_outline, size: 18, color: Color(0xFF22D3EE)),
+                        const Icon(
+                          Icons.chat_bubble_outline,
+                          size: 18,
+                          color: Color(0xFF22D3EE),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           l10n.supportConversation,
@@ -205,7 +236,13 @@ class _SupportScreenState extends State<SupportScreen> {
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     if (_messages.isEmpty)
                       Padding(
@@ -213,7 +250,10 @@ class _SupportScreenState extends State<SupportScreen> {
                         child: Text(
                           l10n.supportEmptyThread,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 13,
+                          ),
                         ),
                       )
                     else
@@ -223,12 +263,18 @@ class _SupportScreenState extends State<SupportScreen> {
                           shrinkWrap: true,
                           physics: const BouncingScrollPhysics(),
                           itemCount: _messages.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
                           itemBuilder: (context, i) {
                             final m = _messages[i];
                             final fromAdmin = m['from'] == 'admin';
-                            final meta = fromAdmin ? l10n.supportTeam : l10n.supportYou;
-                            final when = _formatMessageDate(context, m['createdAt']?.toString());
+                            final meta = fromAdmin
+                                ? l10n.supportTeam
+                                : l10n.supportYou;
+                            final when = _formatMessageDate(
+                              context,
+                              m['createdAt']?.toString(),
+                            );
                             final line = when.isEmpty ? meta : '$meta · $when';
                             return Align(
                               alignment: fromAdmin
@@ -236,27 +282,38 @@ class _SupportScreenState extends State<SupportScreen> {
                                   : AlignmentDirectional.centerStart,
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.sizeOf(context).width * 0.88,
+                                  maxWidth:
+                                      MediaQuery.sizeOf(context).width * 0.88,
                                 ),
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: fromAdmin
-                                        ? const Color(0xFF0E7490).withValues(alpha: 0.22)
+                                        ? const Color(
+                                            0xFF0E7490,
+                                          ).withValues(alpha: 0.22)
                                         : const Color(0xFF1E293B),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         line,
-                                        style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: Color(0xFF64748B),
+                                        ),
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
                                         (m['body'] ?? '').toString(),
-                                        style: const TextStyle(fontSize: 13, color: Color(0xFFE2E8F0), height: 1.35),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFFE2E8F0),
+                                          height: 1.35,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -275,7 +332,9 @@ class _SupportScreenState extends State<SupportScreen> {
                         hintText: l10n.supportTypeMessage,
                         filled: true,
                         fillColor: const Color(0xFF020617),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -293,11 +352,16 @@ class _SupportScreenState extends State<SupportScreen> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           _sendError!,
-                          style: const TextStyle(color: Color(0xFFF87171), fontSize: 12),
+                          style: const TextStyle(
+                            color: Color(0xFFF87171),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     TextButton(
-                      onPressed: _loading ? null : () => _load(showFullScreenLoading: false),
+                      onPressed: _loading
+                          ? null
+                          : () => _load(showFullScreenLoading: false),
                       child: Text(l10n.supportRefresh),
                     ),
                   ],
