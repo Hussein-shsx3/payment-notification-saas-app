@@ -25,4 +25,15 @@ void main() {
     expect(parsed?.amount, 13);
     expect(parsed?.sender?.toLowerCase(), contains('bop'));
   });
+
+  test('rejects outgoing transfer notifications', () {
+    final parsed = PaymentNotificationParser.parse(
+      packageName: 'com.google.android.apps.messaging',
+      title: 'حوالة صادرة من حسابك',
+      message: 'حوالة صادرة من حسابك بمبلغ 10 شيكل',
+      receivedAt: DateTime.utc(2026, 4, 7),
+    );
+
+    expect(parsed, isNull);
+  });
 }

@@ -10,6 +10,7 @@ object PaymentNotifyFilters {
 
         if (isInternalAccountTransferOnly(text)) return false
         if (isCardSpendExcluded(text)) return false
+        if (isOutgoingPaymentNotification(text)) return false
         if (isLikelyNonPaymentJunk(text)) return false
         if (isCasualWhatsAppOrChatJunk(text)) return false
         if (isOtpOrStepUpVerificationMessage(text)) return false
@@ -279,6 +280,35 @@ object PaymentNotifyFilters {
         if (t.contains("من قبل التاجر") && (t.contains("رقم البطاقة") || t.contains("البطاقة:"))) return true
         if (t.contains("مبلغ الحركة") && t.contains("رقم البطاقة")) return true
         return false
+    }
+
+    /** Outgoing transfers/debits should not be treated as incoming payment receipts. */
+    private fun isOutgoingPaymentNotification(text: String): Boolean {
+        val t = text.lowercase()
+        return listOf(
+            "حوالة صادرة",
+            "صادرة من حسابك",
+            "تم التحويل الى",
+            "تم التحويل إلى",
+            "حولت",
+            "تم ارسال",
+            "ارسلت",
+            "تم الدفع لـ",
+            "تم الدفع إلى",
+            "تم الدفع ل",
+            "دفعت",
+            "تم خصم",
+            "تم سحب",
+            "outgoing transfer",
+            "you sent",
+            "you transferred",
+            "you paid",
+            "money sent",
+            "transaction sent",
+            "debited",
+            "withdrawal",
+            "cash out",
+        ).any { t.contains(it) }
     }
 
     /**

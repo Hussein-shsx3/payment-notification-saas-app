@@ -19,6 +19,7 @@ class ParsedPaymentNotification {
   final String? currency;
   final String? sender;
   final String? transactionId;
+
   /// Server stores `detected` (send/receive not inferred). Legacy: incoming/outgoing/unknown.
   final String direction;
 }
@@ -93,8 +94,9 @@ class PaymentNotificationParser {
     required String message,
     required DateTime receivedAt,
   }) {
-    final normalizedMessage =
-        _stripTrailingAvailableBalanceLine(_normalizeDigits(message));
+    final normalizedMessage = _stripTrailingAvailableBalanceLine(
+      _normalizeDigits(message),
+    );
     final packageLower = packageName.toLowerCase();
     final titleLower = title.toLowerCase();
     final messageLower = normalizedMessage.toLowerCase();
@@ -115,12 +117,17 @@ class PaymentNotificationParser {
       return null;
     }
 
+    if (_isOutgoingPaymentNotification(haystack)) {
+      return null;
+    }
+
     if (_isOutgoingOrInternalMultiLang(haystack)) {
       return null;
     }
 
-    final combinedForAmount =
-        _normalizeDigits('$title\n$normalizedMessage').trim();
+    final combinedForAmount = _normalizeDigits(
+      '$title\n$normalizedMessage',
+    ).trim();
     final combinedLower = combinedForAmount.toLowerCase();
     if (_isInternalAccountTransferOnly(combinedLower)) {
       return null;
@@ -131,10 +138,13 @@ class PaymentNotificationParser {
 
     RegExpMatch? amountMatch =
         _amountAfterBimablagRegex.firstMatch(combinedForAmount) ??
-            _amountAfterBimablagRegex.firstMatch(normalizedMessage);
-    amountMatch ??= _amountAfterMablagRegex.firstMatch(combinedForAmount) ??
+        _amountAfterBimablagRegex.firstMatch(normalizedMessage);
+    amountMatch ??=
+        _amountAfterMablagRegex.firstMatch(combinedForAmount) ??
         _amountAfterMablagRegex.firstMatch(normalizedMessage);
-    amountMatch ??= _amountRegex.firstMatch(combinedForAmount) ?? _amountRegex.firstMatch(normalizedMessage);
+    amountMatch ??=
+        _amountRegex.firstMatch(combinedForAmount) ??
+        _amountRegex.firstMatch(normalizedMessage);
 
     double? amount;
     String? currency;
@@ -151,11 +161,13 @@ class PaymentNotificationParser {
       }
     }
 
-    final txMatch = _transactionIdRegex.firstMatch(combinedForAmount) ??
+    final txMatch =
+        _transactionIdRegex.firstMatch(combinedForAmount) ??
         _transactionIdRegex.firstMatch(normalizedMessage);
     transactionId = txMatch?.group(1);
 
-    final senderMatch = _senderRegex.firstMatch(combinedForAmount.toLowerCase()) ??
+    final senderMatch =
+        _senderRegex.firstMatch(combinedForAmount.toLowerCase()) ??
         _senderRegex.firstMatch(normalizedMessage);
     sender = senderMatch?.group(1)?.trim();
 
@@ -175,22 +187,26 @@ class PaymentNotificationParser {
     }
 
     if (!_passesCaptureFilter(
-          packageLower: packageLower,
-          titleLower: titleLower,
-          messageLower: messageLower,
-        )) {
+      packageLower: packageLower,
+      titleLower: titleLower,
+      messageLower: messageLower,
+    )) {
       return null;
     }
 
     const direction = 'detected';
 
-    final source = _detectSource(
+    final source =
+        _detectSource(
           packageName: packageLower,
           title: titleLower,
           message: messageLower,
           input: haystack,
         ) ??
-        _inferSourceFallback(packageNameLower: packageLower, messageLower: messageLower);
+        _inferSourceFallback(
+          packageNameLower: packageLower,
+          messageLower: messageLower,
+        );
 
     return ParsedPaymentNotification(
       source: source,
@@ -212,17 +228,25 @@ class PaymentNotificationParser {
     required String input,
   }) {
     // Direct app detection
-    if (_containsAny(input, ['palpay', 'pal pay', 'بال باي', 'بالباي'])) return 'PalPay';
-    if (_containsAny(input, ['jawwal', 'jawwalpay', 'jawwal pay', 'جوال باي', 'جوال'])) return 'Jawwal Pay';
+    if (_containsAny(input, ['palpay', 'pal pay', 'بال باي', 'بالباي']))
+      return 'PalPay';
     if (_containsAny(input, [
-          'palestine bank',
-          'bank of palestine',
-          'bop',
-          'بنك فلسطين',
-          'تحويل بنكي',
-          'تحويل لصديق',
-          'bankofpalestine',
-        ])) {
+      'jawwal',
+      'jawwalpay',
+      'jawwal pay',
+      'جوال باي',
+      'جوال',
+    ]))
+      return 'Jawwal Pay';
+    if (_containsAny(input, [
+      'palestine bank',
+      'bank of palestine',
+      'bop',
+      'بنك فلسطين',
+      'تحويل بنكي',
+      'تحويل لصديق',
+      'bankofpalestine',
+    ])) {
       return 'Palestine Bank';
     }
 
@@ -293,7 +317,8 @@ class PaymentNotificationParser {
     final textLower = '$titleLower $messageLower';
 
     if (senderValue.isEmpty) {
-      return _containsAny(textLower, _trustedSenderKeywords) || _isKnownPaymentAppPackage(packageLower);
+      return _containsAny(textLower, _trustedSenderKeywords) ||
+          _isKnownPaymentAppPackage(packageLower);
     }
 
     if (_containsAny(senderValue, _trustedSenderKeywords)) {
@@ -312,13 +337,16 @@ class PaymentNotificationParser {
       return false;
     }
 
-    return _containsAny(textLower, _trustedSenderKeywords) || _isKnownPaymentAppPackage(packageLower);
+    return _containsAny(textLower, _trustedSenderKeywords) ||
+        _isKnownPaymentAppPackage(packageLower);
   }
 
   static String _normalizeSender(String? sender) {
     final value = (sender ?? '').toLowerCase().trim();
     if (value.isEmpty) return '';
-    return value.replaceAll(RegExp(r'[\u200e\u200f\u061c]'), '').replaceAll(RegExp(r'\s+'), ' ');
+    return value
+        .replaceAll(RegExp(r'[\u200e\u200f\u061c]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ');
   }
 
   static bool _isNumericOnly(String value) {
@@ -331,32 +359,42 @@ class PaymentNotificationParser {
     if (!RegExp(r'\d').hasMatch(compact)) {
       return false;
     }
-    return RegExp(r'^[\d]+$').hasMatch(compact) || RegExp(r'^\d{2,4}\d{5,}$').hasMatch(compact);
+    return RegExp(r'^[\d]+$').hasMatch(compact) ||
+        RegExp(r'^\d{2,4}\d{5,}$').hasMatch(compact);
   }
 
   static bool _looksLikeKnownAppName(String value) {
     final hasLetters = RegExp(r'[A-Za-z\u0600-\u06FF]').hasMatch(value);
     final hasDigits = RegExp(r'\d').hasMatch(value);
-    final compact = value.replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF0-9]+'), ' ').trim();
+    final compact = value
+        .replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF0-9]+'), ' ')
+        .trim();
     if (compact.isEmpty) return false;
     if (_containsAny(compact, _trustedSenderKeywords)) return true;
     return hasLetters && hasDigits;
   }
 
   static bool _looksLikePersonalName(String value) {
-    final compact = value.replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF]+'), ' ').trim();
+    final compact = value
+        .replaceAll(RegExp(r'[^A-Za-z\u0600-\u06FF]+'), ' ')
+        .trim();
     if (compact.isEmpty) return false;
     if (_containsAny(compact, _trustedSenderKeywords)) return false;
     if (RegExp(r'\d').hasMatch(compact)) return false;
-    final parts = compact.split(RegExp(r'\s+')).where((part) => part.isNotEmpty).toList();
+    final parts = compact
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
     return parts.isNotEmpty && parts.length <= 4;
   }
 
   /// Internal moves between the user's own accounts only (not stored).
   static bool _isInternalAccountTransferOnly(String combinedLower) {
     final t = combinedLower;
-    if (t.contains('بين الحسابات') || t.contains('between accounts')) return true;
-    if (t.contains('تحويل بنكي بين الحسابات') || t.contains('تحويل بين الحسابات')) {
+    if (t.contains('بين الحسابات') || t.contains('between accounts'))
+      return true;
+    if (t.contains('تحويل بنكي بين الحسابات') ||
+        t.contains('تحويل بين الحسابات')) {
       return true;
     }
     return false;
@@ -423,6 +461,35 @@ class PaymentNotificationParser {
     return false;
   }
 
+  /// Hard exclusion for outgoing transfers/debits that must not be stored.
+  static bool _isOutgoingPaymentNotification(String haystack) {
+    final t = haystack.toLowerCase();
+    return _containsAny(t, [
+      'حوالة صادرة',
+      'صادرة من حسابك',
+      'تم التحويل الى',
+      'تم التحويل إلى',
+      'حولت',
+      'تم ارسال',
+      'ارسلت',
+      'تم الدفع لـ',
+      'تم الدفع إلى',
+      'تم الدفع ل',
+      'دفعت',
+      'تم خصم',
+      'تم سحب',
+      'outgoing transfer',
+      'you sent',
+      'you transferred',
+      'you paid',
+      'money sent',
+      'transaction sent',
+      'debited',
+      'withdrawal',
+      'cash out',
+    ]);
+  }
+
   /// Same gate as native [PaymentNotifyNotificationListenerService.shouldRoughlyLookLikePayment].
   static bool _passesCaptureFilter({
     required String packageLower,
@@ -437,10 +504,13 @@ class PaymentNotificationParser {
     final strong = _hasStrongPaymentHint(textLower);
     final bankOp = _hasBankOperationHints(textLower);
     final bankKw = _hasBankKeywords(textLower);
-    final isIburaq = isSms && _containsAny(haystack, ['iburaq', 'ايبرق', 'البراق']);
+    final isIburaq =
+        isSms && _containsAny(haystack, ['iburaq', 'ايبرق', 'البراق']);
 
     if (isKnown) {
-      return strong || bankOp || _looksLikeMoneyFingerprintFromKnownBankApp(textLower);
+      return strong ||
+          bankOp ||
+          _looksLikeMoneyFingerprintFromKnownBankApp(textLower);
     }
     if (isSms && !_smsHasRecognizedPaymentBrand(textLower)) {
       return false;
@@ -453,7 +523,8 @@ class PaymentNotificationParser {
         (strong || _looksLikeMoneyFingerprintFromKnownBankApp(textLower))) {
       return true;
     }
-    final palestineLine = textLower.contains('تحويل بنكي') &&
+    final palestineLine =
+        textLower.contains('تحويل بنكي') &&
         (textLower.contains('بمبلغ') || textLower.contains('مبلغ'));
     if (palestineLine && (strong || bankOp)) return true;
     if (_isPalestineBankFriendPaymentLine(textLower)) return true;
@@ -463,10 +534,12 @@ class PaymentNotificationParser {
 
   /// BOP friend payment tray — "تحويل دفع لصديق" not "تحويل بنكي".
   static bool _isPalestineBankFriendPaymentLine(String textLower) {
-    final friend = textLower.contains('تحويل دفع') ||
+    final friend =
+        textLower.contains('تحويل دفع') ||
         textLower.contains('الدفع لصديق') ||
         textLower.contains('دفع لصديق');
-    final money = textLower.contains('بمبلغ') ||
+    final money =
+        textLower.contains('بمبلغ') ||
         textLower.contains('مبلغ') ||
         textLower.contains('ils') ||
         textLower.contains('nis') ||
@@ -477,7 +550,8 @@ class PaymentNotificationParser {
   /// Incoming to BOP account/wallet (align with server [_isPalestineBankIncomingAccountLine]).
   static bool _isPalestineBankIncomingAccountLine(String textLower) {
     if (!RegExp(r'\d').hasMatch(textLower)) return false;
-    final incomingCue = textLower.contains('حوالة واردة') ||
+    final incomingCue =
+        textLower.contains('حوالة واردة') ||
         textLower.contains('واردة لحسابك') ||
         textLower.contains('واردة إلى حسابك') ||
         textLower.contains('واردة الى حسابك') ||
@@ -501,7 +575,8 @@ class PaymentNotificationParser {
         textLower.contains('iburaq') ||
         textLower.contains('ايبرق') ||
         textLower.contains('البراق');
-    final bankOrMoney = textLower.contains('bop') ||
+    final bankOrMoney =
+        textLower.contains('bop') ||
         textLower.contains('بنك') ||
         textLower.contains('bank') ||
         textLower.contains('فلسطين') ||
@@ -521,11 +596,13 @@ class PaymentNotificationParser {
   /// Iburaq SMS (align with server [_isSmsIburaqIncomingWireLine]).
   static bool _isSmsIburaqIncomingWireLine(String textLower) {
     if (!RegExp(r'\d').hasMatch(textLower)) return false;
-    final wire = textLower.contains('حوالة واردة') ||
+    final wire =
+        textLower.contains('حوالة واردة') ||
         textLower.contains('واردة لحسابك') ||
         textLower.contains('واردة إلى حسابك') ||
         textLower.contains('واردة الى حسابك');
-    final money = textLower.contains('بمبلغ') ||
+    final money =
+        textLower.contains('بمبلغ') ||
         textLower.contains('مبلغ') ||
         textLower.contains('شيكل') ||
         textLower.contains('شيقل') ||
@@ -615,15 +692,15 @@ class PaymentNotificationParser {
 
   static bool _isSmsAppPackage(String packageLower) {
     if (_containsAny(packageLower, [
-          'com.google.android.apps.messaging',
-          'com.samsung.android.messaging',
-          'com.android.mms',
-          'com.android.messaging',
-          'com.miui.mms',
-          'com.huawei.message',
-          'com.oneplus.mms',
-          'com.coloros.mms',
-        ])) {
+      'com.google.android.apps.messaging',
+      'com.samsung.android.messaging',
+      'com.android.mms',
+      'com.android.messaging',
+      'com.miui.mms',
+      'com.huawei.message',
+      'com.oneplus.mms',
+      'com.coloros.mms',
+    ])) {
       return true;
     }
     return packageLower.contains('messaging') ||
@@ -843,18 +920,24 @@ class PaymentNotificationParser {
 
   /// Bank step-up SMS — not a payment (align with Android [isOtpOrStepUpVerificationMessage]).
   static bool _isOtpOrStepUpVerificationMessage(String lower) {
-    if (lower.contains('كلمة السر المؤقتة') || lower.contains('كلمه السر المؤقتة')) {
+    if (lower.contains('كلمة السر المؤقتة') ||
+        lower.contains('كلمه السر المؤقتة')) {
       return true;
     }
-    if (lower.contains('يرجى استخدام كلمة السر') || lower.contains('استخدم كلمة السر المؤقتة')) {
+    if (lower.contains('يرجى استخدام كلمة السر') ||
+        lower.contains('استخدم كلمة السر المؤقتة')) {
       return true;
     }
     if (lower.contains('لاستكمال الحركة') &&
-        (lower.contains('مؤقت') || lower.contains('code') || lower.contains('رمز'))) {
+        (lower.contains('مؤقت') ||
+            lower.contains('code') ||
+            lower.contains('رمز'))) {
       return true;
     }
     if (RegExp(r'code\s*:\s*\d', caseSensitive: false).hasMatch(lower) &&
-        (lower.contains('مؤقت') || lower.contains('استكمال') || lower.contains('يرجى'))) {
+        (lower.contains('مؤقت') ||
+            lower.contains('استكمال') ||
+            lower.contains('يرجى'))) {
       return true;
     }
     return false;
@@ -883,15 +966,14 @@ class PaymentNotificationParser {
       ),
       '',
     );
-    final markStrip = RegExp(r'[\u200c-\u200f\u202a-\u202e\u2066-\u2069\ufeff]+');
-    final lines = s
-        .split('\n')
-        .map((l) => l.trim())
-        .where((line) {
-          if (line.isEmpty) return false;
-          final noMarks = line.replaceAll(markStrip, '').trim();
-          return !RegExp(r'^BOP$', caseSensitive: false).hasMatch(noMarks);
-        });
+    final markStrip = RegExp(
+      r'[\u200c-\u200f\u202a-\u202e\u2066-\u2069\ufeff]+',
+    );
+    final lines = s.split('\n').map((l) => l.trim()).where((line) {
+      if (line.isEmpty) return false;
+      final noMarks = line.replaceAll(markStrip, '').trim();
+      return !RegExp(r'^BOP$', caseSensitive: false).hasMatch(noMarks);
+    });
     s = lines.join('\n').trim();
     s = s.replaceAll(RegExp(r'[.،\s]+$'), '').trim();
     return s;
@@ -941,26 +1023,39 @@ class PaymentNotificationParser {
     required String messageLower,
   }) {
     if (_containsAny(packageNameLower, ['palpay'])) return 'PalPay';
-    if (_containsAny(packageNameLower, ['jawwal', 'jawwalpay'])) return 'Jawwal Pay';
+    if (_containsAny(packageNameLower, ['jawwal', 'jawwalpay']))
+      return 'Jawwal Pay';
     if (_containsAny(packageNameLower, [
-          'bank',
-          'bop',
-          'palestine',
-          'bankofpalestine',
-          'bop.mobile',
-        ])) {
+      'bank',
+      'bop',
+      'palestine',
+      'bankofpalestine',
+      'bop.mobile',
+    ])) {
       return 'Palestine Bank';
     }
 
     final isSmsApp = _isSmsAppPackage(packageNameLower);
-    if (isSmsApp && _containsAny(messageLower, ['iburaq', 'ايبرق', 'البراق'])) return 'Iburaq';
+    if (isSmsApp && _containsAny(messageLower, ['iburaq', 'ايبرق', 'البراق']))
+      return 'Iburaq';
     if (isSmsApp) return 'SMS Payment';
     return 'Other';
   }
 
   static String _normalizeDigits(String input) {
     const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    const easternArabicIndic = [
+      '۰',
+      '۱',
+      '۲',
+      '۳',
+      '۴',
+      '۵',
+      '۶',
+      '۷',
+      '۸',
+      '۹',
+    ];
     var out = input;
     for (var i = 0; i < 10; i++) {
       out = out.replaceAll(arabicIndic[i], '$i');
@@ -992,4 +1087,3 @@ class PaymentNotificationParser {
     return double.tryParse(normalized);
   }
 }
-
