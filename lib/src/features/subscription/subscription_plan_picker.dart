@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Default list prices in ILS (Israeli new shekels). Change here to match your business.
-const double kSubscriptionPriceWeekIls = 5;
-const double kSubscriptionPriceMonthIls = 18;
+/// Updated prices: week 14 ILS, month 55 ILS.
+const double kSubscriptionPriceWeekIls = 14;
+const double kSubscriptionPriceMonthIls = 55;
 
 String _formatIls(double amount) {
   if (amount == amount.roundToDouble()) {

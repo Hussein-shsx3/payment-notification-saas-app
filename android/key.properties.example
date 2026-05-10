@@ -1,0 +1,13 @@
+# Android signing properties example
+# Copy this file to `android/key.properties` (do NOT commit `key.properties`).
+
+storePassword=<keystore_password>
+keyPassword=<key_password>
+keyAlias=<key_alias>
+storeFile=<relative/path/to/keystore.jks>
+
+# Example:
+# storePassword=myStorePass123
+# keyPassword=myKeyPass123
+# keyAlias=paymentnotify
+# storeFile=../keystores/paymentnotify.jks

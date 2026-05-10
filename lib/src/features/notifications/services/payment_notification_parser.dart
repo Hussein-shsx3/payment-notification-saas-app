@@ -959,9 +959,40 @@ class PaymentNotificationParser {
 
   static String _stripTrailingAvailableBalanceLine(String normalized) {
     var s = normalized.trim().replaceAll(RegExp(r'\r\n'), '\n');
+    // Arabic + English balance tails (keep transfer line only; match server).
+    const currAmt =
+        r'[\d.,]+(?:\s*(?:USD|US\$|ILS|NIS|JOD|JDS|EUR|GBP|\$|₪|£|€))?';
     s = s.replaceAll(
       RegExp(
-        r'[\s.،\n]*رصيد(?:كم|ك)\s+المتوفر(?:\s+هو)?\s*[\d.,]+',
+        r'[\s.،\n]*رصيد(?:كم|ك)?\s+المتوفر(?:\s+هو)?\s*[\d.,]+',
+        unicode: true,
+      ),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'[\s.،\n]*الرصيد\s+الحالي\s*:?\s*[\d.,ILSNISJODilsnisjod\s$₪]+',
+        unicode: true,
+      ),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'[\s.،\n]*الرصيد\s*:?\s*[\d.,ILSNISJODilsnisjod\s$₪]+',
+        unicode: true,
+      ),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'[\s.,\n]*(?:your\s+)?current\s+balance\s+is\s*:?\s*' + currAmt,
+        caseSensitive: false,
+      ),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'[\s.,\n]*(?:your\s+)?available\s+balance\s*(?:is)?\s*:?\s*' + currAmt,
         caseSensitive: false,
       ),
       '',

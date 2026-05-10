@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -84,99 +85,101 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Center(child: AppLogo(size: 48)),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _fullNameController,
-                          decoration: InputDecoration(
-                            labelText: l10n.fullName,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? l10n.validationFullNameRequired : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: l10n.email,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return l10n.validationEmailRequired;
-                            }
-                            final t = v.trim();
-                            final i = t.indexOf('@');
-                            if (i <= 0 || i == t.length - 1) {
-                              return l10n.validationEmailInvalid;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            labelText: l10n.phoneNumber,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? l10n.validationPhoneRequired : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: l10n.password,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return l10n.validationPasswordRequired;
-                            }
-                            if (!isStrongPassword(v)) {
-                              return l10n.passwordPolicyError;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _submitting ? null : _submit,
-                          child: Text(_submitting ? l10n.creatingAccount : l10n.createAccount),
-                        ),
-                        if (_message != null) ...[
-                          const SizedBox(height: 10),
-                          Text(
-                            _message!,
-                            style: TextStyle(
-                              color: _message == l10n.registrationSuccess
-                                  ? Colors.greenAccent
-                                  : Colors.redAccent,
-                              fontSize: 12,
+            padding: const EdgeInsets.all(12),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = math.min(constraints.maxWidth, 420.0);
+                final logoSize = width < 360 ? 40.0 : 48.0;
+                return ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: width),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Center(child: AppLogo(size: logoSize)),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _fullNameController,
+                              decoration: InputDecoration(
+                                labelText: l10n.fullName,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? l10n.validationFullNameRequired : null,
                             ),
-                          ),
-                        ],
-                      ],
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                labelText: l10n.email,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return l10n.validationEmailRequired;
+                                }
+                                final t = v.trim();
+                                final i = t.indexOf('@');
+                                if (i <= 0 || i == t.length - 1) {
+                                  return l10n.validationEmailInvalid;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                labelText: l10n.phoneNumber,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? l10n.validationPhoneRequired : null,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.password,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return l10n.validationPasswordRequired;
+                                }
+                                if (!isStrongPassword(v)) {
+                                  return l10n.passwordPolicyError;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _submitting ? null : _submit,
+                              child: Text(_submitting ? l10n.creatingAccount : l10n.createAccount),
+                            ),
+                            if (_message != null) ...[
+                              const SizedBox(height: 10),
+                              Text(
+                                _message!,
+                                style: TextStyle(
+                                  color: _message == l10n.registrationSuccess ? Colors.greenAccent : Colors.redAccent,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),

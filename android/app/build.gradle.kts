@@ -59,6 +59,13 @@ android {
                 "Missing android/key.properties. Configure release signing before building appbundle."
             }
             signingConfig = signingConfigs.getByName("release")
+            // Enable code shrinking and resource shrinking to reduce APK size.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
